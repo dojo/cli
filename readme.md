@@ -28,13 +28,6 @@ CLI available via `$ dojo` in your terminal
 
 `dojo new <appName>`
 
-### Install
-
-- `dojo install [installable]`
-- `dojo install`
-
-TODO: Add appropriate usage and instruction guidelines
-
 ## How do I contribute?
 
 We appreciate your interest!  Please see the [Dojo 2 Meta Repository](https://github.com/dojo/meta#readme) for the
