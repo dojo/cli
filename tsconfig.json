@@ -26,7 +26,6 @@
 		"./tests/intern-local.ts",
 		"./tests/intern.ts",
 		"./tests/support/Reporter.ts",
-		"./tests/support/util.ts",
 		"./tests/unit/all.ts",
 		"./tests/unit/main.ts",
 		"./tests/unit/util/path.ts"

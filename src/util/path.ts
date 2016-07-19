@@ -25,9 +25,6 @@ export function get(base: PathId, ...pathStr: string[]): string {
 }
 
 export function createParentDir(resolvedPath: string) {
-	if (!paths) {
-		throw new Error('CREATEPARENTDIR Config not called');
-	}
 	log('verbose', `path:createParentDir - called with ${resolvedPath}`);
 	const resolvedDir = path.dirname(resolvedPath);
 	if (!existsSync(resolvedDir)) {

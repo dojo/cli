@@ -18,10 +18,10 @@ let paths: any;
 
 registerSuite({
 	name: 'util-path',
-	'setAppBasePath': {
-		setup() {
-			paths = pathUtil.setBasePaths(sourceBasePath, destBasePath);
-		},
+	beforeEach() {
+		paths = pathUtil.setBasePaths(sourceBasePath, destBasePath);
+	},
+	'setBasePaths': {
 		'setting returns paths object'() {
 			assert.isObject(paths);
 			const keys = Object.keys(pathProperties);
@@ -38,6 +38,53 @@ registerSuite({
 			});
 		}
 	},
-	'get': {},
-	'createParentDir': {}
+	'get': {
+		'should throw error if paths not set'() {
+			pathUtil.setBasePaths(null, null);
+			let resolvedPath: void | string;
+			let errorThrown = false;
+			try {
+				resolvedPath = pathUtil.get('templates', 'testPath');
+			}
+			catch (e) {
+				assert.isUndefined(resolvedPath);
+				errorThrown = true;
+			}
+			assert.isTrue(errorThrown);
+		},
+		'should return joined path when given a base and a path'() {
+			const pathStrs = [
+				'testPath',
+				'/testPath',
+				'//testPath'
+			];
+
+			Object.keys(pathProperties).forEach(basePath => {
+				const expected = paths[basePath] + '/testPath';
+				pathStrs.forEach(pathStr => {
+					const resolvedPath = pathUtil.get(<pathUtil.PathId> basePath, pathStr);
+					assert.strictEqual(resolvedPath, expected);
+				});
+			});
+		},
+		'should return joined path when given multiple paths'() {
+			const testPaths: [string[], string][] = [
+				[['testPath1', 'testPath2'], '/testPath1/testPath2'],
+				[['testPath1', 'testPath2', 'testPath3'], '/testPath1/testPath2/testPath3'],
+				[['/testPath1', '/testPath2'], '/testPath1/testPath2'],
+				[['//testPath1', '//testPath2', '//testPath3'], '/testPath1/testPath2/testPath3']
+			];
+			Object.keys(pathProperties).forEach(basePath => {
+				testPaths.forEach(([testPath, expectedPathEnd]) => {
+					const resolvedPath = pathUtil.get(<pathUtil.PathId> basePath, ...testPath);
+					assert.strictEqual(resolvedPath, paths[basePath] + expectedPathEnd);
+				});
+			});
+		}
+	},
+	'createParentDir': {
+		'should create parent dir'() {
+			console.log('CWD is: ' + process.cwd());
+		}
+	}
 });
