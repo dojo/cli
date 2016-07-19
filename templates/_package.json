@@ -1,0 +1,39 @@
+{
+	"name": "<%- name %>",
+	"version": "0.0.1",
+	"description":"<%= description %>",
+	"homepage": "",
+	"bugs": {
+		"url": ""
+	},
+	"license": "BSD-3-Clause",
+	"repository": {
+		"type": "git"
+	},
+	"dependencies": { <% var keys = Object.keys(modules);
+		keys.forEach(function (key, index) {
+		var module = modules[key]; %>
+		"<%- key %>": "<%- module.version %>"<% if (index < keys.length -1) { %>,<% } }) %>
+	},
+	"devDependencies": {
+		"codecov.io": "0.1.6",
+		"dts-generator": "~1.7.0",
+		"glob": "^7.0.3",
+		"grunt": "~1.0.1",
+		"grunt-contrib-clean": "^1.0.0",
+		"grunt-contrib-copy": "^1.0.0",
+		"grunt-contrib-watch": "^1.0.0",
+		"grunt-dojo2": ">=2.0.0-beta.5",
+		"grunt-release": "^0.13.1",
+		"grunt-text-replace": "^0.4.0",
+		"grunt-ts": "^5.5.1",
+		"grunt-tslint": "^3.1.0",
+		"grunt-typings": "kitsonk/grunt-typings#452cf5f29a6070965f85d0dcae48abbd75939179",
+		"intern": "^3.2.0",
+		"istanbul": "^0.4.3",
+		"remap-istanbul": "^0.6.4",
+		"tslint": "^3.10.2",
+		"typescript": "^1.8.10",
+		"typings": "^1.0.0"
+	}
+}

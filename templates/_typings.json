@@ -1,0 +1,13 @@
+{
+	"name": "<%- name %>",
+	"dependencies": { <% var keys = Object.keys(typings);
+		keys.forEach(function (key, index) {
+		var typing = typings[key]; %>
+		"<%- key %>": "<%- typing %>"<% if (index < keys.length -1) { %>,<% } }) %>
+	},
+	"globalDependencies": { <% var keys = Object.keys(globalTypings);
+		keys.forEach(function (key, index) {
+		var globalTyping = globalTypings[key]; %>
+		"<%- key %>": "<%- globalTyping %>"<% if (index < keys.length -1) { %>,<% } }) %>
+	}
+}

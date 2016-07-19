@@ -1,0 +1,34 @@
+{
+	"version": "1.8.10",
+	"compilerOptions": {
+		"declaration": false,
+		"module": "umd",
+		"noImplicitAny": true,
+		"outDir": "_build/",
+		"removeComments": false,
+		"sourceMap": true,
+		"target": "es6"
+	},
+	"filesGlob": [
+		"./typings/index.d.ts",
+		"./src/commands/*.ts",
+		"./src/util/*.ts",
+		"./src/lib/*.ts",
+		"./tests/**/*.ts"
+	],
+	"files": [
+		"./typings/index.d.ts",
+		"./src/commands/newApp.ts",
+		"./src/util/path.ts",
+		"./src/util/template.ts",
+		"./src/lib/cli.ts",
+		"./tests/functional/all.ts",
+		"./tests/intern-local.ts",
+		"./tests/intern.ts",
+		"./tests/support/Reporter.ts",
+		"./tests/support/util.ts",
+		"./tests/unit/all.ts",
+		"./tests/unit/main.ts",
+		"./tests/unit/util/path.ts"
+	]
+}
