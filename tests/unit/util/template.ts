@@ -15,7 +15,6 @@ registerSuite({
 	beforeEach() {
 		writeFileStub = stub(fs, 'writeFile').callsArg(2);
 		mkdirsStub = stub(fs, 'mkdirsSync');
-		// paths = pathUtil.setBasePaths(sourceBasePath, destBasePath);
 	},
 	afterEach() {
 		writeFileStub.restore();
