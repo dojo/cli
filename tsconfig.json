@@ -27,6 +27,7 @@
 		"./tests/intern.ts",
 		"./tests/support/Reporter.ts",
 		"./tests/unit/all.ts",
+		"./tests/unit/commands/newApp.ts",
 		"./tests/unit/main.ts",
 		"./tests/unit/util/path.ts",
 		"./tests/unit/util/template.ts"

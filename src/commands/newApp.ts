@@ -1,8 +1,8 @@
 import * as chalk from 'chalk';
 import * as inquirer from 'inquirer';
 import { readdirSync } from 'fs-extra';
-import { render } from  '../util/template';
-import { get as getPath, PathId } from '../util/path';
+import { render } from  'src/util/template';
+import { get as getPath, PathId } from 'src/util/path';
 import { log } from 'winston';
 
 // Not a TS module
@@ -53,6 +53,10 @@ interface TypingsConfigMap {
 let appConfig: AppConfig;
 let skip: SkipConfig;
 
+const isPosix = process.platform !== 'win32';
+const FAIL_CROSS = chalk.red(isPosix ? "✖" : "×");
+const SUCCESS_TICK = chalk.green(isPosix ? "✔" : "√");
+
 function checkForAppName(name: any): void {
 	if (!name || name.length === 0) {
 		log('error', chalk.red('Error: ') + 'App Name is Required');
@@ -61,7 +65,10 @@ function checkForAppName(name: any): void {
 };
 
 function checkForEmptyDir(dirPath: string, exit: boolean = false): void | boolean {
-	const folderContents = readdirSync(dirPath);
+	const reg = /^[^\.]/;
+	const folderContents = readdirSync(dirPath).filter(fileName => {
+		return reg.test(fileName);
+	});
 	const isEmpty = folderContents.length === 0;
 
 	if (!isEmpty && exit) {
@@ -99,7 +106,7 @@ const filesToRender: [PathId, string, PathId, string][] = [
 	[ 'templates', 'app.styl', 'destSrc', 'app.styl']
 ];
 
-async function renderFiles() {
+export async function renderFiles() {
 	if (skip.render) { return; }
 
 	log('info', chalk.bold('-- Rendering Files --'));
@@ -118,7 +125,6 @@ async function renderFiles() {
 function getSelectedModuleConfig(selectedModuleIds: string[], availableModuleConfig: ModuleConfigMap): ModuleConfigMap {
 	let modules: ModuleConfigMap = {};
 
-	// Get just the module config we care about
 	Object.keys(availableModuleConfig).forEach((moduleId) => {
 		if (selectedModuleIds.indexOf(moduleId) > -1) {
 			modules[moduleId] = availableModuleConfig[moduleId];
@@ -128,7 +134,7 @@ function getSelectedModuleConfig(selectedModuleIds: string[], availableModuleCon
 	return modules;
 }
 
-function getPeerDependencies(modules: ModuleConfigMap, allVersionedModules: ModuleConfigMap): ModuleConfigMap {
+export function getPeerDependencies(modules: ModuleConfigMap, allVersionedModules: ModuleConfigMap): ModuleConfigMap {
 	const returnModules = Object.assign({}, modules);
 	let addedCount = 0;
 
@@ -165,7 +171,7 @@ function mergeTypings(moduleId: string, source: TypingsConfigMap, destination: T
 	}
 }
 
-function getTypings(modules: ModuleConfigMap): [TypingsConfigMap, TypingsConfigMap] {
+export function getTypings(modules: ModuleConfigMap): [TypingsConfigMap, TypingsConfigMap] {
 	const typings: TypingsConfigMap = {};
 	const globalTypings: TypingsConfigMap = {};
 
@@ -178,7 +184,7 @@ function getTypings(modules: ModuleConfigMap): [TypingsConfigMap, TypingsConfigM
 	return [typings, globalTypings];
 }
 
-function createAppConfig(answers: CreateAnswers, availableModules: any) {
+export function createAppConfig(answers: CreateAnswers, availableModules: any) {
 	log('info', chalk.bold('-- Creating AppConfig From Answers --'));
 
 	const allVersionedModules: ModuleConfigMap = availableModules[answers.version].modules;
@@ -195,7 +201,7 @@ function createAppConfig(answers: CreateAnswers, availableModules: any) {
 	};
 };
 
-async function installDependencies() {
+export async function installDependencies() {
 	if (skip.npm) { return; }
 
 	log('info', chalk.bold('-- Running npm install --'));
@@ -263,5 +269,5 @@ export async function createNew(name: string, skipConfig: SkipConfig) {
 	await renderFiles();
 	await installDependencies();
 
-	log('info', chalk.green.bold('\n ✔ DONE'));
+	log('info', chalk.green.bold('\n ' + SUCCESS_TICK + ' DONE'));
 };
