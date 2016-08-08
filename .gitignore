@@ -6,3 +6,4 @@ typings
 cache
 .history
 html-report
+.tsconfig*.json

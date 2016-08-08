@@ -1,80 +1,78 @@
 {
-	"latest": {
-		"default": true,
-		"name": "latest (recommended)",
-		"modules": {
-			"dojo-widgets": {
-				"version": ">=2.0.0-alpha.1",
-				"buildFromSource": true,
-				"globalTypings": {
-					"dojo-widgets": "npm:dojo-widgets"
-				},
-				"peerDependencies": ["dojo-compose", "dojo-core", "immutable", "maquette", "@reactivex/rxjs"]
+	"default": true,
+	"name": "latest (recommended)",
+	"modules": {
+		"dojo-widgets": {
+			"version": ">=2.0.0-alpha.1",
+			"buildFromSource": true,
+			"globalTypings": {
+				"dojo-widgets": "npm:dojo-widgets"
 			},
-			"dojo-actions": {
-				"version": ">=2.0.0-alpha.1",
-				"globalTypings": {
-					"dojo-actions": "npm:dojo-actions"
-				},
-				"peerDependencies": ["dojo-compose", "dojo-core"]
+			"peerDependencies": ["dojo-compose", "dojo-core", "immutable", "maquette", "@reactivex/rxjs"]
+		},
+		"dojo-actions": {
+			"version": ">=2.0.0-alpha.1",
+			"globalTypings": {
+				"dojo-actions": "npm:dojo-actions"
 			},
-			"dojo-compose": {
-				"version": ">=2.0.0-beta.2",
-				"globalTypings": {
-					"dojo-compose": "npm:dojo-compose"
-				},
-				"peerDependencies": ["dojo-core"]
+			"peerDependencies": ["dojo-compose", "dojo-core"]
+		},
+		"dojo-compose": {
+			"version": ">=2.0.0-beta.2",
+			"globalTypings": {
+				"dojo-compose": "npm:dojo-compose"
 			},
-			"dojo-core": {
-				"version": ">=2.0.0-alpha.5",
-				"checked": true,
-				"globalTypings": {
-					"dojo-core": "npm:dojo-core",
-					"node": "github:dojo/typings/custom/node/node.d.ts#a62873258aa1deed48f9882c193c335436100d4b",
-					"symbol-shim": "github:dojo/typings/custom/symbol-shim/symbol-shim.d.ts#9a0185f465a3febe2bb1ff3f1210f43e5f96c5d2"
-				}
+			"peerDependencies": ["dojo-core"]
+		},
+		"dojo-core": {
+			"version": ">=2.0.0-alpha.5",
+			"checked": true,
+			"globalTypings": {
+				"dojo-core": "npm:dojo-core",
+				"node": "github:dojo/typings/custom/node/node.d.ts#a62873258aa1deed48f9882c193c335436100d4b",
+				"symbol-shim": "github:dojo/typings/custom/symbol-shim/symbol-shim.d.ts#9a0185f465a3febe2bb1ff3f1210f43e5f96c5d2"
+			}
+		},
+		"dojo-loader": {
+			"version": ">=2.0.0-beta.4",
+			"checked": true,
+			"globalTypings": {
+				"dojo-loader": "npm:dojo-loader"
+			}
+		},
+		"immutable": {
+			"hidden": true,
+			"version": "^3.7.6",
+			"packageLocation": "/dist",
+			"typings": {
+				"immutable": "npm:immutable"
 			},
-			"dojo-loader": {
-				"version": ">=2.0.0-beta.4",
-				"checked": true,
-				"globalTypings": {
-					"dojo-loader": "npm:dojo-loader"
-				}
+			"globalTypings": {
+				"extra-immutable": "github:dojo/typings/custom/dojo2-extras/immutable.d.ts#004fc065b3b24412c9b6575cdc06545964c370b5"
+			}
+		},
+		"maquette": {
+			"hidden": true,
+			"version": "^2.3.1",
+			"packageLocation": "/dist",
+			"typings": {
+				"maquette": "npm:maquette"
 			},
-			"immutable": {
-				"hidden": true,
-				"version": "^3.7.6",
-				"packageLocation": "/dist",
-				"typings": {
-					"immutable": "npm:immutable"
-				},
-				"globalTypings": {
-					"extra-immutable": "github:dojo/typings/custom/dojo2-extras/immutable.d.ts#004fc065b3b24412c9b6575cdc06545964c370b5"
-				}
+			"globalTypings": {
+				"extra-maquette": "github:dojo/typings/custom/dojo2-extras/maquette.d.ts#004fc065b3b24412c9b6575cdc06545964c370b5"
+			}
+		},
+		"@reactivex/rxjs": {
+			"hidden": true,
+			"version": "5.0.0-beta.6",
+			"packageLocation": "/dist/amd",
+			"packageName": "rxjs",
+			"typings": {
+				"@reactivex/RxJS": "npm:@reactivex/RxJS"
 			},
-			"maquette": {
-				"hidden": true,
-				"version": "^2.3.1",
-				"packageLocation": "/dist",
-				"typings": {
-					"maquette": "npm:maquette"
-				},
-				"globalTypings": {
-					"extra-maquette": "github:dojo/typings/custom/dojo2-extras/maquette.d.ts#004fc065b3b24412c9b6575cdc06545964c370b5"
-				}
-			},
-			"@reactivex/rxjs": {
-				"hidden": true,
-				"version": "5.0.0-beta.6",
-				"packageLocation": "/dist/amd",
-				"packageName": "rxjs",
-				"typings": {
-					"@reactivex/RxJS": "npm:@reactivex/RxJS"
-				},
-				"globalTypings": {
-					"extra-rxjs": "github:dojo/typings/custom/dojo2-extras/rxjs.d.ts#004fc065b3b24412c9b6575cdc06545964c370b5",
-					"es6-shim": "github:DefinitelyTyped/DefinitelyTyped/es6-shim/es6-shim.d.ts#6697d6f7dadbf5773cb40ecda35a76027e0783b2"
-				}
+			"globalTypings": {
+				"extra-rxjs": "github:dojo/typings/custom/dojo2-extras/rxjs.d.ts#004fc065b3b24412c9b6575cdc06545964c370b5",
+				"es6-shim": "github:DefinitelyTyped/DefinitelyTyped/es6-shim/es6-shim.d.ts#6697d6f7dadbf5773cb40ecda35a76027e0783b2"
 			}
 		}
 	}

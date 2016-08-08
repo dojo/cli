@@ -3,4 +3,4 @@ winston.remove(winston.transports.Console);
 
 import './util/path';
 import './util/template';
-import './commands/newApp';
+import './commands/create';

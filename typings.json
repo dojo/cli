@@ -1,15 +1,13 @@
 {
 	"dependencies": {
-		"chalk": "registry:npm/chalk#1.0.0+20160211003958",
+		"chalk": "registry:npm/chalk#1.0.0+20160723033700",
 		"got": "registry:npm/got#6.3.0+20160524045608",
-		"inquirer": "github:Tomdye/npm-inquirer#a65f7a95b96925a5c70497f671123606cba5bd85",
-		"semver": "registry:npm/semver#5.0.0+20160211003958",
-		"yargs": "github:Tomdye/npm-yargs#31572993bc4bddd99dae2321aa67f44eb1694b59"
+		"yargs": "registry:npm/yargs#3.31.0+20160723033700"
 	},
 	"globalDependencies": {
 		"ejs": "registry:dt/ejs#0.0.0+20160317120654",
 		"fs-extra": "registry:dt/fs-extra#0.0.0+20160319124112",
-		"node": "registry:dt/node#6.0.0+20160514165920",
+		"node": "registry:dt/node#6.0.0+20160802155038",
 		"tar": "registry:dt/tar#0.0.0+20160316155526",
 		"winston": "registry:dt/winston#0.0.0+20160417152829"
 	},
@@ -22,8 +20,8 @@
 		"leadfoot": "github:dojo/typings/custom/leadfoot/leadfoot.d.ts#a62873258aa1deed48f9882c193c335436100d4b"
 	},
 	"devDependencies": {
-		"chai": "registry:npm/chai#3.5.0+20160415060238",
+		"chai": "registry:npm/chai#3.5.0+20160723033700",
 		"glob": "registry:npm/glob#6.0.0+20160211003958",
-		"sinon": "registry:npm/sinon#1.16.0+20160427193336"
+		"sinon": "registry:npm/sinon#1.16.0+20160723033700"
 	}
 }

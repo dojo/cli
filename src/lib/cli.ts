@@ -1,23 +1,23 @@
-import * as yargs from 'yargs';
-import { createNew } from '../commands/newApp';
+// import * as yargs from 'yargs';
+import * as create from '../commands/create';
 import { setBasePaths } from '../util/path';
 import * as winston from 'winston';
 
 const pkgDir = require('pkg-dir');
+const yargs = require('yargs');
 
-interface VerboseOptions extends yargs.Argv {
+interface VerboseOptions {
 	verbose?: boolean;
 }
 
 interface CliOptions extends VerboseOptions {
 	skipNpm?: boolean;
-	skipGit?: boolean;
 	skipRender?: boolean;
-	force?: boolean;
+	// force?: boolean;
 	verbose?: boolean;
 }
 
-interface NewAppArgs extends CliOptions {
+interface CreateArgs extends CliOptions {
 	appName: string;
 }
 
@@ -25,7 +25,7 @@ interface InstallArgs extends CliOptions {
 	installable?: string;
 }
 
-function noop() {};
+// function noop() {};
 
 function setUpLogger(verbose: boolean = false) {
 	winston.remove(winston.transports.Console);
@@ -55,35 +55,15 @@ setBasePaths(pkgDir.sync(__dirname), process.cwd());
 yargs
 	.usage('Usage: $0 [global options] <command> [options]')
 	.strict()
-	.command(
-		'new <appName>',
-		'Create a new Dojo 2 application',
-		noop,
-		(argv: NewAppArgs) => {
-			createNew(argv.appName, {
-				npm: argv.skipNpm,
-				git: argv.skipGit,
-				render: argv.skipRender,
-				force: argv.force
-			});
-		}
-	)
+	.command(create)
 	.options({
 		'skipNpm': {
 			alias: 'sn',
 			describe: 'Skip npm install'
 		},
-		'skipGit': {
-			alias: 'sg',
-			describe: 'Skip github install'
-		},
 		'skipRender': {
 			alias: 'sr',
 			describe: 'Skip render files'
-		},
-		'force': {
-			alias: 'f',
-			describe: 'Force usage in non-empty directory'
 		}
 	})
 	.help()

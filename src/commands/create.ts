@@ -1,8 +1,8 @@
 import * as chalk from 'chalk';
-import * as inquirer from 'inquirer';
+// import * as inquirer from 'inquirer';
 import { readdirSync } from 'fs-extra';
-import { render } from  'src/util/template';
-import { get as getPath, PathId } from 'src/util/path';
+import { render } from  '../util/template';
+import { get as getPath, PathId } from '../util/path';
 import { log } from 'winston';
 
 // Not a TS module
@@ -41,7 +41,6 @@ interface ProceedAnswers extends inquirer.Answers {
 
 interface SkipConfig {
 	npm: boolean;
-	git: boolean;
 	render: boolean;
 	force: boolean;
 }
@@ -54,8 +53,7 @@ let appConfig: AppConfig;
 let skip: SkipConfig;
 
 const isPosix = process.platform !== 'win32';
-const FAIL_CROSS = chalk.red(isPosix ? "✖" : "×");
-const SUCCESS_TICK = chalk.green(isPosix ? "✔" : "√");
+const SUCCESS_TICK = chalk.green(isPosix ? '✔' : '√');
 
 function checkForAppName(name: any): void {
 	if (!name || name.length === 0) {
@@ -64,34 +62,34 @@ function checkForAppName(name: any): void {
 	}
 };
 
-function checkForEmptyDir(dirPath: string, exit: boolean = false): void | boolean {
-	const reg = /^[^\.]/;
-	const folderContents = readdirSync(dirPath).filter(fileName => {
-		return reg.test(fileName);
-	});
-	const isEmpty = folderContents.length === 0;
+// function checkForEmptyDir(dirPath: string, exit: boolean = false): void | boolean {
+// 	const reg = /^[^\.]/;
+// 	const folderContents = readdirSync(dirPath).filter(fileName => {
+// 		return reg.test(fileName);
+// 	});
+// 	const isEmpty = folderContents.length === 0;
 
-	if (!isEmpty && exit) {
-		log('error', chalk.red('Error: ') + 'Directory is not empty');
-		process.exit(1);
-	} else {
-		return isEmpty;
-	}
-};
+// 	if (!isEmpty && exit) {
+// 		log('error', chalk.red('Error: ') + 'Directory is not empty');
+// 		process.exit(1);
+// 	} else {
+// 		return isEmpty;
+// 	}
+// };
 
-async function proceedCheck(name: string) {
-	let response = await inquirer.prompt([{
-		type: 'confirm',
-		name: 'proceed',
-		message: `Do you wish to proceed with creating ${name}?`,
-		default: true
-	}]);
+// async function proceedCheck(name: string) {
+// 	let response = await inquirer.prompt([{
+// 		type: 'confirm',
+// 		name: 'proceed',
+// 		message: `Do you wish to proceed with creating ${name}?`,
+// 		default: true
+// 	}]);
 
-	if (!(<ProceedAnswers> response).proceed) {
-		log('error', chalk.red('\nExiting: ') + 'User chose to exit');
-		process.exit(1);
-	}
-}
+// 	if (!(<ProceedAnswers> response).proceed) {
+// 		log('error', chalk.red('\nExiting: ') + 'User chose to exit');
+// 		process.exit(1);
+// 	}
+// }
 
 const filesToRender: [PathId, string, PathId, string][] = [
 	[ 'templates', '_package.json', 'destRoot', 'package.json' ],
@@ -184,10 +182,10 @@ export function getTypings(modules: ModuleConfigMap): [TypingsConfigMap, Typings
 	return [typings, globalTypings];
 }
 
-export function createAppConfig(answers: CreateAnswers, availableModules: any) {
-	log('info', chalk.bold('-- Creating AppConfig From Answers --'));
+export function createAppConfig(availableModules: any) {
+	log('info', chalk.bold('-- Creating AppConfig --'));
 
-	const allVersionedModules: ModuleConfigMap = availableModules[answers.version].modules;
+	const allVersionedModules: ModuleConfigMap = availableModules.modules;
 	const selectedModuleConfig = getSelectedModuleConfig(answers.modules, allVersionedModules);
 	const allDependencies = getPeerDependencies(selectedModuleConfig, allVersionedModules);
 	const [typings, globalTypings] = getTypings(allDependencies);
@@ -216,58 +214,69 @@ export async function installDependencies() {
 	});
 }
 
-export async function createNew(name: string, skipConfig: SkipConfig) {
+export async function handler(name: string, skipConfig: SkipConfig) {
 	const modPath = getPath('config', 'availableModules.json');
 	const availableModules = require(modPath);
-	const questions: inquirer.Questions = [
-		{
-			type: 'text',
-			name: 'description',
-			message: 'Enter a brief description of the app you are creating'
-		},
-		{
-			type: 'list',
-			name: 'version',
-			message: 'What configuration of Dojo modules would you like?',
-			choices: (): inquirer.ChoiceType[] => {
-				return Object.keys(availableModules)
-					.map((key) => {
-						let config = availableModules[key];
-						return { name: config.name, value: key };
-					});
-			},
-			default: 0
-		},
-		{
-			type: 'checkbox',
-			name: 'modules',
-			message: 'Which modules would you like to use?',
-			choices: (answers: CreateAnswers): inquirer.ChoiceType[] => {
-				let chosenModules = availableModules[answers.version].modules;
-				return Object.keys(chosenModules)
-					.filter(name => !chosenModules[name].hidden)
-					.map((name) => {
-						return { name, checked: !!chosenModules[name].checked };
-					});
-			}
-		}
-	];
+	// const questions: inquirer.Questions = [
+	// 	{
+	// 		type: 'text',
+	// 		name: 'description',
+	// 		message: 'Enter a brief description of the app you are creating'
+	// 	},
+	// 	{
+	// 		type: 'list',
+	// 		name: 'version',
+	// 		message: 'What configuration of Dojo modules would you like?',
+	// 		choices: (): inquirer.ChoiceType[] => {
+	// 			return Object.keys(availableModules)
+	// 				.map((key) => {
+	// 					let config = availableModules[key];
+	// 					return { name: config.name, value: key };
+	// 				});
+	// 		},
+	// 		default: 0
+	// 	},
+	// 	{
+	// 		type: 'checkbox',
+	// 		name: 'modules',
+	// 		message: 'Which modules would you like to use?',
+	// 		choices: (answers: CreateAnswers): inquirer.ChoiceType[] => {
+	// 			let chosenModules = availableModules[answers.version].modules;
+	// 			return Object.keys(chosenModules)
+	// 				.filter(name => !chosenModules[name].hidden)
+	// 				.map((name) => {
+	// 					return { name, checked: !!chosenModules[name].checked };
+	// 				});
+	// 		}
+	// 	}
+	// ];
 	skip = skipConfig;
 
-	checkForAppName(name);
+	// checkForAppName(name);
 
-	if (!skip.force) {
-		checkForEmptyDir(getPath('destRoot', ''), true);
-	}
+	// if (!skip.force) {
+	// 	checkForEmptyDir(getPath('destRoot', ''), true);
+	// }
 
 	log('info', chalk.bold('-- Lets get started --\n'));
 
-	await proceedCheck(name);
-	let answers = await inquirer.prompt(questions);
-	(<CreateAnswers> answers).name = name;
-	await createAppConfig(<CreateAnswers> answers, availableModules);
+	// await proceedCheck(name);
+	// let answers = await inquirer.prompt(questions);
+	// (<CreateAnswers> answers).name = name;
+	await createAppConfig(availableModules);
 	await renderFiles();
 	await installDependencies();
 
 	log('info', chalk.green.bold('\n ' + SUCCESS_TICK + ' DONE'));
+};
+
+export const command = 'create <appName>';
+export const describe = 'Create a new Dojo 2 application';
+export const builder = {
+	banana: {
+		default: 'cool'
+	},
+	batman: {
+		default: 'sad'
+	}
 };
