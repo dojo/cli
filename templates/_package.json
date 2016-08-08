@@ -1,7 +1,7 @@
 {
 	"name": "<%- name %>",
 	"version": "0.0.1",
-	"description":"<%= description %>",
+	"description":"A new dojo2 app",
 	"homepage": "",
 	"bugs": {
 		"url": ""

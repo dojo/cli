@@ -1,0 +1,50 @@
+{
+	"globalTypings": {
+		"dojo-widgets": "npm:dojo-widgets",
+		"dojo-actions": "npm:dojo-actions",
+		"dojo-compose": "npm:dojo-compose",
+		"dojo-core": "npm:dojo-core",
+		"node": "github:dojo/typings/custom/node/node.d.ts#a62873258aa1deed48f9882c193c335436100d4b",
+		"symbol-shim": "github:dojo/typings/custom/symbol-shim/symbol-shim.d.ts#9a0185f465a3febe2bb1ff3f1210f43e5f96c5d2",
+		"dojo-loader": "npm:dojo-loader",
+		"extra-immutable": "github:dojo/typings/custom/dojo2-extras/immutable.d.ts#004fc065b3b24412c9b6575cdc06545964c370b5",
+		"extra-maquette": "github:dojo/typings/custom/dojo2-extras/maquette.d.ts#004fc065b3b24412c9b6575cdc06545964c370b5",
+		"extra-rxjs": "github:dojo/typings/custom/dojo2-extras/rxjs.d.ts#004fc065b3b24412c9b6575cdc06545964c370b5",
+		"es6-shim": "github:DefinitelyTyped/DefinitelyTyped/es6-shim/es6-shim.d.ts#6697d6f7dadbf5773cb40ecda35a76027e0783b2"
+	},
+	"typings": {
+		"immutable": "npm:immutable",
+		"maquette": "npm:maquette",
+		"@reactivex/RxJS": "npm:@reactivex/RxJS"
+	},
+	"modules": {
+		"dojo-widgets": {
+			"version": ">=2.0.0-alpha.1"
+		},
+		"dojo-actions": {
+			"version": ">=2.0.0-alpha.1"
+		},
+		"dojo-compose": {
+			"version": ">=2.0.0-beta.2"
+		},
+		"dojo-core": {
+			"version": ">=2.0.0-alpha.5"
+		},
+		"dojo-loader": {
+			"version": ">=2.0.0-beta.4"
+		},
+		"immutable": {
+			"version": "^3.7.6",
+			"packageLocation": "/dist"
+		},
+		"maquette": {
+			"version": "^2.3.1",
+			"packageLocation": "/dist"
+		},
+		"@reactivex/rxjs": {
+			"version": "5.0.0-beta.6",
+			"packageLocation": "/dist/amd",
+			"packageName": "rxjs"
+		}
+	}
+}

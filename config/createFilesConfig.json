@@ -1,0 +1,12 @@
+[
+	[ "templates", "_package.json", "destRoot", "package.json" ],
+	[ "templates", "_Gruntfile.js", "destRoot", "Gruntfile.js" ],
+	[ "templates", "_typings.json", "destRoot", "typings.json" ],
+	[ "templates", "tsconfig.json", "destRoot", "tsconfig.json" ],
+	[ "templates", "tslint.json", "destRoot", "tslint.json" ],
+	[ "templates", "_editorconfig", "destRoot", ".editorconfig" ],
+	[ "templates", "index.html", "destSrc", "index.html" ],
+	[ "templates", "index.ts", "destSrc", "index.ts" ],
+	[ "templates", "app.ts", "destSrc", "app.ts" ],
+	[ "templates", "app.styl", "destSrc", "app.styl"]
+]

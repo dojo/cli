@@ -1,4 +1,3 @@
-import { existsSync, mkdirsSync } from 'fs-extra';
 import * as path from 'path';
 import { log } from 'winston';
 
@@ -22,15 +21,6 @@ export function get(base: PathId, ...pathStr: string[]): string {
 	}
 	const resolvedPath = path.join(paths[base], ...pathStr);
 	return resolvedPath;
-}
-
-export function createParentDir(resolvedPath: string) {
-	log('verbose', `path:createParentDir - called with ${resolvedPath}`);
-	const resolvedDir = path.dirname(resolvedPath);
-	if (!existsSync(resolvedDir)) {
-		log('verbose', `path:get - making folder ${resolvedDir}`);
-		mkdirsSync(resolvedDir);
-	}
 }
 
 export function setBasePaths(sourceBasePath: string, destBasePath: string): PathMap {

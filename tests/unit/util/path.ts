@@ -1,8 +1,6 @@
 import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
 import * as pathUtil from 'src/util/path';
-import * as fs from 'fs-extra';
-import { stub, SinonStub } from 'sinon';
 
 const sourceBasePath = 'testSourcePath';
 const destBasePath = 'testDestPath';
@@ -17,8 +15,6 @@ const pathProperties: any = {
 };
 
 let paths: any;
-let existsStub: SinonStub;
-let mkdirsStub: SinonStub;
 
 registerSuite({
 	name: 'util-path',
@@ -83,27 +79,6 @@ registerSuite({
 					assert.strictEqual(resolvedPath, paths[basePath] + expectedPathEnd);
 				});
 			});
-		}
-	},
-	'createParentDir': {
-		'beforeEach'() {
-			existsStub = stub(fs, 'existsSync');
-			mkdirsStub = stub(fs, 'mkdirsSync');
-		},
-		'afterEach'() {
-			existsStub.restore();
-			mkdirsStub.restore();
-		},
-		'should get parent folder name, check it exists and mkdir if not'() {
-			pathUtil.createParentDir('/tmp/parentFolder/child');
-			assert.isTrue(existsStub.firstCall.calledWith('/tmp/parentFolder'));
-			assert.isTrue(mkdirsStub.firstCall.calledWith('/tmp/parentFolder'));
-		},
-		'should get parent folder name, if exists, not call mkdir'() {
-			existsStub.returns(true);
-			pathUtil.createParentDir('/tmp/parentFolder/child');
-			assert.isTrue(existsStub.firstCall.calledWith('/tmp/parentFolder'));
-			assert.isTrue(mkdirsStub.notCalled);
 		}
 	}
 });

@@ -1,6 +1,6 @@
 import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
-import * as template from 'src/util/template';
+import template from 'src/util/template';
 import * as fs from 'fs-extra';
 import { stub, SinonStub } from 'sinon';
 
@@ -22,17 +22,17 @@ registerSuite({
 	},
 	'render': {
 		'can render ejs file'() {
-			return template.render(testEjsSrc, testDest, { value }).then(function () {
+			return template(testEjsSrc, testDest, { value }).then(function () {
 				assert.strictEqual(writeFileStub.firstCall.args[1], value);
 			});
 		},
 		'write file is called with dest path'() {
-			return template.render(testEjsSrc, testDest, { value }).then(function () {
+			return template(testEjsSrc, testDest, { value }).then(function () {
 				assert.strictEqual(writeFileStub.firstCall.args[0], testDest);
 			});
 		},
 		'parent folder is made for template destination'() {
-			return template.render(testEjsSrc, testDest, { value }).then(function () {
+			return template(testEjsSrc, testDest, { value }).then(function () {
 				assert.strictEqual(mkdirsStub.firstCall.args[0], '/tmp/test');
 			});
 		}

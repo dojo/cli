@@ -2,7 +2,8 @@ import { renderFile } from 'ejs';
 import { writeFile } from 'fs-extra';
 import * as chalk from 'chalk';
 import { log } from 'winston';
-import { createParentDir } from './path';
+import createDir from './createDir';
+import { dirname } from 'path';
 
 function ejsRender(source: string, replacements: Object): Promise<string> {
 	return new Promise<string>((resolve, reject) => {
@@ -26,10 +27,10 @@ function writeRenderedFile(str: string, destination: string): Promise<void> {
 	});
 }
 
-export async function render(source: string, destination: string, replacements: Object): Promise<void> {
+export default async function (source: string, destination: string, replacements: Object): Promise<void> {
 	log('info', chalk.green('Rendering: ') + `${destination}`);
 
-	createParentDir(destination);
+	createDir(dirname(destination));
 	const str = await ejsRender(source, replacements);
 	await writeRenderedFile(str, destination);
 };

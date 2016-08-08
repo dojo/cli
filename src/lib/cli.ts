@@ -10,23 +10,6 @@ interface VerboseOptions {
 	verbose?: boolean;
 }
 
-interface CliOptions extends VerboseOptions {
-	skipNpm?: boolean;
-	skipRender?: boolean;
-	// force?: boolean;
-	verbose?: boolean;
-}
-
-interface CreateArgs extends CliOptions {
-	appName: string;
-}
-
-interface InstallArgs extends CliOptions {
-	installable?: string;
-}
-
-// function noop() {};
-
 function setUpLogger(verbose: boolean = false) {
 	winston.remove(winston.transports.Console);
 	winston.add(winston.transports.Console, {
@@ -56,15 +39,5 @@ yargs
 	.usage('Usage: $0 [global options] <command> [options]')
 	.strict()
 	.command(create)
-	.options({
-		'skipNpm': {
-			alias: 'sn',
-			describe: 'Skip npm install'
-		},
-		'skipRender': {
-			alias: 'sr',
-			describe: 'Skip render files'
-		}
-	})
 	.help()
 	.argv;
