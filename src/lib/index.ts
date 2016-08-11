@@ -42,7 +42,6 @@ function globs(searchPaths: string[], searchPrefixes: string[]) {
 			globPaths.push(path.resolve(depPath, `${folderPrefix}-*`));
 		});
 	});
-	console.log(globPaths);
 	return globPaths;
 }
 
