@@ -45,10 +45,10 @@ function globs(searchPaths: string[], searchPrefixes: string[]) {
 	return globPaths;
 }
 
-// TODO: fix :any
+// TODO: fix :any usages
 function getTaskDescription(taskType: string, taskSubTypes: any) {
 	return taskSubTypes.length > 1 ?
-		`There are ${taskSubTypes.length} ${taskType} subTasks: ${taskSubTypes.map(taskSubType => taskSubType.name).join(', ')}` :
+		`There are ${taskSubTypes.length} ${taskType} subTasks: ${taskSubTypes.map((taskSubType: any) => taskSubType.name).join(', ')}` :
 		taskSubTypes[0].description;
 }
 
