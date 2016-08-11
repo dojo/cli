@@ -1,0 +1,17 @@
+{
+	"version": "1.8.10",
+	"compilerOptions": {
+		"declaration": false,
+		"module": "commonjs",
+		"noImplicitAny": true,
+		"outDir": "_build/",
+		"removeComments": false,
+		"sourceMap": true,
+		"target": "es6"
+	},
+	"include": [
+		"./typings/index.d.ts",
+		"./src/util/*.ts",
+		"./src/lib/*.ts"
+	]
+}

@@ -1,0 +1,51 @@
+{
+  "name": "dojo-cli",
+  "version": "0.0.3-pre",
+  "description": "Dojo 2 CLI utility",
+  "homepage": "http://dojotoolkit.org",
+  "bugs": {
+    "url": "https://github.com/dojo/cli/issues"
+  },
+  "license": "BSD-3-Clause",
+  "scripts": {
+    "test": "grunt test"
+  },
+  "keywords": [
+    "dojo",
+    "cli"
+  ],
+  "bin": {
+    "dojo": "bin/dojo.js"
+  },
+  "preferGlobal": true,
+  "dependencies": {
+    "chalk": "^1.1.3",
+    "globby": "^6.0.0",
+    "update-notifier": "^1.0.2",
+    "winston": "^2.2.0",
+    "yargs": "^4.8.1"
+  },
+  "devDependencies": {
+    "codecov.io": "0.1.6",
+    "dojo-loader": "^2.0.0-beta.5",
+    "dts-generator": "~1.7.0",
+    "grunt": "~1.0.1",
+    "grunt-contrib-clean": "^1.0.0",
+    "grunt-contrib-copy": "^1.0.0",
+    "grunt-contrib-uglify": "^1.0.1",
+    "grunt-contrib-watch": "^1.0.0",
+    "grunt-dojo2": "^2.0.0-beta.12",
+    "grunt-release": "^0.13.1",
+    "grunt-text-replace": "^0.4.0",
+    "grunt-ts": "^5.5.1",
+    "grunt-tslint": "^3.1.0",
+    "grunt-typings": "kitsonk/grunt-typings#452cf5f29a6070965f85d0dcae48abbd75939179",
+    "intern": "^3.2.0",
+    "istanbul": "^0.4.3",
+    "remap-istanbul": "^0.6.4",
+    "sinon": "^1.17.4",
+    "tslint": "^3.10.2",
+    "typescript": "beta",
+    "typings": "^1.0.0"
+  }
+}

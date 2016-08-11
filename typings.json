@@ -1,0 +1,12 @@
+{
+  "dependencies": {
+    "chalk": "registry:npm/chalk#1.0.0+20160723033700",
+    "globby": "registry:npm/globby#3.0.0+20160723033700",
+    "update-notifier": "registry:npm/update-notifier#0.6.0+20160723033700",
+    "yargs": "registry:npm/yargs#3.31.0+20160723033700"
+  },
+  "globalDependencies": {
+    "node": "registry:dt/node#6.0.0+20160807145350",
+    "winston": "registry:dt/winston#0.0.0+20160417152829"
+  }
+}
