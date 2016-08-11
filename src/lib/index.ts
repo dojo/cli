@@ -12,15 +12,16 @@ const pkg = require('../../package.json');
 const verboseArgvs: VerboseOptions = yargs.option({
 	'v': {
 		alias: 'verbose',
-		describe: 'Set console logging level to verbose'
+		describe: 'Set console logging level to verbose',
+		type: 'boolean'
 	}
 }).argv;
 
 setupLogger(verboseArgvs.verbose);
 setupUpdateNotifier(pkg, 0);
 
-const pluginMap = new Map();
-const taskTypes = new Set();
+const taskSet = new Set();
+const taskTypes = new Map();
 
 const helpUsage = `${chalk.bold('dojo help')}
 
@@ -41,51 +42,62 @@ function globs(searchPaths: string[], searchPrefixes: string[]) {
 			globPaths.push(path.resolve(depPath, `${folderPrefix}-*`));
 		});
 	});
+	console.log(globPaths);
 	return globPaths;
 }
 
+// TODO: fix :any
+function getTaskDescription(taskType: string, taskSubTypes: any) {
+	return taskSubTypes.length > 1 ?
+		`There are ${taskSubTypes.length} ${taskType} subTasks: ${taskSubTypes.map(taskSubType => taskSubType.name).join(', ')}` :
+		taskSubTypes[0].description;
+}
+
 globby(globs(config.searchPaths, config.searchPrefixes)).then((paths) => {
-	const tasks = paths.map((path) => {
-		const task = require(path);
+	paths.forEach((path) => {
+		const { description, register, run } = require(path);
 		const pluginParts = /dojo-cli-(.*)-(.*)/.exec(path);
 		const taskType = pluginParts[1];
 		const taskSubType = pluginParts[2];
 		let computedName = taskSubType;
 		let count = 1;
 
-		taskTypes.add(taskType);
-
-		while (pluginMap.has(computedName)) {
+		while (taskSet.has(computedName)) {
 			computedName = `${computedName}-${count}`;
 			count++;
 		}
 
-		pluginMap.set(computedName, task);
+		taskSet.add(computedName);
 
-		return {
-			type: taskType,
-			args: [
-				computedName,
-				`${task.description} (${path})`,
-				task.register,
-				task.run
-			]
+		const taskConfig = {
+			name: computedName,
+			description,
+			register,
+			run
 		};
+
+		if (taskTypes.has(taskType)) {
+			taskTypes.get(taskType).push(taskConfig);
+		} else {
+			taskTypes.set(taskType, [ taskConfig ]);
+		}
 	});
 
-	taskTypes.forEach((taskType) => {
-		yargs.command(taskType, 'Compile list of subTasks for here', (yargs) => {
-			tasks
-				.filter((task) => task.type === taskType)
-				.map((command) => yargs.command.apply(null, command.args));
+	// TODO: Fix this :any
+	let taskType: string, taskSubTypes: any[];
+	for ([ taskType, taskSubTypes ] of taskTypes.entries()) {
+		const description = getTaskDescription(taskType, taskSubTypes);
+
+		yargs.command(taskType, description, (yargs) => {
+			taskSubTypes.map(({ name, description, register, run }) => yargs.command.apply(null, [ name, description, register, run ]));
 			return yargs;
 		});
-	});
+	}
 
 	yargs.demand(1, 'must provide a valid command')
 		.usage(helpUsage)
+		.epilog(helpEpilog)
 		.help('h')
 		.alias('h', 'help')
-		.epilog(helpEpilog)
 		.argv;
 });
