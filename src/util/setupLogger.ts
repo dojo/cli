@@ -4,7 +4,7 @@ export interface VerboseOptions {
 	verbose?: boolean;
 }
 
-export default function (verbose: boolean = false) {
+export default function setupLogger(verbose: boolean = false) {
 	remove(transports.Console);
 	add(transports.Console, {
 		showLevel: false,
