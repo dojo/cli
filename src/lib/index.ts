@@ -5,6 +5,7 @@ import getGlobPaths from '../util/getGlobPaths';
 import * as chalk from 'chalk';
 import * as globby from 'globby';
 import config from './config';
+import { log } from 'winston';
 const pkg = require('../../package.json');
 
 type CommandConfig = {
@@ -49,9 +50,11 @@ function getCommandDescription(commandType: string, commandSubTypes: CommandConf
 		commandSubTypes[0].description;
 }
 
+const commandRegExp = new RegExp(`${config.searchPrefix}-(.*)-(.*)`);
 function loadCommandFromPath(path: string): void {
+	log('verbose', `index:loadCommandFromPath - path: ${path}`);
 	const { description, register, run } = require(path);
-	const pluginParts = /dojo-cli-(.*)-(.*)/.exec(path);
+	const pluginParts = commandRegExp.exec(path);
 	const commandType = pluginParts[1];
 	const commandSubType = pluginParts[2];
 	let computedName = commandSubType;
@@ -80,6 +83,7 @@ function loadCommandFromPath(path: string): void {
 
 function registerCommands(commandsMap: CommandsMap): void {
 	for (let [ commandType, commandSubTypes ] of commandsMap.entries()) {
+		log('verbose', `index:registerCommand - commandType: ${commandType}, commandSubTypes: ${JSON.stringify(commandSubTypes)}`);
 		const description = getCommandDescription(commandType, commandSubTypes);
 
 		yargs.command(commandType, description, (yargs) => {
@@ -91,7 +95,9 @@ function registerCommands(commandsMap: CommandsMap): void {
 
 // Get paths, load commands, register commands
 globby(getGlobPaths(config)).then((paths) => {
+	log('verbose', `index - loading commands`);
 	paths.forEach(loadCommandFromPath);
+	log('verbose', `index - registering commands`);
 	registerCommands(commandsMap);
 
 	yargs.demand(1, 'must provide a valid command')

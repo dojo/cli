@@ -1,4 +1,5 @@
 import { add, remove, transports } from 'winston';
+import config from '../lib/config';
 
 export interface VerboseOptions {
 	verbose?: boolean;
@@ -12,7 +13,7 @@ export default function setupLogger(verbose: boolean = false) {
 	});
 
 	add(transports.File, {
-		filename: '.dojo-cli.log',
+		filename: config.logPath,
 		level: 'verbose'
 	});
 }
