@@ -1,22 +1,7 @@
 import { verbose } from './logger';
 import config from './config';
 import { command } from 'yargs';
-
-export interface Command {
-	name: string;
-	description: string;
-	register: Function;
-	run: Function;
-}
-
-export interface CommandConfig extends Command {
-	type: string;
-	subType: string;
-}
-
-export type CommandsMap = Map<string, CommandConfig[]>;
-
-export type CommandSet = Set<string>;
+import { Command, CommandConfig, CommandSet, CommandsMap } from './interfaces';
 
 const commandRegExp = new RegExp(`${config.searchPrefix}-(.*)-(.*)`);
 

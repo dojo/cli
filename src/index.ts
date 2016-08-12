@@ -4,6 +4,7 @@ import updateNotifier from './updateNotifier';
 import globPaths from './globPaths';
 import config from './config';
 import * as command from './command';
+import { CommandsMap, CommandSet } from './interfaces';
 import * as chalk from 'chalk';
 import * as globby from 'globby';
 const pkg = <PackageFile> require('../package.json');
@@ -24,7 +25,7 @@ const verboseArgvs: VerboseOptions = yargs.option({
 logger(verboseArgvs.verbose);
 updateNotifier(pkg, 0);
 
-const commandsMap: command.CommandsMap = new Map();
+const commandsMap: CommandsMap = new Map();
 
 const helpUsage = `${chalk.bold('dojo help')}
 
@@ -40,7 +41,7 @@ e.g. 'dojo run -h' will give you the help for the 'run' command.
 
 globby(globPaths(config)).then((paths) => {
 	verbose(`index - loading commands`);
-	const commandSet: command.CommandSet = new Set();
+	const commandSet: CommandSet = new Set();
 	paths.forEach((path) => {
 		const commandConfig = command.load(path, commandSet);
 		const commandType = commandConfig.type;
