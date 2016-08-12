@@ -1,5 +1,5 @@
 {
-	"version": "1.8.10",
+	"version": "2.0.0",
 	"compilerOptions": {
 		"declaration": false,
 		"module": "commonjs",
@@ -7,7 +7,11 @@
 		"outDir": "_build/",
 		"removeComments": false,
 		"sourceMap": true,
-		"target": "es6"
+		"target": "es6",
+		"noImplicitThis": true,
+		"strictNullChecks": true,
+		"baseUrl": "node_modules",
+ 		"paths": {}
 	},
 	"include": [
 		"./typings/index.d.ts",
