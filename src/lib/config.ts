@@ -1,6 +1,11 @@
 import { resolve } from 'path';
 
-export default {
+export type Config = {
+	searchPaths: string[],
+	searchPrefixes: string[]
+};
+
+export default <Config> {
 	searchPaths: [
 		resolve(__dirname, '../node_modules'),
 		resolve(__dirname, '../../'),

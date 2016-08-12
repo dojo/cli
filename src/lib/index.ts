@@ -4,11 +4,17 @@ import setupUpdateNotifier from '../util/setupUpdateNotifier';
 import * as chalk from 'chalk';
 import * as globby from 'globby';
 import * as path from 'path';
-import config from './config';
-
+import config, { Config } from './config';
 const pkg = require('../../package.json');
 
-// Get verbose settings
+type TaskConfig = {
+	name: string;
+	description: string;
+	register: Function;
+	run: Function;
+};
+
+// Get verbose log settings first
 const verboseArgvs: VerboseOptions = yargs.option({
 	'v': {
 		alias: 'verbose',
@@ -20,8 +26,8 @@ const verboseArgvs: VerboseOptions = yargs.option({
 setupLogger(verboseArgvs.verbose);
 setupUpdateNotifier(pkg, 0);
 
-const taskSet = new Set();
-const taskTypes = new Map();
+const taskSet = new Set<string>();
+const taskTypes = new Map<string, TaskConfig[]>();
 
 const helpUsage = `${chalk.bold('dojo help')}
 
@@ -35,7 +41,7 @@ e.g. 'dojo run -h' will give you the help for the 'run' command.
 
 (You are running dojo-cli ${pkg.version})`;
 
-function globs(searchPaths: string[], searchPrefixes: string[]) {
+function globs({ searchPaths, searchPrefixes }: Config): string[] {
 	const globPaths: string[] = [];
 	searchPaths.forEach((depPath) => {
 		searchPrefixes.forEach((folderPrefix) => {
@@ -45,14 +51,13 @@ function globs(searchPaths: string[], searchPrefixes: string[]) {
 	return globPaths;
 }
 
-// TODO: fix :any usages
-function getTaskDescription(taskType: string, taskSubTypes: any) {
+function getTaskDescription(taskType: string, taskSubTypes: TaskConfig[]): string {
 	return taskSubTypes.length > 1 ?
-		`There are ${taskSubTypes.length} ${taskType} subTasks: ${taskSubTypes.map((taskSubType: any) => taskSubType.name).join(', ')}` :
+		`There are ${taskSubTypes.length} ${taskType} subTasks: ${taskSubTypes.map((taskSubType: TaskConfig) => taskSubType.name).join(', ')}` :
 		taskSubTypes[0].description;
 }
 
-globby(globs(config.searchPaths, config.searchPrefixes)).then((paths) => {
+globby(globs(config)).then((paths) => {
 	paths.forEach((path) => {
 		const { description, register, run } = require(path);
 		const pluginParts = /dojo-cli-(.*)-(.*)/.exec(path);
@@ -68,7 +73,7 @@ globby(globs(config.searchPaths, config.searchPrefixes)).then((paths) => {
 
 		taskSet.add(computedName);
 
-		const taskConfig = {
+		const taskConfig: TaskConfig = {
 			name: computedName,
 			description,
 			register,
@@ -82,9 +87,7 @@ globby(globs(config.searchPaths, config.searchPrefixes)).then((paths) => {
 		}
 	});
 
-	// TODO: Fix this :any
-	let taskType: string, taskSubTypes: any[];
-	for ([ taskType, taskSubTypes ] of taskTypes.entries()) {
+	for (let [ taskType, taskSubTypes ] of taskTypes.entries()) {
 		const description = getTaskDescription(taskType, taskSubTypes);
 
 		yargs.command(taskType, description, (yargs) => {
