@@ -1,0 +1,9 @@
+node_modules
+_build
+.tscache
+dist
+typings
+cache
+.history
+html-report
+.tsconfig*.json
