@@ -7,14 +7,14 @@ import * as globby from 'globby';
 import config from './config';
 const pkg = require('../../package.json');
 
-type TaskConfig = {
+type CommandConfig = {
 	name: string;
 	description: string;
 	register: Function;
 	run: Function;
 };
 
-type TasksMap = Map<string, TaskConfig[]>;
+type CommandsMap = Map<string, CommandConfig[]>;
 
 // Get verbose log settings first
 const verboseArgvs: VerboseOptions = yargs.option({
@@ -28,12 +28,12 @@ const verboseArgvs: VerboseOptions = yargs.option({
 setupLogger(verboseArgvs.verbose);
 setupUpdateNotifier(pkg, 0);
 
-const taskSet = new Set<string>();
-const tasksMap: TasksMap = new Map();
+const commandSet = new Set<string>();
+const commandsMap: CommandsMap = new Map();
 
 const helpUsage = `${chalk.bold('dojo help')}
 
-Usage: dojo <task> [subTask] [options]
+Usage: dojo <command> [subCommand] [options]
 
 Hey there, here are all the things you can do with dojo-cli:`;
 
@@ -43,56 +43,56 @@ e.g. 'dojo run -h' will give you the help for the 'run' command.
 
 (You are running dojo-cli ${pkg.version})`;
 
-function getTaskDescription(taskType: string, taskSubTypes: TaskConfig[]): string {
-	return taskSubTypes.length > 1 ?
-		`There are ${taskSubTypes.length} ${taskType} subTasks: ${taskSubTypes.map((taskSubType: TaskConfig) => taskSubType.name).join(', ')}` :
-		taskSubTypes[0].description;
+function getCommandDescription(commandType: string, commandSubTypes: CommandConfig[]): string {
+	return commandSubTypes.length > 1 ?
+		`There are ${commandSubTypes.length} ${commandType} subCommands: ${commandSubTypes.map((commandSubType: CommandConfig) => commandSubType.name).join(', ')}` :
+		commandSubTypes[0].description;
 }
 
-function loadTaskFromPath(path: string): void {
+function loadCommandFromPath(path: string): void {
 	const { description, register, run } = require(path);
 	const pluginParts = /dojo-cli-(.*)-(.*)/.exec(path);
-	const taskType = pluginParts[1];
-	const taskSubType = pluginParts[2];
-	let computedName = taskSubType;
+	const commandType = pluginParts[1];
+	const commandSubType = pluginParts[2];
+	let computedName = commandSubType;
 	let count = 1;
 
-	while (taskSet.has(computedName)) {
+	while (commandSet.has(computedName)) {
 		computedName = `${computedName}-${count}`;
 		count++;
 	}
 
-	taskSet.add(computedName);
+	commandSet.add(computedName);
 
-	const taskConfig: TaskConfig = {
+	const commandConfig: CommandConfig = {
 		name: computedName,
 		description,
 		register,
 		run
 	};
 
-	if (tasksMap.has(taskType)) {
-		tasksMap.get(taskType).push(taskConfig);
+	if (commandsMap.has(commandType)) {
+		commandsMap.get(commandType).push(commandConfig);
 	} else {
-		tasksMap.set(taskType, [ taskConfig ]);
+		commandsMap.set(commandType, [ commandConfig ]);
 	}
 }
 
-function registerTasks(tasksMap: TasksMap): void {
-	for (let [ taskType, taskSubTypes ] of tasksMap.entries()) {
-		const description = getTaskDescription(taskType, taskSubTypes);
+function registerCommands(commandsMap: CommandsMap): void {
+	for (let [ commandType, commandSubTypes ] of commandsMap.entries()) {
+		const description = getCommandDescription(commandType, commandSubTypes);
 
-		yargs.command(taskType, description, (yargs) => {
-			taskSubTypes.map(({ name, description, register, run }) => yargs.command.apply(null, [ name, description, register, run ]));
+		yargs.command(commandType, description, (yargs) => {
+			commandSubTypes.map(({ name, description, register, run }) => yargs.command.apply(null, [ name, description, register, run ]));
 			return yargs;
 		});
 	}
 }
 
-// Get paths, load tasks, register tasks
+// Get paths, load commands, register commands
 globby(getGlobPaths(config)).then((paths) => {
-	paths.forEach(loadTaskFromPath);
-	registerTasks(tasksMap);
+	paths.forEach(loadCommandFromPath);
+	registerCommands(commandsMap);
 
 	yargs.demand(1, 'must provide a valid command')
 		.usage(helpUsage)
