@@ -6,7 +6,11 @@ import config from './config';
 import * as command from './command';
 import * as chalk from 'chalk';
 import * as globby from 'globby';
-const pkg = require('../package.json');
+const pkg = <PackageFile> require('../package.json');
+
+interface PackageFile {
+	version: string;
+}
 
 // Get verbose log settings first
 const verboseArgvs: VerboseOptions = yargs.option({
@@ -41,11 +45,8 @@ globby(globPaths(config)).then((paths) => {
 		const commandConfig = command.load(path, commandSet);
 		const commandType = commandConfig.type;
 
-		if (commandsMap.has(commandType)) {
-			commandsMap.get(commandType).push(commandConfig);
-		} else {
-			commandsMap.set(commandType, [ commandConfig ]);
-		}
+		const commands = commandsMap.get(commandType) || [];
+		commandsMap.set(commandType, [...commands, commandConfig]);
 	});
 
 	verbose(`index - registering commands`);

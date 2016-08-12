@@ -2,13 +2,16 @@ import { verbose } from './logger';
 import config from './config';
 import { command } from 'yargs';
 
-export type CommandConfig = {
-	type: string;
-	subType: string;
+export interface Command {
 	name: string;
 	description: string;
 	register: Function;
 	run: Function;
+}
+
+export interface CommandConfig extends Command {
+	type: string;
+	subType: string;
 }
 
 export type CommandsMap = Map<string, CommandConfig[]>;
@@ -19,11 +22,8 @@ const commandRegExp = new RegExp(`${config.searchPrefix}-(.*)-(.*)`);
 
 export function load(path: string, commandSet: CommandSet): CommandConfig {
 	verbose(`command:load - path: ${path}`);
-	const { description, register, run } = require(path);
-	const pluginParts = commandRegExp.exec(path);
-	const type = pluginParts[1];
-	const subType = pluginParts[2];
-
+	const { description, register, run } = <Command> require(path);
+	const [ , type, subType] = <string[]> commandRegExp.exec(path);
 	let computedName = subType;
 	let count = 1;
 
