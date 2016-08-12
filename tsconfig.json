@@ -9,7 +9,9 @@
 		"sourceMap": true,
 		"target": "es6",
 		"noImplicitThis": true,
-		"strictNullChecks": true
+		"strictNullChecks": true,
+		"baseUrl": "node_modules",
+ 		"paths": {}
 	},
 	"include": [
 	]
