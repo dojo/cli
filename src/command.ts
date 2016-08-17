@@ -42,6 +42,6 @@ function pad(str: string, num: number): string {
 function getMultiCommandDescription(commands: CommandsMap): string {
 	const longestName = Math.max(...Array.from(commands.keys(), name => name.length));
 	const targetNameLength = longestName + 2;
-	let descriptions: string[] = Array.from(commands.entries(), ([ command, { description } ]) => `${pad(command, targetNameLength)}${description}`);
+	const descriptions = Array.from(commands.entries(), ([ command, { description } ]) => `${pad(command, targetNameLength)}${description}`);
 	return descriptions.join('\n');
 }
