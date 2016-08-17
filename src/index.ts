@@ -1,57 +1,41 @@
 import * as yargs from 'yargs';
-import logger, { VerboseOptions, verbose } from './logger';
 import updateNotifier from './updateNotifier';
-import globPaths from './globPaths';
 import config from './config';
-import * as command from './command';
-import { CommandsMap, CommandSet } from './interfaces';
-import * as chalk from 'chalk';
+import { load, getGroupDescription, CommandsMap } from './command';
 import * as globby from 'globby';
-const pkg = <PackageFile> require('../package.json');
+import { helpUsage, helpEpilog } from './text';
+import { resolve } from 'path';
+const pkg = <any> require('../package.json');
 
-interface PackageFile {
-	version: string;
-}
+type GroupsMap = Map<string, CommandsMap>;
 
-// Get verbose log settings first
-const verboseArgvs: VerboseOptions = yargs.option({
-	'v': {
-		alias: 'verbose',
-		describe: 'Set console logging level to verbose',
-		type: 'boolean'
-	}
-}).argv;
-
-logger(verboseArgvs.verbose);
 updateNotifier(pkg, 0);
 
-const commandsMap: CommandsMap = new Map();
+const groupsMap: GroupsMap = new Map();
 
-const helpUsage = `${chalk.bold('dojo help')}
+function register(groupsMap: GroupsMap): void {
+	for (let [ group, commands ] of groupsMap.entries()) {
+		const description = getGroupDescription(group, commands);
 
-Usage: dojo <command> [subCommand] [options]
+		yargs.command(group, description, (yargs) => {
+			Array.from(commands.values()).map(({ name, description, register, run }) => yargs.command.apply(null, [ name, description, register, run ]));
+			return yargs;
+		});
+	}
+}
 
-Hey there, here are all the things you can do with dojo-cli:`;
-
-const helpEpilog = `For more information on any of these commands just run them with '-h'.
-
-e.g. 'dojo run -h' will give you the help for the 'run' command.
-
-(You are running dojo-cli ${pkg.version})`;
-
-globby(globPaths(config)).then((paths) => {
-	verbose(`index - loading commands`);
-	const commandSet: CommandSet = new Set();
+const globPaths = config.searchPaths.map(depPath => resolve(depPath, `${config.searchPrefix}-*`));
+globby(globPaths).then((paths) => {
 	paths.forEach((path) => {
-		const commandConfig = command.load(path, commandSet);
-		const commandType = commandConfig.type;
+		const commandWrapper = load(path);
+		const { group, name } = commandWrapper;
 
-		const commands = commandsMap.get(commandType) || [];
-		commandsMap.set(commandType, [...commands, commandConfig]);
+		const commandsMap = groupsMap.get(group) || new Map();
+		commandsMap.set(name, commandWrapper);
+		groupsMap.set(group, commandsMap);
 	});
 
-	verbose(`index - registering commands`);
-	command.register(commandsMap);
+	register(groupsMap);
 
 	yargs.demand(1, 'must provide a valid command')
 		.usage(helpUsage)

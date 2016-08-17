@@ -1,17 +1,23 @@
 import { Argv, Yargs } from 'yargs';
 
+export interface RunResult {
+	success: boolean;
+	payload: any;
+}
+
+export interface TaskHelper {
+	run(group: string, taskName?: string, args?: Argv): Promise<RunResult>;
+	exists(group: string, taskName?: string): Promise<boolean>;
+}
+
+export interface CommandHelper {
+	yargs: Yargs;
+	task: TaskHelper;
+	context: any;
+}
+
 export interface Command {
-	name: string;
 	description: string;
-	register: (yargs: Yargs) => any;
-	run: (argv: Argv) => void;
+	register(commandHelper: CommandHelper): Promise<any>;
+	run(commandHelper: CommandHelper, args?: Argv): Promise<RunResult>;
 }
-
-export interface CommandConfig extends Command {
-	type: string;
-	subType: string;
-}
-
-export type CommandsMap = Map<string, CommandConfig[]>;
-
-export type CommandSet = Set<string>;
