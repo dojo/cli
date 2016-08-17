@@ -5,19 +5,19 @@ export interface RunResult {
 	payload: any;
 }
 
-export interface TaskHelper {
+export interface CommandHelper {
 	run(group: string, taskName?: string, args?: Argv): Promise<RunResult>;
 	exists(group: string, taskName?: string): Promise<boolean>;
 }
 
-export interface CommandHelper {
+export interface Helper {
 	yargs: Yargs;
-	task: TaskHelper;
+	command: CommandHelper;
 	context: any;
 }
 
 export interface Command {
 	description: string;
-	register(commandHelper: CommandHelper): Promise<any>;
-	run(commandHelper: CommandHelper, args?: Argv): Promise<RunResult>;
+	register(helper: Helper): Promise<any>;
+	run(helper: Helper, args?: Argv): Promise<RunResult>;
 }

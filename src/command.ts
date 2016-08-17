@@ -29,7 +29,7 @@ export function getGroupDescription(group: string, commands: CommandsMap): strin
 	if (numCommands > 1) {
 		return `There are ${numCommands} ${group} commands: ${commandNames.join(', ')}`;
 	} else {
-		let { description } = <CommandWrapper> commands.get(commandNames[0]);
+		const { description } = <CommandWrapper> commands.get(commandNames[0]);
 		return description;
 	}
 }
