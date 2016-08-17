@@ -27,9 +27,25 @@ export function getGroupDescription(group: string, commands: CommandsMap): strin
 	const commandNames: string[] = Array.from(commands.keys());
 	const numCommands = commandNames.length;
 	if (numCommands > 1) {
-		return `There are ${numCommands} ${group} commands: ${commandNames.join(', ')}`;
+		return getMultiCommandDescription(commands);
 	} else {
 		const { description } = <CommandWrapper> commands.get(commandNames[0]);
 		return description;
 	}
+}
+
+function pad(str: string, num: number): string {
+	const padding = Array.from(new Array(num - str.length), () => ' ');
+	return str + padding.join('');
+}
+
+function getMultiCommandDescription(commands: CommandsMap): string {
+	const longestName = Math.max(...Array.from(commands.keys(), name => name.length));
+	const targetNameLength = longestName + 2;
+	let descriptions: string[] = [];
+
+	for (let [ command, { description } ] of commands.entries()) {
+		descriptions.push(`${pad(command, targetNameLength)}${description}`);
+	}
+	return descriptions.join('\n');
 }
