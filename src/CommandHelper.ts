@@ -36,6 +36,6 @@ export default class implements CommandHelper {
 	};
 	exists(group: string, commandName?: string) {
 		const command = getCommand(this.groupsMap, group, commandName);
-		return Promise.resolve(command !== undefined);
+		return command !== undefined;
 	};
 }

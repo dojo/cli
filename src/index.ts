@@ -7,7 +7,6 @@ import { helpUsage, helpEpilog } from './text';
 import { resolve } from 'path';
 import CommandHelper from './CommandHelper';
 import Helper from './Helper';
-import { RunResult } from './interfaces';
 const pkg = <any> require('../package.json');
 
 updateNotifier(pkg, 0);
@@ -28,7 +27,7 @@ function register(groupsMap: GroupsMap): void {
 						register(helper);
 						return yargs;
 					},
-					(argv: yargs.Argv): Promise<RunResult> => {
+					(argv: yargs.Argv) => {
 						return run(helper, argv);
 					}
 				);

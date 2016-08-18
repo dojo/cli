@@ -6,7 +6,7 @@ export interface RunResult {
 
 export interface CommandHelper {
 	run(group: string, commandName?: string, args?: Argv): Promise<RunResult>;
-	exists(group: string, commandName?: string): Promise<boolean>;
+	exists(group: string, commandName?: string): boolean;
 }
 
 export interface Helper {
@@ -17,6 +17,6 @@ export interface Helper {
 
 export interface Command {
 	description: string;
-	register(helper: Helper): Promise<any>;
+	register(helper: Helper): Yargs;
 	run(helper: Helper, args?: Argv): Promise<RunResult>;
 }
