@@ -2,7 +2,7 @@ import { Argv, Yargs } from 'yargs';
 
 export interface RunResult {
 	success: boolean;
-	payload: any;
+	payload?: any;
 }
 
 export interface CommandHelper {
@@ -12,7 +12,7 @@ export interface CommandHelper {
 
 export interface Helper {
 	yargs: Yargs;
-	command: CommandHelper;
+	commandHelper: CommandHelper;
 	context: any;
 }
 

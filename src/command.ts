@@ -7,6 +7,7 @@ export interface CommandWrapper extends Command {
 };
 
 export type CommandsMap = Map<string, CommandWrapper>;
+export type GroupsMap = Map<string, CommandsMap>;
 
 const commandRegExp = new RegExp(`${config.searchPrefix}-(.*)-(.*)`);
 
@@ -24,24 +25,28 @@ export function load(path: string): CommandWrapper {
 }
 
 export function getGroupDescription(group: string, commands: CommandsMap): string {
-	const commandNames: string[] = Array.from(commands.keys());
+	const commandNames = Array.from(commands.keys());
 	const numCommands = commandNames.length;
 	if (numCommands > 1) {
 		return getMultiCommandDescription(commands);
-	} else {
+	}
+	else {
 		const { description } = <CommandWrapper> commands.get(commandNames[0]);
 		return description;
 	}
 }
 
 function pad(str: string, num: number): string {
-	const padding = Array.from(new Array(num - str.length), () => ' ');
-	return str + padding.join('');
+	const padding = new Array(num - str.length).join(' ');
+	return str + padding;
 }
 
 function getMultiCommandDescription(commands: CommandsMap): string {
-	const longestName = Math.max(...Array.from(commands.keys(), name => name.length));
+	const commandNames = Array.from(commands.keys(), (name) => name.length);
+	const longestName = Math.max(...commandNames);
 	const targetNameLength = longestName + 2;
-	const descriptions = Array.from(commands.entries(), ([ command, { description } ]) => `${pad(command, targetNameLength)}${description}`);
+	const descriptions = Array.from(commands.entries(),
+		([ command, { description } ]) => `${pad(command, targetNameLength)}${description}`
+	);
 	return descriptions.join('\n');
 }
