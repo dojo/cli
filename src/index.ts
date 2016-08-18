@@ -12,10 +12,13 @@ const pkg = <any> require('../package.json');
 
 updateNotifier(pkg, 0);
 
-function register(groupsMap: GroupsMap, commandHelper: CommandHelper): void {
+function register(groupsMap: GroupsMap): void {
+	const helperContext = {};
+	const commandHelper = new CommandHelper(groupsMap, helperContext);
+	const helper = new Helper(commandHelper, yargs, helperContext);
+
 	for (let [ group, commands ] of groupsMap.entries()) {
 		const description = getGroupDescription(group, commands);
-		const helper = new Helper(commandHelper, yargs, {});
 		yargs.command(group, description, (yargs) => {
 			for (let { name, description, register, run } of commands.values()) {
 				yargs.command(
@@ -47,8 +50,7 @@ globby(globPaths).then((paths) => {
 		groupsMap.set(group, commandsMap);
 	});
 
-	const commandHelper = new CommandHelper(groupsMap);
-	register(groupsMap, commandHelper);
+	register(groupsMap);
 
 	yargs.demand(1, 'must provide a valid command')
 		.usage(helpUsage)

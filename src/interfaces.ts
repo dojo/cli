@@ -12,7 +12,7 @@ export interface CommandHelper {
 
 export interface Helper {
 	yargs: Yargs;
-	commandHelper: CommandHelper;
+	command: CommandHelper;
 	context: any;
 }
 

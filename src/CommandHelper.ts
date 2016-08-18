@@ -19,14 +19,16 @@ function getCommand(groupsMap: GroupsMap, group: string, taskName?: string): Com
 }
 
 export default class implements CommandHelper {
-	constructor(groupsMap: GroupsMap) {
+	constructor(groupsMap: GroupsMap, context: any) {
 		this.groupsMap = groupsMap;
+		this.context = context;
 	};
 	groupsMap: GroupsMap;
+	readonly context: any;
 	run(group: string, taskName?: string, args?: yargs.Argv): Promise<RunResult> {
 		const command = getCommand(this.groupsMap, group, taskName);
 		if (command) {
-			return command.run(new Helper(this, yargs, {}));
+			return command.run(new Helper(this, yargs, this.context));
 		}
 		else {
 			return Promise.resolve({
