@@ -5,8 +5,8 @@ export interface RunResult {
 }
 
 export interface CommandHelper {
-	run(group: string, taskName?: string, args?: Argv): Promise<RunResult>;
-	exists(group: string, taskName?: string): Promise<boolean>;
+	run(group: string, commandName?: string, args?: Argv): Promise<RunResult>;
+	exists(group: string, commandName?: string): Promise<boolean>;
 }
 
 export interface Helper {

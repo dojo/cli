@@ -3,13 +3,13 @@ import { CommandHelper, RunResult, Command } from './interfaces';
 import Helper from './Helper';
 import * as yargs from 'yargs';
 
-function getCommand(groupsMap: GroupsMap, group: string, taskName?: string): Command | undefined {
+function getCommand(groupsMap: GroupsMap, group: string, commandName?: string): Command | undefined {
 	const commandsMap: CommandsMap | undefined = groupsMap.get(group);
 	if (commandsMap) {
-		if (taskName) {
-			return commandsMap.get(taskName);
+		if (commandName) {
+			return commandsMap.get(commandName);
 		}
-		else if (commandsMap.size === 0) {
+		else if (commandsMap.size === 1) {
 			return Array.from(commandsMap.values())[0];
 		}
 	}
@@ -25,17 +25,17 @@ export default class implements CommandHelper {
 	};
 	groupsMap: GroupsMap;
 	readonly context: any;
-	run(group: string, taskName?: string, args?: yargs.Argv): Promise<RunResult> {
-		const command = getCommand(this.groupsMap, group, taskName);
+	run(group: string, commandName?: string, args?: yargs.Argv): Promise<RunResult> {
+		const command = getCommand(this.groupsMap, group, commandName);
 		if (command) {
 			return command.run(new Helper(this, yargs, this.context));
 		}
 		else {
-			return Promise.reject({});
+			return Promise.reject(new Error('The command does not exist'));
 		}
 	};
-	exists(group: string, taskName?: string) {
-		const command = getCommand(this.groupsMap, group, taskName);
+	exists(group: string, commandName?: string) {
+		const command = getCommand(this.groupsMap, group, commandName);
 		return Promise.resolve(command !== undefined);
 	};
 }
