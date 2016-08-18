@@ -1,7 +1,6 @@
 import { Argv, Yargs } from 'yargs';
 
 export interface RunResult {
-	success: boolean;
 	payload?: any;
 }
 

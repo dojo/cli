@@ -31,9 +31,7 @@ export default class implements CommandHelper {
 			return command.run(new Helper(this, yargs, this.context));
 		}
 		else {
-			return Promise.resolve({
-				success: false
-			});
+			return Promise.reject({});
 		}
 	};
 	exists(group: string, taskName?: string) {
