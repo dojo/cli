@@ -9,6 +9,10 @@ import CommandHelper from './CommandHelper';
 import Helper from './Helper';
 const pkg = <any> require('../package.json');
 
+interface YargsCommands {
+	[property: string]: string[];
+};
+
 updateNotifier(pkg, 0);
 
 function register(commandsMap: CommandsMap, yargsCommands: YargsCommands): void {
@@ -39,10 +43,6 @@ function register(commandsMap: CommandsMap, yargsCommands: YargsCommands): void 
 		});
 	});
 }
-
-interface YargsCommands {
-	[property: string]: string[];
-};
 
 const globPaths = config.searchPaths.map((depPath) => resolve(depPath, `${config.searchPrefix}-*`));
 globby(globPaths).then((paths) => {
