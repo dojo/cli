@@ -1,32 +1,22 @@
-import { GroupsMap, CommandsMap } from './command';
+import { CommandsMap } from './command';
 import { CommandHelper, RunResult, Command } from './interfaces';
 import Helper from './Helper';
 import * as yargs from 'yargs';
 
-function getCommand(groupsMap: GroupsMap, group: string, commandName?: string): Command | undefined {
-	const commandsMap: CommandsMap | undefined = groupsMap.get(group);
-	if (commandsMap) {
-		if (commandName) {
-			return commandsMap.get(commandName);
-		}
-		else if (commandsMap.size === 1) {
-			return Array.from(commandsMap.values())[0];
-		}
-	}
-	else {
-		return undefined;
-	}
+function getCommand(commandsMap: CommandsMap, group: string, commandName?: string): Command | undefined {
+	const commandKey = commandName ? `${group}-${commandName}` : group;
+	return commandsMap.get(commandKey);
 }
 
 export default class implements CommandHelper {
-	constructor(groupsMap: GroupsMap, context: any) {
-		this.groupsMap = groupsMap;
+	constructor(commandsMap: CommandsMap, context: any) {
+		this.commandsMap = commandsMap;
 		this.context = context;
 	};
-	groupsMap: GroupsMap;
-	readonly context: any;
+	commandsMap: CommandsMap;
+	context: any;
 	run(group: string, commandName?: string, args?: yargs.Argv): Promise<RunResult> {
-		const command = getCommand(this.groupsMap, group, commandName);
+		const command = getCommand(this.commandsMap, group, commandName);
 		if (command) {
 			return command.run(new Helper(this, yargs, this.context));
 		}
@@ -35,7 +25,7 @@ export default class implements CommandHelper {
 		}
 	};
 	exists(group: string, commandName?: string) {
-		const command = getCommand(this.groupsMap, group, commandName);
-		return command !== undefined;
+		const command = getCommand(this.commandsMap, group, commandName);
+		return !!command;
 	};
 }

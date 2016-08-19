@@ -1,7 +1,7 @@
 import * as yargs from 'yargs';
 import updateNotifier from './updateNotifier';
 import config from './config';
-import { load, getGroupDescription, CommandsMap, GroupsMap } from './command';
+import { load, getGroupDescription, CommandsMap, CommandWrapper } from './command';
 import * as globby from 'globby';
 import { helpUsage, helpEpilog } from './text';
 import { resolve } from 'path';
@@ -11,15 +11,18 @@ const pkg = <any> require('../package.json');
 
 updateNotifier(pkg, 0);
 
-function register(groupsMap: GroupsMap): void {
+function register(commandsMap: CommandsMap, yargsCommands: YargsCommands): void {
 	const helperContext = {};
-	const commandHelper = new CommandHelper(groupsMap, helperContext);
+	const commandHelper = new CommandHelper(commandsMap, helperContext);
 	const helper = new Helper(commandHelper, yargs, helperContext);
 
-	for (let [ group, commands ] of groupsMap.entries()) {
-		const description = getGroupDescription(group, commands);
-		yargs.command(group, description, (yargs) => {
-			for (let { name, description, register, run } of commands.values()) {
+	Object.keys(yargsCommands).forEach((group: string) => {
+		const commandNames = yargsCommands[group];
+		const groupDescription = getGroupDescription(commandNames, commandsMap);
+
+		yargs.command(group, groupDescription, (yargs) => {
+			commandNames.forEach((command: string) => {
+				const { name, description, register, run } = <CommandWrapper> commandsMap.get(command);
 				yargs.command(
 					name,
 					description,
@@ -31,25 +34,36 @@ function register(groupsMap: GroupsMap): void {
 						return run(helper, argv);
 					}
 				);
-			}
+			});
 			return yargs;
 		});
-	}
+	});
 }
+
+interface YargsCommands {
+	[property: string]: string[];
+};
 
 const globPaths = config.searchPaths.map((depPath) => resolve(depPath, `${config.searchPrefix}-*`));
 globby(globPaths).then((paths) => {
-	const groupsMap: GroupsMap = new Map();
+	const commandsMap: CommandsMap = new Map();
+	const yargsCommands: YargsCommands = {};
 
 	paths.forEach((path) => {
 		const commandWrapper = load(path);
 		const { group, name } = commandWrapper;
-		const commandsMap: CommandsMap = groupsMap.get(group) || new Map() ;
-		commandsMap.set(name, commandWrapper);
-		groupsMap.set(group, commandsMap);
+		const compositeKey = `${group}-${name}`;
+
+		// First of each type will be 'default' for now
+		if (!commandsMap.has(group)) {
+			commandsMap.set(group, commandWrapper);
+			yargsCommands[group] = [];
+		}
+		commandsMap.set(compositeKey, commandWrapper);
+		yargsCommands[group].push(compositeKey);
 	});
 
-	register(groupsMap);
+	register(commandsMap, yargsCommands);
 
 	yargs.demand(1, 'must provide a valid command')
 		.usage(helpUsage)

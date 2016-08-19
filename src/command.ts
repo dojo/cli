@@ -1,5 +1,6 @@
 import config from './config';
 import { Command } from './interfaces';
+const cliui = require('cliui');
 
 export interface CommandWrapper extends Command {
 	name: string;
@@ -7,7 +8,6 @@ export interface CommandWrapper extends Command {
 };
 
 export type CommandsMap = Map<string, CommandWrapper>;
-export type GroupsMap = Map<string, CommandsMap>;
 
 const commandRegExp = new RegExp(`${config.searchPrefix}-(.*)-(.*)`);
 
@@ -24,11 +24,10 @@ export function load(path: string): CommandWrapper {
 	};
 }
 
-export function getGroupDescription(group: string, commands: CommandsMap): string {
-	const commandNames = Array.from(commands.keys());
+export function getGroupDescription(commandNames: string[], commands: CommandsMap): string {
 	const numCommands = commandNames.length;
 	if (numCommands > 1) {
-		return getMultiCommandDescription(commands);
+		return getMultiCommandDescription(commandNames, commands);
 	}
 	else {
 		const { description } = <CommandWrapper> commands.get(commandNames[0]);
@@ -36,17 +35,14 @@ export function getGroupDescription(group: string, commands: CommandsMap): strin
 	}
 }
 
-function pad(str: string, num: number): string {
-	const padding = new Array(num - str.length).join(' ');
-	return str + padding;
-}
-
-function getMultiCommandDescription(commands: CommandsMap): string {
-	const commandNameLengths = Array.from(commands.keys(), (name) => name.length);
-	const longestName = Math.max(...commandNameLengths);
-	const targetNameLength = longestName + 2;
-	const descriptions = Array.from(commands.entries(),
-		([ command, { description } ]) => `${pad(command, targetNameLength)}${description}`
-	);
-	return descriptions.join('\n');
+function getMultiCommandDescription(commandNames: string[], commands: CommandsMap): string {
+	const descriptions = commandNames.map((commandName) => {
+		const { name, description } = (<CommandWrapper> commands.get(commandName));
+		return `${name}  \t${description}`;
+	});
+	const ui = cliui({
+		width: 80
+	});
+	ui.div(descriptions.join('\n'));
+	return ui.toString();
 }
