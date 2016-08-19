@@ -1,1 +1,1 @@
-// put test file imports here
+import './command';

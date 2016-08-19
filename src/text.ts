@@ -1,5 +1,5 @@
 import { bold } from 'chalk';
-const pkg = <any> require('../package.json');
+const pkg = <any> require('../../package.json');
 
 export const helpUsage = `${bold('dojo help')}
 

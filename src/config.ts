@@ -7,8 +7,8 @@ export type Config = {
 
 export default <Config> {
 	searchPaths: [
-		resolve(__dirname, '../node_modules'),
-		resolve(__dirname, '../'),
+		resolve(__dirname, '../../node_modules'),
+		resolve(__dirname, '../../'),
 		'node_modules'
 	],
 	searchPrefix: 'dojo-cli'

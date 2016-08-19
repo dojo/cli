@@ -7,7 +7,7 @@ import { helpUsage, helpEpilog } from './text';
 import { resolve } from 'path';
 import CommandHelper from './CommandHelper';
 import Helper from './Helper';
-const pkg = <any> require('../package.json');
+const pkg = <any> require('../../package.json');
 
 interface YargsCommands {
 	[property: string]: string[];

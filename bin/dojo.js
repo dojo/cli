@@ -1,4 +1,4 @@
 #! /usr/bin/env node
 'use strict'
 
-require('../_build/index');
+require('../_build/src/index');
