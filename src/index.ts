@@ -1,7 +1,7 @@
 import * as yargs from 'yargs';
 import updateNotifier from './updateNotifier';
 import config from './config';
-import { load, getGroupDescription, CommandsMap, CommandWrapper } from './command';
+import { load, getGroupDescription, CommandsMap, CommandWrapper, setSearchPrefix } from './command';
 import * as globby from 'globby';
 import { helpUsage, helpEpilog } from './text';
 import { resolve } from 'path';
@@ -45,6 +45,8 @@ function register(commandsMap: CommandsMap, yargsCommands: YargsCommands): void 
 }
 
 const globPaths = config.searchPaths.map((depPath) => resolve(depPath, `${config.searchPrefix}-*`));
+setSearchPrefix(config.searchPrefix);
+
 globby(globPaths).then((paths) => {
 	const commandsMap: CommandsMap = new Map();
 	const yargsCommands: YargsCommands = {};

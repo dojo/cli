@@ -1,15 +1,20 @@
 import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
-import { load } from 'src/command';
-import * as sinon from 'sinon';
+
+import { setSearchPrefix, load } from 'src/command';
 
 // let existsStub: SinonStub;
 // let mkdirsStub: SinonStub;
-const testCommandPath = '../path';
+const testCommandPath = '../test-prefix-foo-bar';
+const testSearchPrefix = 'test-prefix';
+// commandRegExp
 
 registerSuite({
 	name: 'command',
-	'beforeEach'() {
+	'setup'() {
+		setSearchPrefix(testSearchPrefix);
+	},
+	'teardown'() {
 		// existsStub = stub(fs, 'existsSync');
 		// mkdirsStub = stub(fs, 'mkdirsSync');
 	},
@@ -19,14 +24,14 @@ registerSuite({
 	},
 	'load': {
 		'beforeEach'() {
-			// sinon.stub()
+
 		},
 		'afterEach'() {
 
 		},
 		'should get description from module'() {
-			const command = load(testCommandPath);
-			assert.isTrue(command.name);
+			const loaded = load(testCommandPath);
+			assert.isTrue(loaded.name === 'badger');
 		}
 		// createDir('/tmp/parentFolder/childFolder');
 		// assert.isTrue(existsStub.firstCall.calledWith('/tmp/parentFolder/childFolder'));

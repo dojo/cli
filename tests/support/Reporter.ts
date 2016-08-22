@@ -214,9 +214,9 @@ class Reporter extends Runner {
 				noCompact: true,
 				noAutoWrap: true
 			});
-			glob.sync('_build/**/*.js').filter(function (filepath) {
+			glob.sync('_build/**/*.js').filter(function (filepath: string) {
 				return !(<any> intern.executor).config.excludeInstrumentation.test(filepath) && coveredFiles.indexOf(path.resolve(filepath)) === -1;
-			}).forEach(function (filepath) {
+			}).forEach(function (filepath: string) {
 				try {
 					const wholename = path.resolve(filepath);
 					instrumenter.instrumentSync(fs.readFileSync(wholename, 'utf8'), wholename);

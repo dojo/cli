@@ -34,6 +34,7 @@
     "codecov.io": "0.1.6",
     "dojo-loader": ">=2.0.0-beta",
     "dts-generator": "~1.7.0",
+    "glob": "^7.0.3",
     "grunt": "~1.0.1",
     "grunt-contrib-clean": "^1.0.0",
     "grunt-contrib-copy": "^1.0.0",

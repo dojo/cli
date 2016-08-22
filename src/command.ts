@@ -1,4 +1,3 @@
-import config from './config';
 import { Command } from './interfaces';
 const cliui = require('cliui');
 
@@ -9,7 +8,11 @@ export interface CommandWrapper extends Command {
 
 export type CommandsMap = Map<string, CommandWrapper>;
 
-const commandRegExp = new RegExp(`${config.searchPrefix}-(.*)-(.*)`);
+let commandRegExp: RegExp;
+
+export function setSearchPrefix(searchPrefix: string): void {
+	commandRegExp = new RegExp(`${searchPrefix}-(.*)-(.*)`);
+}
 
 export function load(path: string): CommandWrapper {
 	const { description, register, run } = <Command> require(path);

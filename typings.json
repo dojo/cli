@@ -11,7 +11,8 @@
 	},
 	"devDependencies": {
 		"chai": "registry:npm/chai#3.5.0+20160415060238",
-		"sinon": "registry:npm/sinon#1.16.0+20160723033700"
+		"sinon": "registry:npm/sinon#1.16.0+20160723033700",
+		"glob": "registry:npm/glob#6.0.0+20160211003958"
 	},
 	"globalDevDependencies": {
 		"digdug": "github:dojo/typings/custom/digdug/digdug.d.ts#a62873258aa1deed48f9882c193c335436100d4b",
