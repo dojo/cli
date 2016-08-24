@@ -7,7 +7,7 @@ import { resolve } from 'path';
 import CommandHelper from './CommandHelper';
 import Helper from './Helper';
 
-interface YargsCommands {
+export interface YargsCommands {
 	[property: string]: string[];
 };
 
