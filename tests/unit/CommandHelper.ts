@@ -35,7 +35,7 @@ registerSuite({
 	'Should return exists = true when a queried command exists'() {
 		assert.isTrue(commandHelper.exists('group1', 'command1'));
 	},
-	'Should except composite key for query and return exists = true when a command exists'() {
+	'Should accept composite key for query and return exists = true when a command exists'() {
 		assert.isTrue(commandHelper.exists('group1-command1'));
 	},
 	'Should return exists = false when a queried command does not exist'() {
@@ -58,7 +58,7 @@ registerSuite({
 			}
 		);
 	},
-	'Should not run a command that does not exists and return a rejected promise'() {
+	'Should not run a command that does not exist and return a rejected promise'() {
 		const key = 'nogroup-nocommand';
 		const expectedErrorMsg = 'The command does not exist';
 		return commandHelper.run(key).then(
