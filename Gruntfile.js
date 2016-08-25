@@ -21,6 +21,11 @@ module.exports = function (grunt) {
 					'./src/**/*.ts'
 				]
 			}
+		},
+		'intern': {
+			'options': {
+				'nodeOptions': []
+			}
 		}
 	});
 
@@ -29,7 +34,6 @@ module.exports = function (grunt) {
 		'tslint',
 		'clean:dev',
 		'ts:tests-umd',
-		'ts:src-cjs',
-		'updateTsconfig'
+		'ts:src-cjs'
 	]);
 };

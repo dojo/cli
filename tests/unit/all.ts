@@ -1,4 +1,5 @@
 import './command';
 import './text';
-import './register';
+import './loadCommands';
+import './registerCommands';
 import './CommandHelper';
