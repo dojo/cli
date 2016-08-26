@@ -1,11 +1,7 @@
 import { Argv, Yargs } from 'yargs';
 
-export interface RunResult {
-	payload?: any;
-}
-
 export interface CommandHelper {
-	run(group: string, commandName?: string, args?: Argv): Promise<RunResult>;
+	run(group: string, commandName?: string, args?: Argv): Promise<any>;
 	exists(group: string, commandName?: string): boolean;
 }
 
@@ -18,5 +14,5 @@ export interface Helper {
 export interface Command {
 	description: string;
 	register(helper: Helper): Yargs;
-	run(helper: Helper, args?: Argv): Promise<RunResult>;
+	run(helper: Helper, args?: Argv): Promise<any>;
 }

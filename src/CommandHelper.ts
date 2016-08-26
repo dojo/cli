@@ -1,5 +1,5 @@
 import { CommandsMap } from './command';
-import { CommandHelper, RunResult, Command } from './interfaces';
+import { CommandHelper, Command } from './interfaces';
 import Helper from './Helper';
 import * as yargs from 'yargs';
 
@@ -13,9 +13,9 @@ export default class implements CommandHelper {
 		this.commandsMap = commandsMap;
 		this.context = context;
 	};
-	commandsMap: CommandsMap;
-	context: any;
-	run(group: string, commandName?: string, args?: yargs.Argv): Promise<RunResult> {
+	private commandsMap: CommandsMap;
+	private context: any;
+	run(group: string, commandName?: string, args?: yargs.Argv): Promise<any> {
 		const command = getCommand(this.commandsMap, group, commandName);
 		if (command) {
 			return command.run(new Helper(this, yargs, this.context));
