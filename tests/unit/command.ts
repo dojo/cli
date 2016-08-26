@@ -20,15 +20,16 @@ const groupDef: GroupDef = [
 	}
 ];
 const commandsMap = getCommandsMap(groupDef);
+let commandLoader: any;
 
 registerSuite({
 	name: 'command',
 	'setup'() {
-		command.setSearchPrefix(testSearchPrefix);
+		commandLoader = command.initCommandLoader(testSearchPrefix);
 	},
 	'load': {
 		'beforeEach'() {
-			commandWrapper = command.load(testCommandPath);
+			commandWrapper = commandLoader(testCommandPath);
 		},
 		'Should get group and name from filename'() {
 			assert.equal(testGroup, commandWrapper.group);

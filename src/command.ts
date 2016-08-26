@@ -8,22 +8,20 @@ export interface CommandWrapper extends Command {
 
 export type CommandsMap = Map<string, CommandWrapper>;
 
-let commandRegExp: RegExp;
+export function initCommandLoader(searchPrefix: string): (path: string) => CommandWrapper {
+	const commandRegExp = new RegExp(`${searchPrefix}-(.*)-(.*)`);
 
-export function setSearchPrefix(searchPrefix: string): void {
-	commandRegExp = new RegExp(`${searchPrefix}-(.*)-(.*)`);
-}
+	return function load(path: string): CommandWrapper {
+		const { description, register, run } = <Command> require(path);
+		const [ , group, name] = <string[]> commandRegExp.exec(path);
 
-export function load(path: string): CommandWrapper {
-	const { description, register, run } = <Command> require(path);
-	const [ , group, name] = <string[]> commandRegExp.exec(path);
-
-	return {
-		name,
-		group,
-		description,
-		register,
-		run
+		return {
+			name,
+			group,
+			description,
+			register,
+			run
+		};
 	};
 }
 
