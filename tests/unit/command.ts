@@ -2,6 +2,7 @@ import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
 import { getCommandsMap, GroupDef } from '../support/testHelper';
 const command = require('intern/dojo/node!../../src/command');
+const expectedCommand = require('intern/dojo/node!../support/test-prefix-foo-bar');
 
 const testGroup = 'foo';
 const testName = 'bar';
@@ -34,13 +35,13 @@ registerSuite({
 			assert.equal(testName, commandWrapper.name);
 		},
 		'Should get description from loaded file'() {
-			assert.equal('test-description', commandWrapper.description);
+			assert.equal(expectedCommand.description, commandWrapper.description);
 		},
 		'Should get register function from loaded file'() {
-			assert.isTrue(typeof commandWrapper.register === 'function');
+			assert.equal(expectedCommand.register, commandWrapper.register);
 		},
 		'Should get run function from loaded file'() {
-			assert.isTrue(typeof commandWrapper.run === 'function');
+			assert.equal(expectedCommand.run, commandWrapper.run);
 		}
 	},
 	'getGroupDescription': {
