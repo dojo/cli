@@ -8,8 +8,8 @@ const pkg = <any> require('../../package.json');
 
 async function init() {
 	updateNotifier(pkg, 0);
-	const commandLoader = initCommandLoader(config.searchPrefix);
-	const { commandsMap, yargsCommandNames } = await loadCommands(yargs, config, commandLoader);
+	const loader = initCommandLoader(config.searchPrefix);
+	const { commandsMap, yargsCommandNames } = await loadCommands(yargs, config, loader);
 	registerCommands(yargs, commandsMap, yargsCommandNames);
 }
 
