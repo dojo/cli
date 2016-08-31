@@ -16,7 +16,6 @@
     "url": "https://github.com/dojo/cli.git"
   },
   "scripts": {
-    "prepublish": "grunt peerDepInstall dist",
     "test": "grunt test"
   },
   "preferGlobal": true,
