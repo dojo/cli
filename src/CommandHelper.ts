@@ -8,6 +8,10 @@ function getCommand(commandsMap: CommandsMap, group: string, commandName?: strin
 	return commandsMap.get(commandKey);
 }
 
+/**
+ * CommandHelper class which is passed into each command's run function
+ * allowing commands to call one another. Provides 'run' and 'exists' functions
+ */
 export default class implements CommandHelper {
 	constructor(commandsMap: CommandsMap, context: any) {
 		this.commandsMap = commandsMap;

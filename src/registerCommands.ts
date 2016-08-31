@@ -8,6 +8,15 @@ interface YargsCommandNames {
 	[property: string]: string[];
 };
 
+/**
+ * Registers commands and subcommands using yargs. Receives a CommandsMap of commands and
+ * a map of YargsCommandNames which links composite keys to groups.
+ * Subcommands have to be registered when a group is registered, this is a restriction of
+ * yargs.
+ * @param yargs Yargs instance
+ * @param commandsMap The map of composite keys to commands
+ * @param yargsCommandNames Map of groups and names to composite keys
+ */
 export default function(yargs: Yargs, commandsMap: CommandsMap, yargsCommandNames: YargsCommandNames): void {
 	const helperContext = {};
 	const commandHelper = new CommandHelper(commandsMap, helperContext);
