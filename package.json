@@ -20,16 +20,26 @@
     "test": "grunt test"
   },
   "preferGlobal": true,
-  "dependencies": {},
+  "bin": {
+    "dojo": "bin/dojo.js"
+  },
+  "dependencies": {
+    "chalk": "^1.1.3",
+    "cliui": "^3.2.0",
+    "globby": "^6.0.0",
+    "update-notifier": "^1.0.2",
+    "yargs": "^4.8.1"
+  },
   "devDependencies": {
     "codecov.io": "0.1.6",
     "dojo-loader": ">=2.0.0-beta",
     "dts-generator": "~1.7.0",
+    "glob": "^7.0.3",
     "grunt": "~1.0.1",
     "grunt-contrib-clean": "^1.0.0",
     "grunt-contrib-copy": "^1.0.0",
     "grunt-contrib-watch": "^1.0.0",
-    "grunt-dojo2": ">=2.0.0-beta.7",
+    "grunt-dojo2": ">=2.0.0-beta.15",
     "grunt-text-replace": "^0.4.0",
     "grunt-ts": "^5.5.1",
     "grunt-tslint": "^3.1.0",
@@ -37,6 +47,7 @@
     "intern": "^3.2.3",
     "istanbul": "^0.4.3",
     "remap-istanbul": "^0.6.4",
+    "sinon": "^1.17.5",
     "tslint": "^3.11.0",
     "typescript": "beta"
   }

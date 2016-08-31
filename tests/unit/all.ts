@@ -1,1 +1,5 @@
-// put test file imports here
+import './command';
+import './text';
+import './loadCommands';
+import './registerCommands';
+import './CommandHelper';
