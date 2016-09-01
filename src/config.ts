@@ -1,4 +1,4 @@
-import { resolve, join } from 'path';
+import { join } from 'path';
 const pkgDir = require('pkg-dir');
 
 const packagePath = pkgDir.sync(__dirname);
