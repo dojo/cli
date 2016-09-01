@@ -4,11 +4,11 @@ import { CommandsMap, CommandWrapper } from './command';
 import * as globby from 'globby';
 import { resolve } from 'path';
 
-interface YargsCommandNames {
+export interface YargsCommandNames {
 	[property: string]: string[];
 };
 
-type LoadedCommands = {
+export type LoadedCommands = {
 	commandsMap: CommandsMap,
 	yargsCommandNames: YargsCommandNames
 }
