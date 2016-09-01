@@ -2,7 +2,7 @@
 	"version": "2.0.0",
 	"compilerOptions": {
 		"declaration": false,
-		"module": "commonjs",
+		"module": "umd",
 		"noImplicitAny": true,
 		"outDir": "_build/",
 		"removeComments": false,
@@ -15,7 +15,7 @@
 	},
 	"include": [
 		"./typings/index.d.ts",
-		"./src/*.ts",
+		"./src/**/*.ts",
 		"./tests/**/*.ts"
 	]
 }
