@@ -21,7 +21,7 @@
   },
   "preferGlobal": true,
   "bin": {
-    "dojo": "bin/dojo.js"
+    "dojo": "dist/umd/dojo.js"
   },
   "dependencies": {
     "chalk": "^1.1.3",

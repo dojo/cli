@@ -4,7 +4,7 @@ import CommandHelper from './CommandHelper';
 import Helper from './Helper';
 import { helpUsage, helpEpilog } from './text';
 
-interface YargsCommandNames {
+export interface YargsCommandNames {
 	[property: string]: string[];
 };
 
