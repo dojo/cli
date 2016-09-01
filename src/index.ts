@@ -4,7 +4,13 @@ import config from './config';
 import loadCommands from './loadCommands';
 import registerCommands from './registerCommands';
 import { initCommandLoader } from './command';
-const pkg = <any> require('../../package.json');
+import { join } from 'path';
+const pkgDir = require('pkg-dir');
+
+const packagePath = pkgDir.sync(__dirname);
+const packageJsonFilePath = join(packagePath, 'package.json');
+
+const pkg = <any> require(packageJsonFilePath);
 
 /**
  * Runs the CLI
