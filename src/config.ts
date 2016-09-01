@@ -1,4 +1,7 @@
-import { resolve } from 'path';
+import { join } from 'path';
+const pkgDir = require('pkg-dir');
+
+const packagePath = pkgDir.sync(__dirname);
 
 export type Config = {
 	searchPaths: string[],
@@ -7,8 +10,8 @@ export type Config = {
 
 export default <Config> {
 	searchPaths: [
-		resolve(__dirname, '../../node_modules'),
-		resolve(__dirname, '../../'),
+		join(packagePath, 'node_modules'),
+		packagePath,
 		'node_modules'
 	],
 	searchPrefix: 'dojo-cli'
