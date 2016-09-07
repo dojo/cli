@@ -3,11 +3,13 @@ import * as assert from 'intern/chai!assert';
 import { getCommandsMap, GroupDef } from '../support/testHelper';
 const command = require('intern/dojo/node!../../src/command');
 const expectedCommand = require('intern/dojo/node!../support/test-prefix-foo-bar');
+const expectedEsModuleCommand = require('intern/dojo/node!../support/esmodule-prefix-foo-bar').default;
 
 const testGroup = 'foo';
 const testName = 'bar';
 const testSearchPrefix = 'test-prefix';
-const testCommandPath = `../tests/support/${testSearchPrefix}-${testGroup}-${testName}`;
+const testEsModuleSearchPrefix = 'esmodule-prefix';
+const testEsModuleFailSearchPrefix = 'esmodule-fail';
 let commandWrapper: any;
 const groupDef: GroupDef = [
 	{
@@ -22,14 +24,16 @@ const groupDef: GroupDef = [
 const commandsMap = getCommandsMap(groupDef);
 let loader: any;
 
+function getCommandPath(prefix: string): string {
+	return `../tests/support/${prefix}-${testGroup}-${testName}`;
+}
+
 registerSuite({
 	name: 'command',
-	'setup'() {
-		loader = command.initCommandLoader(testSearchPrefix);
-	},
 	'load': {
 		'beforeEach'() {
-			commandWrapper = loader(testCommandPath);
+			loader = command.initCommandLoader(testSearchPrefix);
+			commandWrapper = loader(getCommandPath(testSearchPrefix));
 		},
 		'Should get group and name from filename'() {
 			assert.equal(testGroup, commandWrapper.group);
@@ -45,7 +49,43 @@ registerSuite({
 			assert.equal(expectedCommand.run, commandWrapper.run);
 		}
 	},
+	'load esmodule default': {
+		'beforeEach'() {
+			loader = command.initCommandLoader(testEsModuleSearchPrefix);
+			commandWrapper = loader(getCommandPath(testEsModuleSearchPrefix));
+		},
+		'Should get group and name from filename'() {
+			assert.equal(testGroup, commandWrapper.group);
+			assert.equal(testName, commandWrapper.name);
+		},
+		'Should get description from loaded file'() {
+			assert.equal(expectedEsModuleCommand.description, commandWrapper.description);
+		},
+		'Should get register function from loaded file'() {
+			assert.equal(expectedEsModuleCommand.register, commandWrapper.register);
+		},
+		'Should get run function from loaded file'() {
+			assert.equal(expectedEsModuleCommand.run, commandWrapper.run);
+		}
+	},
+	'load esmodule that does not meet Command interface': {
+		'setup'() {
+			loader = command.initCommandLoader(testEsModuleFailSearchPrefix);
+		},
+		'Should throw an error when attempting to load'() {
+			try {
+				commandWrapper = loader(getCommandPath(testEsModuleFailSearchPrefix));
+			}
+			catch (error) {
+				assert.isTrue(error instanceof Error);
+				assert.isTrue(error.message.indexOf('does not satisfy the Command interface') > -1);
+			}
+		}
+	},
 	'getGroupDescription': {
+		'setup'() {
+			loader = command.initCommandLoader(testSearchPrefix);
+		},
 		'Should return simple command description when only one command name passed'() {
 			const key = 'group1-command1';
 			const description = command.getGroupDescription([key], commandsMap);
