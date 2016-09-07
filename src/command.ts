@@ -20,7 +20,8 @@ export function initCommandLoader(searchPrefix: string): (path: string) => Comma
 	const commandRegExp = new RegExp(`${searchPrefix}-(.*)-(.*)`);
 
 	return function load(path: string): CommandWrapper {
-		const { description, register, run } = <Command> require(path);
+		const module = require(path);
+		const { description, register, run } = <Command> module;
 		const [ , group, name] = <string[]> commandRegExp.exec(path);
 
 		return {
