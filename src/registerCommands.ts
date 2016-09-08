@@ -50,5 +50,6 @@ export default function(yargs: Yargs, commandsMap: CommandsMap, yargsCommandName
 		.epilog(helpEpilog)
 		.help('h')
 		.alias('h', 'help')
+		.alias('v', 'version')
 		.argv;
 }
