@@ -75,6 +75,7 @@ registerSuite({
 		'Should throw an error when attempting to load'() {
 			try {
 				commandWrapper = loader(getCommandPath(testEsModuleFailSearchPrefix));
+				assert.fail(null, null, 'Should not get here');
 			}
 			catch (error) {
 				assert.isTrue(error instanceof Error);
