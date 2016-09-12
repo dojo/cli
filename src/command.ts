@@ -20,16 +20,27 @@ export function initCommandLoader(searchPrefix: string): (path: string) => Comma
 	const commandRegExp = new RegExp(`${searchPrefix}-(.*)-(.*)`);
 
 	return function load(path: string): CommandWrapper {
-		const { description, register, run } = <Command> require(path);
-		const [ , group, name] = <string[]> commandRegExp.exec(path);
+		let module = require(path);
 
-		return {
-			name,
-			group,
-			description,
-			register,
-			run
-		};
+		if (module.__esModule && module.default) {
+			module = module.default;
+		}
+
+		if (module.description && module.register && module.run) {
+			const { description, register, run } = <Command> module;
+			const [ , group, name] = <string[]> commandRegExp.exec(path);
+
+			return {
+				name,
+				group,
+				description,
+				register,
+				run
+			};
+		}
+		else {
+			throw new Error(`Path: ${path} returned module that does not satisfy the Command interface`);
+		}
 	};
 }
 

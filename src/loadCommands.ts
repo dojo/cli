@@ -39,18 +39,23 @@ export default async function (yargs: Yargs, config: Config, load: (path: string
 			const yargsCommandNames: YargsCommandNames = {};
 
 			paths.forEach((path) => {
-				const commandWrapper = load(path);
-				const { group, name } = commandWrapper;
-				const compositeKey = `${group}-${name}`;
+				try {
+					const commandWrapper = load(path);
+					const { group, name } = commandWrapper;
+					const compositeKey = `${group}-${name}`;
 
-				if (!commandsMap.has(group)) {
-					// First of each type will be 'default' for now
-					setDefaultGroup(commandsMap, group, commandWrapper);
+					if (!commandsMap.has(group)) {
+						// First of each type will be 'default' for now
+						setDefaultGroup(commandsMap, group, commandWrapper);
 
-					yargsCommandNames[group] = [];
+						yargsCommandNames[group] = [];
+					}
+					commandsMap.set(compositeKey, commandWrapper);
+					yargsCommandNames[group].push(compositeKey);
 				}
-				commandsMap.set(compositeKey, commandWrapper);
-				yargsCommandNames[group].push(compositeKey);
+				catch (error) {
+					console.error(`Failed to load module: ${path}, error: ${error.message}`);
+				}
 			});
 
 			resolve({
