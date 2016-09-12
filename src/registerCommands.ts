@@ -45,7 +45,8 @@ export default function(yargs: Yargs, commandsMap: CommandsMap, yargsCommandName
 		});
 	});
 
-	yargs.usage(helpUsage)
+	yargs.demand(1, '')
+		.usage(helpUsage)
 		.epilog(helpEpilog)
 		.help('h')
 		.alias('h', 'help')

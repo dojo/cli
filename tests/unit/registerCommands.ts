@@ -22,7 +22,7 @@ registerSuite({
 		yargsStub = getYargsStub();
 	},
 	'Should setup correct yargs arguments'() {
-		const yargsArgs = ['usage', 'epilog', 'help'];
+		const yargsArgs = ['demand', 'usage', 'epilog', 'help'];
 		registerCommands(yargsStub, commandsMap, {});
 		yargsArgs.forEach((arg) => {
 			assert.isTrue(yargsStub[arg].calledOnce);
