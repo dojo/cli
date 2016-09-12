@@ -45,8 +45,7 @@ export default function(yargs: Yargs, commandsMap: CommandsMap, yargsCommandName
 		});
 	});
 
-	yargs.demand(1, 'must provide a valid command')
-		.usage(helpUsage)
+	yargs.usage(helpUsage)
 		.epilog(helpEpilog)
 		.help('h')
 		.alias('h', 'help')
