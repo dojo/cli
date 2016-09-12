@@ -43,6 +43,7 @@ registerSuite({
 		}
 	},
 	async 'failed load'() {
+		const consoleStub = stub(console, 'error');
 		const failConfig = {
 			searchPaths: [ '_build/tests/support' ],
 			searchPrefix: 'esmodule-fail'
@@ -55,6 +56,7 @@ registerSuite({
 		catch (error) {
 			assert.isTrue(error instanceof Error);
 			assert.isTrue(error.message.indexOf('Failed to load module') > -1);
+			consoleStub.restore();
 		}
 	}
 });

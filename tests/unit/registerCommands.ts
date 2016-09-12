@@ -22,11 +22,12 @@ registerSuite({
 		yargsStub = getYargsStub();
 	},
 	'Should setup correct yargs arguments'() {
-		const yargsArgs = ['demand', 'usage', 'epilog', 'help', 'alias'];
+		const yargsArgs = ['demand', 'usage', 'epilog', 'help'];
 		registerCommands(yargsStub, commandsMap, {});
 		yargsArgs.forEach((arg) => {
 			assert.isTrue(yargsStub[arg].calledOnce);
 		});
+		assert.isTrue(yargsStub.alias.calledTwice, 'Should be called for help and version aliases');
 	},
 	'Should not call yargs.command when no yargsCommandNames are passed'() {
 		registerCommands(yargsStub, commandsMap, {});
