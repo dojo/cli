@@ -26,10 +26,12 @@ export default function(yargs: Yargs, commandsMap: CommandsMap, yargsCommandName
 		const commandNames = yargsCommandNames[group];
 		const groupDescription = getGroupDescription(commandNames, commandsMap);
 		const defaultCommand = <CommandWrapper> commandsMap.get(group);
-
+		const defaultCommandAvailable = !!(defaultCommand && defaultCommand.register && defaultCommand.run);
 		yargs.command(group, groupDescription, (yargs: Yargs) => {
 			// Register the default command so that options show
-			defaultCommand.register(helper);
+			if (defaultCommandAvailable) {
+				defaultCommand.register(helper);
+			}
 
 			commandNames.forEach((command: string) => {
 				const { name, description, register, run } = <CommandWrapper> commandsMap.get(command);
@@ -52,7 +54,7 @@ export default function(yargs: Yargs, commandsMap: CommandsMap, yargsCommandName
 			// if `dojo example` was called, it will only be size one,
 			// so we call default command, else, the subcommand will
 			// have been ran and we don't want to run the default.
-			if (argv._.length === 1) {
+			if (defaultCommandAvailable && argv._.length === 1) {
 				return defaultCommand.run(helper, argv);
 			}
 		});
