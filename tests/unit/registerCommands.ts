@@ -77,5 +77,4 @@ registerSuite({
 			assert.isFalse(defaultRunStub.called);
 		}
 	}
-
 });
