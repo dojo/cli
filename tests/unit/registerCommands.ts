@@ -1,7 +1,6 @@
 import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
 import { stub, SinonStub } from 'sinon';
-import * as yargs from 'yargs';
 import { getCommandsMap, getYargsStub, GroupDef } from '../support/testHelper';
 const registerCommands = require('intern/dojo/node!../../src/registerCommands').default;
 const defaultCommandWrapper = require('intern/dojo/node!../support/test-prefix-foo-bar');
@@ -56,7 +55,6 @@ registerSuite({
 	},
 	'default command': {
 		'beforeEach'() {
-			yargs.reset();
 			defaultRegisterStub = stub(defaultCommandWrapper, 'register');
 			defaultRunStub = stub(defaultCommandWrapper, 'run');
 			commandsMap.set('group1', defaultCommandWrapper);
