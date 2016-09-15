@@ -57,7 +57,7 @@ This will output generic help information.
 
 `dojo create help`
 
-where `create` is the group and ``help` is the command. This will output help for the `create` group.
+where `create` is the group and `help` is the command. This will output help for the `create` group.
 
 The CLI has the following basic commands:
 
