@@ -11,6 +11,7 @@ You will need node V4 or v6+.
 
 ## Installation
 Getting the cli
+
 You can install from npm:
 
 `npm i dojo-cli -g`
@@ -54,9 +55,9 @@ where `help` is the group, and no command is specified, so the default help comm
 
 This will output generic help information.
 
-`dojo help create`
+`dojo create help`
 
-where `help` is the group and the command is `create`. This will output help for the `create` command.
+where `create` is the group and ``help` is the command. This will output help for the `create` group.
 
 The CLI has the following basic commands:
 
