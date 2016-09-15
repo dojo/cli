@@ -1,20 +1,67 @@
 # dojo-cli
 
-<!-- TODO: change and uncomment
-[![Build Status](https://travis-ci.org/dojo/<< package-name >>.svg?branch=master)](https://travis-ci.org/dojo/<< package-name >>)
-[![codecov](https://codecov.io/gh/dojo/<< package-name >>/branch/master/graph/badge.svg)](https://codecov.io/gh/dojo/<< package-name >>)
-[![npm version](https://badge.fury.io/js/dojo-<< package-name >>.svg)](http://badge.fury.io/js/dojo-<< package-name >>)
--->
+[![Build Status](https://travis-ci.org/dojo/cli.svg?branch=master)](https://travis-ci.org/dojo/cli) [![codecov](https://codecov.io/gh/dojo/cli/branch/master/graph/badge.svg)](https://codecov.io/gh/dojo/cli) [![npm version](https://badge.fury.io/js/dojo-cli.svg)](http://badge.fury.io/js/dojo-cli)
 
-TODO: Replace with a description of this package
+The CLI is the officially supported way to create and maintain Dojo 2 apps.
 
-## Features
+Its designed to save you time, by promoting a stadardised workflow, and automating away lots of the boring boilerplate tasks.
 
-TODO: Add sections on features of this package
+## Prerequisites
+You will need node V4 or v6+.
 
-## How do I use this package?
+## Installation
+Getting the cli
+You can install from npm:
 
-TODO: Add appropriate usage and instruction guidelines
+`npm i dojo-cli -g`
+
+In a terminal, run:
+
+`dojo`
+
+This should output the following:
+
+```
+dojo help
+
+Usage: dojo <command> [subCommand] [options]
+
+Hey there, here are all the things you can do with dojo-cli:
+...
+```
+
+If you don't see the message above, then check that you have installed the CLI with the `-g` option.
+
+You can list all your global npm dependencies by running:
+
+`npm list -g –depth=0`
+
+If you don't see `dojo-cli` in the list of global dependencies, then please re-install and make sure the installation runs without errors.
+
+## How to use
+
+
+### The basic groups and commands
+The CLI has the following format:
+
+`dojo group [command]` - where [command] is optional
+
+e.g. 
+
+`dojo help`
+
+where `help` is the group, and no command is specified, so the default help command is run. 
+
+This will output generic help information.
+
+`dojo help create`
+
+where `help` is the group and the command is `create`. This will output help for the `create` command.
+
+The CLI has the following basic commands:
+
+`dojo help` - provides a list of help as detailed above.
+`dojo -v` - provides the current version of the CLI
 
 ## How do I contribute?
 
@@ -44,9 +91,5 @@ or
 `grunt test:saucelabs`
 
 ## Licensing information
-
-TODO: If third-party code was used to write this library, make a list of project names and licenses here
-
-* [Third-party lib one](https//github.com/foo/bar) ([New BSD](http://opensource.org/licenses/BSD-3-Clause))
 
 © 2004–2016 Dojo Foundation & contributors. [New BSD](http://opensource.org/licenses/BSD-3-Clause) license.
