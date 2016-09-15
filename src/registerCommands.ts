@@ -53,8 +53,6 @@ export default function(yargs: Yargs, commandsMap: CommandsMap, yargsCommandName
 			// so we call default command, else, the subcommand will
 			// have been ran and we don't want to run the default.
 			if (argv._.length === 1) {
-				// Run the default command
-				console.log('running default command');
 				return defaultCommand.run(helper, argv);
 			}
 		});
