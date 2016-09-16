@@ -6,6 +6,9 @@
   "bugs": {
     "url": "https://github.com/dojo/cli/issues"
   },
+  "engines": {
+    "node": ">= 6.0.0"
+  },
   "license": "BSD-3-Clause",
   "keywords": [
     "dojo",
