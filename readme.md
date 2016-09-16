@@ -7,7 +7,7 @@ The CLI is the officially supported way to create and maintain Dojo 2 apps.
 Its designed to save you time, by promoting a stadardised workflow, and automating away lots of the boring boilerplate tasks.
 
 ## Prerequisites
-You will need node V4 or v6+.
+You will need node v6+.
 
 ## Installation
 Getting the cli
