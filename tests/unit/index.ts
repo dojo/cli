@@ -31,19 +31,16 @@ registerSuite({
 		mockery.deregisterAll();
 		mockery.disable();
 	},
-	'Should call updateNotifier'() {
-		assert.isTrue(updateNotifierStub.calledOnce);
-	},
-	'Should set yargs version'() {
-		assert.isTrue(yargsVersionStub.calledOnce);
-		assert.isTrue(yargsVersionStub.calledAfter(updateNotifierStub));
-	},
-	'Should init the command loader'() {
-		assert.isTrue(commandLoaderStub.calledOnce);
-		assert.isTrue(commandLoaderStub.calledAfter(yargsVersionStub));
-	},
-	'Should load the commands using the command loader'() {
-		assert.isTrue(loadCommandsStub.calledOnce);
-		assert.isTrue(loadCommandsStub.calledAfter(commandLoaderStub));
+	'Should call functions in order'() {
+		assert.isTrue(updateNotifierStub.calledOnce, 'should call update notifier');
+		assert.isTrue(yargsVersionStub.calledOnce, 'should set yargs version');
+		assert.isTrue(yargsVersionStub.calledAfter(updateNotifierStub),
+			'should set yargs version after update notifier');
+		assert.isTrue(commandLoaderStub.calledOnce, 'should call init command loader');
+		assert.isTrue(commandLoaderStub.calledAfter(yargsVersionStub),
+			'should call init command loader after set yargs version');
+		assert.isTrue(loadCommandsStub.calledOnce, 'should call load commands');
+		assert.isTrue(loadCommandsStub.calledAfter(commandLoaderStub),
+			'should call load commands after init command loader');
 	}
 });
