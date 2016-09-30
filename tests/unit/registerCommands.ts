@@ -12,7 +12,7 @@ const groupDef: GroupDef = [
 	},
 	{
 		groupName: 'group2',
-		commands: [ { commandName: 'command1' } ]
+		commands: [ { commandName: 'command1' }, { commandName: 'command2' }  ]
 	}
 ];
 let commandsMap: any;
@@ -29,7 +29,7 @@ registerSuite({
 		commandsMap = getCommandsMap(groupDef);
 	},
 	'Should setup correct yargs arguments'() {
-		const yargsArgs = ['demand', 'usage', 'epilog', 'help'];
+		const yargsArgs = [ 'demand', 'usage', 'epilog', 'help', 'strict' ];
 		registerCommands(yargsStub, commandsMap, {});
 		yargsArgs.forEach((arg) => {
 			assert.isTrue(yargsStub[arg].calledOnce);
@@ -39,6 +39,13 @@ registerSuite({
 	'Should not call yargs.command when no yargsCommandNames are passed'() {
 		registerCommands(yargsStub, commandsMap, {});
 		assert.isFalse(yargsStub.command.called);
+	},
+	'Should call strict for all commands'() {
+		registerCommands(yargsStub, commandsMap, {
+			'group1': [ 'group1-command1' ],
+			'group2': [ 'group2-command1', 'group2-command2' ]
+		});
+		assert.equal(yargsStub.strict.callCount, 4);
 	},
 	'Should call yargs.command once for each yargsCommandName passed and once for the default command'() {
 		const key = 'group1-command1';

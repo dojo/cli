@@ -47,7 +47,8 @@ export default function(yargs: Yargs, commandsMap: CommandsMap, yargsCommandName
 					(argv: Argv) => {
 						return run(helper, argv).catch(reportError);
 					}
-				);
+				)
+				.strict();
 			});
 			return yargs;
 		},
@@ -68,5 +69,6 @@ export default function(yargs: Yargs, commandsMap: CommandsMap, yargsCommandName
 		.help('h')
 		.alias('h', 'help')
 		.alias('v', 'version')
+		.strict()
 		.argv;
 }
