@@ -19,6 +19,8 @@ let commandsMap: any;
 let yargsStub: any;
 let defaultRegisterStub: SinonStub;
 let defaultRunStub: SinonStub;
+let consoleErrorStub: SinonStub;
+const errorMessage = 'test error message';
 
 registerSuite({
 	name: 'registerCommands',
@@ -75,6 +77,20 @@ registerSuite({
 		'Should not run default command when yargs called with group name and command'() {
 			yargsStub.command.firstCall.args[3]({'_': ['group', 'command']});
 			assert.isFalse(defaultRunStub.called);
+		},
+		'error message': {
+			'beforeEach'() {
+				consoleErrorStub = stub(console, 'error');
+				defaultRunStub.returns(Promise.reject(new Error(errorMessage)));
+			},
+			'afterEach'() {
+				consoleErrorStub.restore();
+			},
+			async 'Should show error message if the run command rejects'() {
+				await yargsStub.command.firstCall.args[3]({'_': ['group']});
+				assert.isTrue(consoleErrorStub.calledOnce);
+				assert.isTrue(consoleErrorStub.firstCall.calledWithMatch(errorMessage));
+			}
 		}
 	}
 });
