@@ -13,14 +13,19 @@ let loadStub: SinonStub;
 let yargsStub: any;
 let commandWrapper1: any;
 let commandWrapper2: any;
+let consoleStub: SinonStub;
 
 registerSuite({
 	name: 'loadCommands',
 	'beforeEach'() {
+			consoleStub = stub(console, 'error');
 			commandWrapper1 = getCommandWrapper('command1');
 			commandWrapper2 = getCommandWrapper('command2');
 			yargsStub = getYargsStub();
 			loadStub = stub();
+	},
+	'afterEach'() {
+		consoleStub.restore();
 	},
 	'successful load': {
 		'beforeEach'() {
@@ -43,7 +48,6 @@ registerSuite({
 		}
 	},
 	async 'failed load'() {
-		const consoleStub = stub(console, 'error');
 		const failConfig = {
 			searchPaths: [ '_build/tests/support' ],
 			searchPrefix: 'esmodule-fail'
@@ -56,7 +60,6 @@ registerSuite({
 		catch (error) {
 			assert.isTrue(error instanceof Error);
 			assert.isTrue(error.message.indexOf('Failed to load module') > -1);
-			consoleStub.restore();
 		}
 	}
 });

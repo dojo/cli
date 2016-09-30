@@ -3,6 +3,7 @@ import { getGroupDescription, CommandsMap, CommandWrapper } from './command';
 import CommandHelper from './CommandHelper';
 import Helper from './Helper';
 import { helpUsage, helpEpilog } from './text';
+import * as chalk from 'chalk';
 
 export interface YargsCommandNames {
 	[property: string]: string[];
@@ -27,6 +28,7 @@ export default function(yargs: Yargs, commandsMap: CommandsMap, yargsCommandName
 		const groupDescription = getGroupDescription(commandNames, commandsMap);
 		const defaultCommand = <CommandWrapper> commandsMap.get(group);
 		const defaultCommandAvailable = !!(defaultCommand && defaultCommand.register && defaultCommand.run);
+		const reportError = (error: Error) => console.error(chalk.red.bold(error.message));
 		yargs.command(group, groupDescription, (yargs: Yargs) => {
 			// Register the default command so that options show
 			if (defaultCommandAvailable) {
@@ -43,7 +45,7 @@ export default function(yargs: Yargs, commandsMap: CommandsMap, yargsCommandName
 						return yargs;
 					},
 					(argv: Argv) => {
-						return run(helper, argv);
+						return run(helper, argv).catch(reportError);
 					}
 				);
 			});
@@ -55,7 +57,7 @@ export default function(yargs: Yargs, commandsMap: CommandsMap, yargsCommandName
 			// so we call default command, else, the subcommand will
 			// have been ran and we don't want to run the default.
 			if (defaultCommandAvailable && argv._.length === 1) {
-				return defaultCommand.run(helper, argv);
+				return defaultCommand.run(helper, argv).catch(reportError);
 			}
 		});
 	});
