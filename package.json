@@ -49,6 +49,7 @@
     "grunt-typings": ">=0.1.5",
     "intern": "^3.2.3",
     "istanbul": "^0.4.3",
+    "mockery": "^1.7.0",
     "remap-istanbul": "^0.6.4",
     "sinon": "^1.17.5",
     "tslint": "^3.11.0",
