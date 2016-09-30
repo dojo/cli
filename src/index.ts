@@ -5,11 +5,11 @@ import loadCommands from './loadCommands';
 import registerCommands from './registerCommands';
 import { initCommandLoader } from './command';
 import { join } from 'path';
+import dirname from './dirname';
 const pkgDir = require('pkg-dir');
 
-const packagePath = pkgDir.sync(__dirname);
+const packagePath = pkgDir.sync(dirname);
 const packageJsonFilePath = join(packagePath, 'package.json');
-
 const pkg = <any> require(packageJsonFilePath);
 
 /**
