@@ -31,18 +31,18 @@ registerSuite({
 		mockery.deregisterAll();
 		mockery.disable();
 	},
-	async 'Should call updateNotifier'() {
+	'Should call updateNotifier'() {
 		assert.isTrue(updateNotifierStub.calledOnce);
 	},
-	async 'Should set yargs version'() {
+	'Should set yargs version'() {
 		assert.isTrue(yargsVersionStub.calledOnce);
 		assert.isTrue(yargsVersionStub.calledAfter(updateNotifierStub));
 	},
-	async 'Should init the command loader'() {
+	'Should init the command loader'() {
 		assert.isTrue(commandLoaderStub.calledOnce);
 		assert.isTrue(commandLoaderStub.calledAfter(yargsVersionStub));
 	},
-	async 'Should load the commands using the command loader'() {
+	'Should load the commands using the command loader'() {
 		assert.isTrue(loadCommandsStub.calledOnce);
 		assert.isTrue(loadCommandsStub.calledAfter(commandLoaderStub));
 	}
