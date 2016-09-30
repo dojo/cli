@@ -29,13 +29,13 @@ export function getCommandsMap(groupDef: GroupDef) {
 	return commands;
 };
 
-const yargsFunctions = ['demand', 'usage', 'epilog', 'help', 'alias'];
+const yargsFunctions = [ 'demand', 'usage', 'epilog', 'help', 'alias', 'strict' ];
 export function getYargsStub() {
 	const yargsStub: any = {};
 	yargsFunctions.forEach((fnc) => {
 		yargsStub[fnc] = stub().returns(yargsStub);
 	});
-	yargsStub.command = stub().callsArgWith(2, yargsStub);
+	yargsStub.command = stub().callsArgWith(2, yargsStub).returns(yargsStub);
 	return yargsStub;
 }
 
