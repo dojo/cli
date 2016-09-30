@@ -56,7 +56,7 @@ registerSuite({
 	'default command': {
 		'beforeEach'() {
 			defaultRegisterStub = stub(defaultCommandWrapper, 'register');
-			defaultRunStub = stub(defaultCommandWrapper, 'run');
+			defaultRunStub = stub(defaultCommandWrapper, 'run').returns(Promise.resolve());
 			commandsMap.set('group1', defaultCommandWrapper);
 			const key = 'group1-command1';
 			registerCommands(yargsStub, commandsMap, {'group1': [ key ]});
