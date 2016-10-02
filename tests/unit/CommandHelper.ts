@@ -47,6 +47,15 @@ registerSuite({
 			assert.equal(key, response);
 		});
 	},
+	'Should run a command that exists with args and return a promise that resolves'() {
+		const key = 'group1-command1';
+		return commandHelper.run(key, undefined, 'args').then((response: string) => {
+			const mockCommand = commandsMap.get(key);
+			assert.isTrue(mockCommand.runStub.called);
+			assert.equal(mockCommand.runStub.getCall(0).args[1], 'args');
+			assert.equal(key, response);
+		});
+	},
 	'Should run a command that exists and return a rejected promise when it fails'() {
 		const key = 'group2-failcommand';
 		return commandHelper.run(key).then(
