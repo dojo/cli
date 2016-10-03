@@ -13,12 +13,14 @@ export function getCommandsMap(groupDef: GroupDef) {
 	groupDef.forEach((group) => {
 		group.commands.forEach((command) => {
 			const compositeKey = `${group.groupName}-${command.commandName}`;
+			const runStub = stub();
 			const commandWrapper = {
 				name: command.commandName,
 				group: group.groupName,
 				description: compositeKey,
 				register: stub().returns(compositeKey),
-				run: stub().returns(command.fails ?
+				runStub,
+				run: runStub.returns(command.fails ?
 					Promise.reject(new Error(compositeKey)) :
 					Promise.resolve(compositeKey))
 			};
