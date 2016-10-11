@@ -1,4 +1,6 @@
+import {CommandWrapper} from '../../src/command';
 import { stub } from 'sinon';
+
 export type GroupDef = [{
 	groupName: string;
 	commands: [{
@@ -6,6 +8,14 @@ export type GroupDef = [{
 		fails?: boolean;
 	}]
 }];
+
+export interface CommandWrapperConfig {
+	group?: string;
+	name?: string;
+	description?: string;
+	path?: string;
+	runs?: boolean;
+}
 
 export function getCommandsMap(groupDef: GroupDef) {
 	const commands = new Map();
@@ -31,7 +41,7 @@ export function getCommandsMap(groupDef: GroupDef) {
 	return commands;
 };
 
-const yargsFunctions = [ 'demand', 'usage', 'epilog', 'help', 'alias', 'strict' ];
+const yargsFunctions = [ 'demand', 'usage', 'epilog', 'help', 'alias', 'strict', 'version' ];
 export function getYargsStub() {
 	const yargsStub: any = {};
 	yargsFunctions.forEach((fnc) => {
@@ -42,12 +52,25 @@ export function getYargsStub() {
 }
 
 export function getCommandWrapper(name: string, runs: boolean = true) {
-	const commandWrapper = {
-		group: 'foo',
+	return getCommandWrapperWithConfiguration({
 		name,
-		description: 'test-description',
+		runs,
+		group: 'foo',
+		description: 'test-description'
+	});
+}
+
+export function getCommandWrapperWithConfiguration(config: CommandWrapperConfig): CommandWrapper {
+	const {group = '', name = '', description = '', path = '', runs = false} = config;
+
+	const commandWrapper = {
+		group,
+		name,
+		description,
+		path,
 		register: stub().returns('registered'),
 		run: stub().returns(runs ? Promise.resolve('success') : Promise.reject(new Error()))
 	};
+
 	return commandWrapper;
 }

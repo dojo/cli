@@ -5,4 +5,5 @@ import './text';
 import './loadCommands';
 import './registerCommands';
 import './updateNotifier';
+import './version';
 import './CommandHelper';

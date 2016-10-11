@@ -2,7 +2,8 @@ import { Yargs, Argv } from 'yargs';
 import { getGroupDescription, CommandsMap, CommandWrapper } from './command';
 import CommandHelper from './CommandHelper';
 import Helper from './Helper';
-import { helpUsage, helpEpilog } from './text';
+import { helpUsage, helpEpilog, versionDescription } from './text';
+import createVersionsString from './version';
 import * as chalk from 'chalk';
 
 export interface YargsCommandNames {
@@ -69,6 +70,8 @@ export default function(yargs: Yargs, commandsMap: CommandsMap, yargsCommandName
 		.help('h')
 		.alias('h', 'help')
 		.alias('v', 'version')
+		.version(() => createVersionsString(commandsMap))
+		.command('version', versionDescription, (yarts) => yargs, () => console.log(createVersionsString(commandsMap)))
 		.strict()
 		.argv;
 }

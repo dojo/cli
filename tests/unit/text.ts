@@ -4,12 +4,23 @@ const text = require('intern/dojo/node!../../src/text');
 
 registerSuite({
 	name: 'text',
-	'Should export helpUsage'() {
-		assert.isNotNull(text.helpUsage);
-		assert.equal('string', typeof text.helpUsage);
-	},
-	'Should export helpEpilog'() {
-		assert.isNotNull(text.helpEpilog);
-		assert.equal('string', typeof text.helpEpilog);
-	}
+	exports: (function (exportedStrings) {
+		const tests: (() => void)[] = [];
+
+		exportedStrings.forEach(function (exportedString) {
+			tests.push(function () {
+				assert.isNotNull(text[exportedString]);
+				assert.isString(text[exportedString]);
+			});
+		});
+
+		return tests;
+	})([
+		'helpUsage',
+		'helpEpilog',
+		'versionDescription',
+		'versionNoRegisteredCommands',
+		'versionRegisteredCommands',
+		'versionCurrentVersion'
+	])
 });
