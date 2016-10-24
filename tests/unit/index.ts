@@ -33,11 +33,8 @@ registerSuite({
 	},
 	'Should call functions in order'() {
 		assert.isTrue(updateNotifierStub.calledOnce, 'should call update notifier');
-		assert.isTrue(yargsVersionStub.calledOnce, 'should set yargs version');
-		assert.isTrue(yargsVersionStub.calledAfter(updateNotifierStub),
-			'should set yargs version after update notifier');
 		assert.isTrue(commandLoaderStub.calledOnce, 'should call init command loader');
-		assert.isTrue(commandLoaderStub.calledAfter(yargsVersionStub),
+		assert.isTrue(commandLoaderStub.calledAfter(updateNotifierStub),
 			'should call init command loader after set yargs version');
 		assert.isTrue(loadCommandsStub.calledOnce, 'should call load commands');
 		assert.isTrue(loadCommandsStub.calledAfter(commandLoaderStub),

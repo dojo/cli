@@ -2,7 +2,9 @@ import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
 import { stub, SinonStub } from 'sinon';
 import { getCommandsMap, getYargsStub, GroupDef } from '../support/testHelper';
-const registerCommands = require('intern/dojo/node!../../src/registerCommands').default;
+import { versionRegisteredCommands } from '../../src/text';
+
+const { 'default': registerCommands } = require('intern/dojo/node!../../src/registerCommands');
 const defaultCommandWrapper = require('intern/dojo/node!../support/test-prefix-foo-bar');
 
 const groupDef: GroupDef = [
@@ -36,9 +38,9 @@ registerSuite({
 		});
 		assert.isTrue(yargsStub.alias.calledTwice, 'Should be called for help and version aliases');
 	},
-	'Should not call yargs.command when no yargsCommandNames are passed'() {
+	'Should call yargs.command once when no yargsCommandNames are passed'() {
 		registerCommands(yargsStub, commandsMap, {});
-		assert.isFalse(yargsStub.command.called);
+		assert.isTrue(yargsStub.command.calledOnce);
 	},
 	'Should call strict for all commands'() {
 		registerCommands(yargsStub, commandsMap, {
@@ -51,7 +53,7 @@ registerSuite({
 		const key = 'group1-command1';
 		const { group, description } = commandsMap.get(key);
 		registerCommands(yargsStub, commandsMap, {'group1': [ key ]});
-		assert.isTrue(yargsStub.command.calledTwice);
+		assert.isTrue(yargsStub.command.calledThrice);
 		assert.isTrue(yargsStub.command.firstCall.calledWith(group, description), 'First call is for parent');
 		assert.isTrue(yargsStub.command.secondCall.calledWith('command1', key), 'Second call is sub-command');
 	},
@@ -98,6 +100,37 @@ registerSuite({
 				assert.isTrue(consoleErrorStub.calledOnce);
 				assert.isTrue(consoleErrorStub.firstCall.calledWithMatch(errorMessage));
 			}
+		}
+	},
+	'version': {
+		'version option'() {
+			commandsMap.set('group1', defaultCommandWrapper);
+			const key = 'group1-command1';
+			registerCommands(yargsStub, commandsMap, { 'group1': [ key ] });
+
+			let versionString = yargsStub.version.lastCall.args[ 0 ]();
+
+			assert.include(versionString, versionRegisteredCommands);
+		},
+
+		'version command'() {
+			defaultRegisterStub = stub(defaultCommandWrapper, 'register');
+			defaultRunStub = stub(defaultCommandWrapper, 'run').returns(Promise.resolve());
+			commandsMap.set('group1', defaultCommandWrapper);
+			const key = 'group1-command1';
+			registerCommands(yargsStub, commandsMap, { 'group1': [ key ] });
+
+			let output = '';
+			let consoleStub = stub(console, 'log', function (...lines: string[]) {
+				output += lines.join(' ');
+			});
+
+			yargsStub.command.lastCall.args[ 3 ]();
+
+			consoleStub.restore();
+
+			assert.isTrue(consoleStub.calledOnce);
+			assert.include(output, versionRegisteredCommands);
 		}
 	}
 });

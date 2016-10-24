@@ -21,7 +21,6 @@ const pkg = <any> require(packageJsonFilePath);
  */
 async function init() {
 	updateNotifier(pkg, 0);
-	yargs.version(pkg.version);
 	const loader = initCommandLoader(config.searchPrefix);
 	const { commandsMap, yargsCommandNames } = await loadCommands(yargs, config, loader);
 	registerCommands(yargs, commandsMap, yargsCommandNames);

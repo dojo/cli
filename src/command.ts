@@ -4,6 +4,7 @@ const cliui = require('cliui');
 export interface CommandWrapper extends Command {
 	name: string;
 	group: string;
+	path: string;
 };
 
 export type CommandsMap = Map<string, CommandWrapper>;
@@ -35,7 +36,8 @@ export function initCommandLoader(searchPrefix: string): (path: string) => Comma
 				group,
 				description,
 				register,
-				run
+				run,
+				path
 			};
 		}
 		else {
