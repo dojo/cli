@@ -44,15 +44,15 @@ registerSuite({
 	},
 	'Should call strict for all commands'() {
 		registerCommands(yargsStub, commandsMap, {
-			'group1': [ 'group1-command1' ],
-			'group2': [ 'group2-command1', 'group2-command2' ]
+			'group1': new Set([ 'group1-command1' ]),
+			'group2': new Set([ 'group2-command1', 'group2-command2' ])
 		});
 		assert.equal(yargsStub.strict.callCount, 4);
 	},
 	'Should call yargs.command once for each yargsCommandName passed and once for the default command'() {
 		const key = 'group1-command1';
 		const { group, description } = commandsMap.get(key);
-		registerCommands(yargsStub, commandsMap, {'group1': [ key ]});
+		registerCommands(yargsStub, commandsMap, {'group1': new Set([ key ])});
 		assert.isTrue(yargsStub.command.calledThrice);
 		assert.isTrue(yargsStub.command.firstCall.calledWith(group, description), 'First call is for parent');
 		assert.isTrue(yargsStub.command.secondCall.calledWith('command1', key), 'Second call is sub-command');
@@ -60,7 +60,7 @@ registerSuite({
 	'Should run the passed command when yargs called with group name and command'() {
 		const key = 'group1-command1';
 		const { run } = commandsMap.get(key);
-		registerCommands(yargsStub, commandsMap, {'group1': [ key ]});
+		registerCommands(yargsStub, commandsMap, {'group1': new Set([ key ])});
 		yargsStub.command.secondCall.args[3]();
 		assert.isTrue(run.calledOnce);
 	},
@@ -70,7 +70,7 @@ registerSuite({
 			defaultRunStub = stub(defaultCommandWrapper, 'run').returns(Promise.resolve());
 			commandsMap.set('group1', defaultCommandWrapper);
 			const key = 'group1-command1';
-			registerCommands(yargsStub, commandsMap, {'group1': [ key ]});
+			registerCommands(yargsStub, commandsMap, {'group1': new Set([ key ])});
 		},
 		'afterEach'() {
 			defaultRegisterStub.restore();
@@ -106,7 +106,7 @@ registerSuite({
 		'version option'() {
 			commandsMap.set('group1', defaultCommandWrapper);
 			const key = 'group1-command1';
-			registerCommands(yargsStub, commandsMap, { 'group1': [ key ] });
+			registerCommands(yargsStub, commandsMap, { 'group1': new Set([ key ]) });
 
 			let versionString = yargsStub.version.lastCall.args[ 0 ]();
 
@@ -118,7 +118,7 @@ registerSuite({
 			defaultRunStub = stub(defaultCommandWrapper, 'run').returns(Promise.resolve());
 			commandsMap.set('group1', defaultCommandWrapper);
 			const key = 'group1-command1';
-			registerCommands(yargsStub, commandsMap, { 'group1': [ key ] });
+			registerCommands(yargsStub, commandsMap, { 'group1': new Set([ key ]) });
 
 			let output = '';
 			let consoleStub = stub(console, 'log', function (...lines: string[]) {
