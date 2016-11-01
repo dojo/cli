@@ -7,7 +7,7 @@ import createVersionsString from './version';
 import * as chalk from 'chalk';
 
 export interface YargsCommandNames {
-	[property: string]: string[];
+	[property: string]: Set<string>;
 };
 
 /**
