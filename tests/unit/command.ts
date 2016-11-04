@@ -89,13 +89,13 @@ registerSuite({
 		},
 		'Should return simple command description when only one command name passed'() {
 			const key = 'group1-command1';
-			const description = command.getGroupDescription([key], commandsMap);
+			const description = command.getGroupDescription(new Set([key]), commandsMap);
 			assert.equal(commandsMap.get(key).description, description);
 		},
 		'Should return composite description of sub commands when multiple command names passed'() {
 			const key1 = 'group1-command1';
 			const key2 = 'group2-command1';
-			const description = command.getGroupDescription([key1, key2], commandsMap);
+			const description = command.getGroupDescription(new Set([key1, key2]), commandsMap);
 			const expected = `${commandsMap.get(key1).name}  ${commandsMap.get(key1).description}\n${commandsMap.get(key1).name}  ${commandsMap.get(key2).description}`;
 
 			assert.equal(expected, description);

@@ -46,19 +46,19 @@ export function initCommandLoader(searchPrefix: string): (path: string) => Comma
 	};
 }
 
-export function getGroupDescription(commandNames: string[], commands: CommandsMap): string {
-	const numCommands = commandNames.length;
+export function getGroupDescription(commandNames: Set<string>, commands: CommandsMap): string {
+	const numCommands = commandNames.size;
 	if (numCommands > 1) {
 		return getMultiCommandDescription(commandNames, commands);
 	}
 	else {
-		const { description } = <CommandWrapper> commands.get(commandNames[0]);
+		const { description } = <CommandWrapper> commands.get(Array.from(commandNames.keys())[0]);
 		return description;
 	}
 }
 
-function getMultiCommandDescription(commandNames: string[], commands: CommandsMap): string {
-	const descriptions = commandNames.map((commandName) => {
+function getMultiCommandDescription(commandNames: Set<string>, commands: CommandsMap): string {
+	const descriptions = Array.from(commandNames.keys(), (commandName) => {
 		const { name, description } = (<CommandWrapper> commands.get(commandName));
 		return `${name}  \t${description}`;
 	});

@@ -61,5 +61,20 @@ registerSuite({
 			assert.isTrue(error instanceof Error);
 			assert.isTrue(error.message.indexOf('Failed to load module') > -1);
 		}
+	},
+	async 'should apply loading precedence to duplicate commands'() {
+		const duplicateCommandName = 'command1';
+		const duplicateGroupName = 'foo';
+		const commandWrapperDuplicate = getCommandWrapper(duplicateCommandName);
+		loadStub.onFirstCall().returns(commandWrapper1);
+		loadStub.onSecondCall().returns(commandWrapperDuplicate);
+
+		const { yargsCommandNames } = await loadCommands(yargsStub, config, loadStub);
+		assert.isTrue(loadStub.calledTwice);
+		const groupCommandSet = yargsCommandNames[ duplicateGroupName ];
+
+		assert.equal(1, groupCommandSet.size);
+		assert.isTrue(groupCommandSet.has(`${duplicateGroupName}-${duplicateCommandName}`));
 	}
+
 });
