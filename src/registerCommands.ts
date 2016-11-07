@@ -2,10 +2,12 @@ import { Yargs, Argv } from 'yargs';
 import { getGroupDescription, CommandsMap, CommandWrapper } from './command';
 import CommandHelper from './CommandHelper';
 import Helper from './Helper';
-import { helpUsage, helpEpilog } from './text';
+import { helpUsage, helpEpilog, versionDescription } from './text';
+import createVersionsString from './version';
+import * as chalk from 'chalk';
 
 export interface YargsCommandNames {
-	[property: string]: string[];
+	[property: string]: Set<string>;
 };
 
 /**
@@ -25,8 +27,15 @@ export default function(yargs: Yargs, commandsMap: CommandsMap, yargsCommandName
 	Object.keys(yargsCommandNames).forEach((group: string) => {
 		const commandNames = yargsCommandNames[group];
 		const groupDescription = getGroupDescription(commandNames, commandsMap);
-
+		const defaultCommand = <CommandWrapper> commandsMap.get(group);
+		const defaultCommandAvailable = !!(defaultCommand && defaultCommand.register && defaultCommand.run);
+		const reportError = (error: Error) => console.error(chalk.red.bold(error.message));
 		yargs.command(group, groupDescription, (yargs: Yargs) => {
+			// Register the default command so that options show
+			if (defaultCommandAvailable) {
+				defaultCommand.register(helper);
+			}
+
 			commandNames.forEach((command: string) => {
 				const { name, description, register, run } = <CommandWrapper> commandsMap.get(command);
 				yargs.command(
@@ -37,11 +46,21 @@ export default function(yargs: Yargs, commandsMap: CommandsMap, yargsCommandName
 						return yargs;
 					},
 					(argv: Argv) => {
-						return run(helper, argv);
+						return run(helper, argv).catch(reportError);
 					}
-				);
+				)
+				.strict();
 			});
 			return yargs;
+		},
+		(argv: Argv) => {
+			// argv._ is an array of commands.
+			// if `dojo example` was called, it will only be size one,
+			// so we call default command, else, the subcommand will
+			// have been ran and we don't want to run the default.
+			if (defaultCommandAvailable && argv._.length === 1) {
+				return defaultCommand.run(helper, argv).catch(reportError);
+			}
 		});
 	});
 
@@ -51,5 +70,8 @@ export default function(yargs: Yargs, commandsMap: CommandsMap, yargsCommandName
 		.help('h')
 		.alias('h', 'help')
 		.alias('v', 'version')
+		.version(() => createVersionsString(commandsMap))
+		.command('version', versionDescription, (yarts) => yargs, () => console.log(createVersionsString(commandsMap)))
+		.strict()
 		.argv;
 }

@@ -5,7 +5,7 @@ import * as globby from 'globby';
 import { resolve } from 'path';
 
 export interface YargsCommandNames {
-	[property: string]: string[];
+	[property: string]: Set<string>;
 };
 
 export type LoadedCommands = {
@@ -48,10 +48,12 @@ export default async function (yargs: Yargs, config: Config, load: (path: string
 						// First of each type will be 'default' for now
 						setDefaultGroup(commandsMap, group, commandWrapper);
 
-						yargsCommandNames[group] = [];
+						yargsCommandNames[group] = new Set();
 					}
 					commandsMap.set(compositeKey, commandWrapper);
-					yargsCommandNames[group].push(compositeKey);
+
+					const groupCommandNames = yargsCommandNames[group];
+					groupCommandNames.add(compositeKey);
 				}
 				catch (error) {
 					console.error(`Failed to load module: ${path}, error: ${error.message}`);

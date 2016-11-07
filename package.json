@@ -6,6 +6,9 @@
   "bugs": {
     "url": "https://github.com/dojo/cli/issues"
   },
+  "engines": {
+    "node": ">= 6.0.0"
+  },
   "license": "BSD-3-Clause",
   "keywords": [
     "dojo",
@@ -32,7 +35,7 @@
   },
   "devDependencies": {
     "codecov.io": "0.1.6",
-    "dojo-loader": ">=2.0.0-beta",
+    "dojo-loader": ">=2.0.0-beta.7",
     "dts-generator": "~1.7.0",
     "glob": "^7.0.3",
     "grunt": "~1.0.1",
@@ -46,6 +49,7 @@
     "grunt-typings": ">=0.1.5",
     "intern": "^3.2.3",
     "istanbul": "^0.4.3",
+    "mockery": "^1.7.0",
     "remap-istanbul": "^0.6.4",
     "sinon": "^1.17.5",
     "tslint": "^3.11.0",
