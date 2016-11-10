@@ -9,6 +9,7 @@ import {
 } from '../text';
 import { join } from 'path';
 import { Yargs, Argv } from 'yargs';
+import { yellow } from 'chalk';
 
 const david = require('david');
 const pkgDir = require('pkg-dir');
@@ -62,9 +63,7 @@ function run(helper: Helper, args: VersionArgs): Promise<any> {
 
 	const installedCommands = helper.commandsMap;
 	return createVersionsString(installedCommands, checkOutdated)
-		.then((data) => {
-			console.log(data);
-		});
+		.then((data) => console.log(data));
 }
 
 /**
@@ -155,7 +154,7 @@ function areCommandsOutdated(commandsMap: ModuleVersion[]): Promise<any> {
 			resolve(commandsMap.map((command) => {
 				const canBeUpdated = deps[command.name];    //david returns all deps that can be updated
 				const versionStr = canBeUpdated ?
-					`${command.version} (can be updated to ${deps[command.name].stable}).` :
+					`${command.version} ${yellow(`(can be updated to ${deps[command.name].stable})`)}.` :
 					`${command.version} (on latest stable version).`;
 				return {
 					name: command.name,
@@ -175,26 +174,25 @@ function areCommandsOutdated(commandsMap: ModuleVersion[]): Promise<any> {
  * @param {CommandsMap} commandsMap
  * @returns {string}
  */
-function createVersionsString(commandsMap: CommandsMap, checkOutdated: boolean): Promise<any> {
+function createVersionsString(commandsMap: CommandsMap, checkOutdated: boolean): Promise<string> {
 
 	const myPackageDetails = readPackageDetails(packagePath);
 	const versionProm = buildVersions(commandsMap);
 
-	return versionProm.then((commandVersions : ModuleVersion[]) => {
-		if(checkOutdated){
-			return areCommandsOutdated(commandVersions)
-				.then((commandVersions: ModuleVersion[]) => {
-					return outputVersionInfo(myPackageDetails, commandVersions);
-				});
-		} else {
-			return outputVersionInfo(myPackageDetails, commandVersions);
-		}
+	return versionProm
+		.then((commandVersions : ModuleVersion[]) => {
+			if(checkOutdated){
+				return areCommandsOutdated(commandVersions)
+					.then((commandVersions: ModuleVersion[]) => createOutput(myPackageDetails, commandVersions));
+			} else {
+				return createOutput(myPackageDetails, commandVersions);
+			}
 	}, (err) => {
 		return 'Something went wrong trying to fetch command versions'
 	});
 }
 
-function outputVersionInfo(myPackageDetails: PackageDetails, commandVersions: ModuleVersion[]){
+function createOutput(myPackageDetails: PackageDetails, commandVersions: ModuleVersion[]){
 	let output = '';
 	if (commandVersions.length) {
 		output += versionRegisteredCommands;

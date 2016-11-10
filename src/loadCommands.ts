@@ -1,7 +1,7 @@
 import { Config } from './config';
 import { CommandsMap, CommandWrapper } from './command';
 import * as globby from 'globby';
-import { resolve, join } from 'path';
+import { resolve as pathResolve, join } from 'path';
 
 export type YargsCommandNames = Map<string, Set<string>>
 
@@ -21,13 +21,8 @@ function setDefaultGroup(commandsMap: CommandsMap, commandName: string, commandW
  * @returns {Promise<string []>} the paths of all installed commands
  */
 export async function enumerateInstalledCommands (config: Config) : Promise <string []> {
-	const globPaths = config.searchPaths.map((depPath) => resolve(depPath, `${config.searchPrefix}-*`));
-	return new Promise<string[]>((resolve, reject) => {
-		globby(globPaths, (<globby.Options> { ignore: '**/*.map' }))
-			.then((paths) => {
-				resolve(paths);
-			});
-	});
+	const globPaths = config.searchPaths.map((depPath) => pathResolve(depPath, `${config.searchPrefix}-*`));
+	return globby(globPaths, (<globby.Options> { ignore: '**/*.map' }));
 }
 
 /**
@@ -36,12 +31,7 @@ export async function enumerateInstalledCommands (config: Config) : Promise <str
  */
 export async function enumerateBuiltInCommands () : Promise <string []> {
 	const builtInCommandParentDirGlob = join(__dirname, '/commands/*.js');
-	return new Promise<string[]>((resolve, reject) => {
-		globby(builtInCommandParentDirGlob)
-			.then((paths) => {
-				resolve(paths);
-			}, reject);
-	});
+	return globby(builtInCommandParentDirGlob);
 }
 
 /**
