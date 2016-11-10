@@ -3,7 +3,7 @@ import { getGroupDescription, CommandsMap, CommandWrapper } from './command';
 import CommandHelper from './CommandHelper';
 import Helper from './Helper';
 import { helpUsage, helpEpilog, versionDescription } from './text';
-import createVersionsString from './version';
+//import createVersionsString from './commands/version';
 import * as chalk from 'chalk';
 
 export interface YargsCommandNames {
@@ -21,8 +21,9 @@ export interface YargsCommandNames {
  */
 export default function(yargs: Yargs, commandsMap: CommandsMap, yargsCommandNames: YargsCommandNames): void {
 	const helperContext = {};
+
 	const commandHelper = new CommandHelper(commandsMap, helperContext);
-	const helper = new Helper(commandHelper, yargs, helperContext);
+	const helper = new Helper(commandHelper, yargs, helperContext, commandsMap);
 
 	Object.keys(yargsCommandNames).forEach((group: string) => {
 		const commandNames = yargsCommandNames[group];
@@ -69,9 +70,6 @@ export default function(yargs: Yargs, commandsMap: CommandsMap, yargsCommandName
 		.epilog(helpEpilog)
 		.help('h')
 		.alias('h', 'help')
-		.alias('v', 'version')
-		.version(() => createVersionsString(commandsMap))
-		.command('version', versionDescription, (yarts) => yargs, () => console.log(createVersionsString(commandsMap)))
 		.strict()
 		.argv;
 }

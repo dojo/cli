@@ -35,6 +35,7 @@
   },
   "devDependencies": {
     "codecov.io": "0.1.6",
+    "david": "^9.0.0",
     "dojo-loader": ">=2.0.0-beta.7",
     "dts-generator": "~1.7.0",
     "glob": "^7.0.3",

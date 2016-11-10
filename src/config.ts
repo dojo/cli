@@ -12,7 +12,7 @@ export default <Config> {
 	searchPaths: [
 		join(packagePath, 'node_modules'),
 		join(packagePath, '..'),
-		'node_modules'
+		'node_modules',
 	],
 	searchPrefix: 'dojo-cli'
 };
