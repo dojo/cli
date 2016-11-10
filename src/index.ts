@@ -1,7 +1,7 @@
 import * as yargs from 'yargs';
 import updateNotifier from './updateNotifier';
 import config from './config';
-import { loadCommands } from './loadCommands';
+import {loadCommands, LoadedCommands, YargsCommandNames} from './loadCommands';
 import registerCommands from './registerCommands';
 import { initCommandLoader, createBuiltInCommandLoader } from './command';
 import { join } from 'path';
@@ -23,19 +23,23 @@ const pkg = <any> require(packageJsonFilePath);
 async function init() {
 	updateNotifier(pkg, 0);
 	//create loader funcs
-	const installedCommandLoader = initCommandLoader(config.searchPrefix);
 	const builtInCommandLoader = createBuiltInCommandLoader();
+	const installedCommandLoader = initCommandLoader(config.searchPrefix);
+	let builtInCommands: LoadedCommands, installedCommands: LoadedCommands;
 
-	const installedCommandsPaths = await enumerateInstalledCommands(config);
-	const installedCommands = await loadCommands(installedCommandsPaths, installedCommandLoader);
-	const builtInCommandsPaths = await enumerateBuiltInCommands();
-	const builtInCommands = await loadCommands(builtInCommandsPaths, builtInCommandLoader);
+	try{
+		const builtInCommandsPaths = await enumerateBuiltInCommands();
+		const installedCommandsPaths = await enumerateInstalledCommands(config);
+		builtInCommands = await loadCommands(builtInCommandsPaths, builtInCommandLoader);
+		installedCommands = await loadCommands(installedCommandsPaths, installedCommandLoader);
+		//combine the inbuilt and installed commands - last in wins when keys clash
+		const commands = new Map([...installedCommands.commandsMap, ...builtInCommands.commandsMap]);
+		const yargsCommandNames = new Map([...installedCommands.yargsCommandNames, ...builtInCommands.yargsCommandNames]);
+		registerCommands(yargs, commands, yargsCommandNames);
+	} catch (err){
+		console.log(`Some commands are not available: ${err}`);
+	}
 
-	console.log('asdad');
-	//combine the inbuilt and installed commands - last in wins when keys clash
-	const commandsMap = new Map([...installedCommands.commandsMap, ...builtInCommands.commandsMap]);
-	const yargsCommandNames = new Set([...installedCommands.yargsCommandNames, ...builtInCommands.yargsCommandNames]);
-	registerCommands(yargs, commandsMap, yargsCommandNames);
 }
 
 init();

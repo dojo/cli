@@ -33,7 +33,7 @@ export interface PackageDetails {
 
 const command: Command = {
 	name: 'version',
-	group: 'version-group',
+	group: 'version',
 	description: 'Provides version information for all installed commands and the cli itself.',
 	register,
 	run
@@ -43,7 +43,7 @@ export default command;
 function register(helper: Helper): Yargs {
 	helper.yargs.option('outdated', {
 		alias: 'outdated',
-		describe: 'Output which installed commands can be updated to a more recent stable version.',
+		describe: 'Output a list of installed commands that can be updated to a more recent stable version.',
 		demand: false,
 		type: 'string'
 	});
@@ -61,7 +61,10 @@ function run(helper: Helper, args: VersionArgs): Promise<any> {
 	}
 
 	const installedCommands = helper.commandsMap;
-	return createVersionsString(installedCommands, checkOutdated);
+	return createVersionsString(installedCommands, checkOutdated)
+		.then((data) => {
+			console.log(data);
+		});
 }
 
 /**
@@ -123,45 +126,46 @@ function buildVersions(commandsMap: CommandsMap):Promise<any> {
  * @param {CommandsMap} commandsMap
  * @returns {{name, version, group}[]}
  */
-function areCommandsOutdated(commandsMap: CommandsMap): Promise<any> {
-	return buildVersions(commandsMap)
-		.then((sortedCommands: ModuleVersion[]) => {
-			//convert [ModuleVersion] = [{commandPackageName: commandPackageVersion}]
-			var deps: {}[] = sortedCommands.map((command) => {
-				let obj:any = {};
-				obj[command.name] = command.version;
-				return obj
-			});
-
-			let manifest = {
-				name: 'xyz',    //check if needed
-				dependencies: {},   //required by david even if no deps
-				devDependencies: deps
-			};
-
-
-			let prom = new Promise((resolve, reject) => {
-				//we want to fetch the latest stable version for our devDependencies
-				david.getUpdatedDependencies(manifest, { dev: true, stable: true }, function (er : any, deps: any) {
-					if(er){
-						reject(er);
-					}
-					resolve(sortedCommands.map((command) => {
-						const canBeUpdated = deps[command.name];    //david returns all deps that can be updated
-						const versionStr = canBeUpdated ?
-							`${command.version} (can be updated to ${deps[command.name].stable}).` :
-							`${command.version} (on latest stable version).`;
-						return {
-							name: command.name,
-							version: versionStr,
-							group: command.group
-						}
-					}));
-				});
-			});
-			return prom;
+function areCommandsOutdated(commandsMap: ModuleVersion[]): Promise<any> {
+	//convert [ModuleVersion] = [{commandPackageName: commandPackageVersion}]
+	var deps: {}[] = commandsMap
+		.filter((command) => {
+			//remove inbuilt commands or commands that dont have a valid version in the package.json
+			return command.version !== versionNoVersion;
+		})
+		.map((command) => {
+			let obj:any = {};
+			obj[command.name] = command.version;
+			return obj
 		});
 
+	let manifest = {
+		name: 'xyz',    //check if needed
+		dependencies: {},   //required by david even if no deps
+		devDependencies: deps
+	};
+
+
+	let prom = new Promise((resolve, reject) => {
+		//we want to fetch the latest stable version for our devDependencies
+		david.getUpdatedDependencies(manifest, { dev: true, stable: true }, function (er : any, deps: any) {
+			if(er){
+				reject(er);
+			}
+			resolve(commandsMap.map((command) => {
+				const canBeUpdated = deps[command.name];    //david returns all deps that can be updated
+				const versionStr = canBeUpdated ?
+					`${command.version} (can be updated to ${deps[command.name].stable}).` :
+					`${command.version} (on latest stable version).`;
+				return {
+					name: command.name,
+					version: versionStr,
+					group: command.group
+				}
+			}));
+		});
+	});
+	return prom;
 }
 
 /**
@@ -172,25 +176,36 @@ function areCommandsOutdated(commandsMap: CommandsMap): Promise<any> {
  * @returns {string}
  */
 function createVersionsString(commandsMap: CommandsMap, checkOutdated: boolean): Promise<any> {
-	let output = '';
-	const myPackageDetails = readPackageDetails(packagePath);
 
-	const versionProm = checkOutdated ? areCommandsOutdated(commandsMap) : buildVersions(commandsMap);
+	const myPackageDetails = readPackageDetails(packagePath);
+	const versionProm = buildVersions(commandsMap);
 
 	return versionProm.then((commandVersions : ModuleVersion[]) => {
-		if (commandVersions.length) {
-			output += versionRegisteredCommands;
-			output += '\n'
-				+ commandVersions.map((command) => `${command.group} (${command.name}) ${command.version}`).join('\n')
-				+ '\n';
+		if(checkOutdated){
+			return areCommandsOutdated(commandVersions)
+				.then((commandVersions: ModuleVersion[]) => {
+					return outputVersionInfo(myPackageDetails, commandVersions);
+				});
+		} else {
+			return outputVersionInfo(myPackageDetails, commandVersions);
 		}
-		else {
-			output += versionNoRegisteredCommands;
-		}
-
-		output += versionCurrentVersion.replace('\{version\}', myPackageDetails.version);
-		return output;
 	}, (err) => {
 		return 'Something went wrong trying to fetch command versions'
 	});
+}
+
+function outputVersionInfo(myPackageDetails: PackageDetails, commandVersions: ModuleVersion[]){
+	let output = '';
+	if (commandVersions.length) {
+		output += versionRegisteredCommands;
+		output += '\n'
+			+ commandVersions.map((command) => `${command.group} (${command.name}) ${command.version}`).join('\n')
+			+ '\n';
+	}
+	else {
+		output += versionNoRegisteredCommands;
+	}
+
+	output += versionCurrentVersion.replace('\{version\}', myPackageDetails.version);
+	return output;
 }

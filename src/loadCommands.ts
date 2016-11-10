@@ -3,9 +3,7 @@ import { CommandsMap, CommandWrapper } from './command';
 import * as globby from 'globby';
 import { resolve, join } from 'path';
 
-export interface YargsCommandNames {
-	[property: string]: Set<string>;
-};
+export type YargsCommandNames = Map<string, Set<string>>
 
 export type LoadedCommands = {
 	commandsMap: CommandsMap,
@@ -59,9 +57,9 @@ export async function enumerateBuiltInCommands () : Promise <string []> {
  * of the commands have been loaded.
  */
 export async function loadCommands(paths: string[], load: (path: string) => CommandWrapper ): Promise <LoadedCommands> {
-	const promise = new Promise <LoadedCommands> ((resolve, reject) => {
+	return new Promise <LoadedCommands> ((resolve, reject) => {
 		const commandsMap: CommandsMap = new Map();
-		const yargsCommandNames: YargsCommandNames = {};
+		const yargsCommandNames: YargsCommandNames = new Map();
 
 		paths.forEach((path) => {
 			try {
@@ -73,12 +71,14 @@ export async function loadCommands(paths: string[], load: (path: string) => Comm
 					// First of each type will be 'default' for now
 					setDefaultGroup(commandsMap, group, commandWrapper);
 
-					yargsCommandNames[group] = new Set();
+					yargsCommandNames.set(group, new Set());
 				}
 				commandsMap.set(compositeKey, commandWrapper);
 
-				const groupCommandNames = yargsCommandNames[group];
-				groupCommandNames.add(compositeKey);
+				const groupCommandNames = yargsCommandNames.get(group);
+				if(groupCommandNames){
+					groupCommandNames.add(compositeKey);
+				}
 			}
 			catch (error) {
 				reject(`Failed to load module: ${path}, error: ${error.message}`);
@@ -90,5 +90,4 @@ export async function loadCommands(paths: string[], load: (path: string) => Comm
 			yargsCommandNames
 		});
 	});
-	return promise;
 }
