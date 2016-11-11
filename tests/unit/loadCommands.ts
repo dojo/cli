@@ -2,7 +2,10 @@ import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
 import { stub, SinonStub } from 'sinon';
 import { getCommandWrapper, getYargsStub } from '../support/testHelper';
+import * as mockery from 'mockery';
 const loadCommands = require('intern/dojo/node!../../src/loadCommands').default;
+
+const fakePackageRoot = 'fakePackageRoot';
 
 const config = {
 	searchPaths: [ '_build/tests/support' ],
@@ -17,6 +20,13 @@ let consoleStub: SinonStub;
 
 registerSuite({
 	name: 'loadCommands',
+	'setup'() {
+		mockery.enable({
+			warnOnUnregistered: false
+		});
+
+		mockery.registerMock('./dirname', {'default': fakePackageRoot});
+	},
 	'beforeEach'() {
 			consoleStub = stub(console, 'error');
 			commandWrapper1 = getCommandWrapper('command1');

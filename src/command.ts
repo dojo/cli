@@ -25,8 +25,8 @@ export function initCommandLoader(searchPrefix: string): (path: string) => Comma
 		try {
 			const command = convertModuleToCommand(module);
 			const {description, register, run} = command;
-			//derive the group and name from the module directory name, e.g. dojo-cli-group-name
-			const [ moduleFileName, group, name] = <string[]> commandRegExp.exec(path);
+			//  derive the group and name from the module directory name, e.g. dojo-cli-group-name
+			const [ , group, name] = <string[]> commandRegExp.exec(path);
 
 			return {
 				name,
@@ -36,7 +36,7 @@ export function initCommandLoader(searchPrefix: string): (path: string) => Comma
 				run,
 				path
 			};
-		} catch(err){
+		} catch (err) {
 			throw new Error(`Path: ${path} returned module that does not satisfy the Command interface`);
 		}
 	};
@@ -52,8 +52,8 @@ export function createBuiltInCommandLoader(): (path: string) => CommandWrapper {
 
 		try {
 			const command = convertModuleToCommand(module);
-			//derive the name and group of the built in commands from the command itself (these are optional props)
-			const { name, group, description, register, run } = command;
+			//  derive the name and group of the built in commands from the command itself (these are optional props)
+			const { name = '', group = '', description, register, run } = command;
 
 			return {
 				name,
@@ -62,8 +62,8 @@ export function createBuiltInCommandLoader(): (path: string) => CommandWrapper {
 				register,
 				run,
 				path
-			}
-		} catch (err){
+			};
+		} catch (err) {
 			throw new Error(`Path: ${path} returned module that does not satisfy the Command interface`);
 		}
 	};
@@ -81,7 +81,6 @@ export function convertModuleToCommand(module: any): Command {
 		throw new Error(`Module does not satisfy the Command interface`);
 	}
 }
-
 
 export function getGroupDescription(commandNames: Set<string>, commands: CommandsMap): string {
 	const numCommands = commandNames.size;

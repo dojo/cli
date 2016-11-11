@@ -2,10 +2,9 @@ import { Yargs, Argv } from 'yargs';
 import { getGroupDescription, CommandsMap, CommandWrapper } from './command';
 import CommandHelper from './CommandHelper';
 import Helper from './Helper';
-import { helpUsage, helpEpilog, versionDescription } from './text';
-//import createVersionsString from './commands/version';
+import { helpUsage, helpEpilog } from './text';
 import * as chalk from 'chalk';
-import {YargsCommandNames} from "./loadCommands";
+import {YargsCommandNames} from './loadCommands';
 
 /**
  * Registers commands and subcommands using yargs. Receives a CommandsMap of commands and

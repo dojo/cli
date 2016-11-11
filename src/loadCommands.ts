@@ -2,6 +2,7 @@ import { Config } from './config';
 import { CommandsMap, CommandWrapper } from './command';
 import * as globby from 'globby';
 import { resolve as pathResolve, join } from 'path';
+import dirname  from './dirname';
 
 export type YargsCommandNames = Map<string, Set<string>>
 
@@ -20,7 +21,7 @@ function setDefaultGroup(commandsMap: CommandsMap, commandName: string, commandW
  * @param config
  * @returns {Promise<string []>} the paths of all installed commands
  */
-export async function enumerateInstalledCommands (config: Config) : Promise <string []> {
+export async function enumerateInstalledCommands (config: Config): Promise <string []> {
 	const globPaths = config.searchPaths.map((depPath) => pathResolve(depPath, `${config.searchPrefix}-*`));
 	return globby(globPaths, (<globby.Options> { ignore: '**/*.map' }));
 }
@@ -29,8 +30,8 @@ export async function enumerateInstalledCommands (config: Config) : Promise <str
  * Enumerate all the builtIn commands and return their absolute paths
  * @returns {Promise<string []>} the paths of all builtIn commands
  */
-export async function enumerateBuiltInCommands () : Promise <string []> {
-	const builtInCommandParentDirGlob = join(__dirname, '/commands/*.js');
+export async function enumerateBuiltInCommands (): Promise <string []> {
+	const builtInCommandParentDirGlob = join(dirname, '/commands/*.js');
 	return globby(builtInCommandParentDirGlob);
 }
 
@@ -41,6 +42,7 @@ export async function enumerateBuiltInCommands () : Promise <string []> {
  * group-name to store the Command. Currently the first of each group is
  * stored as the default command for that group.
  *
+ * @param paths array of absolute paths to commands
  * @param load The load function, this takes a path and loads it using the searchPrefix
  * 	that it was pre-configured to look for.
  * @returns Promise This function is async and returns a promise once all
@@ -66,7 +68,7 @@ export async function loadCommands(paths: string[], load: (path: string) => Comm
 				commandsMap.set(compositeKey, commandWrapper);
 
 				const groupCommandNames = yargsCommandNames.get(group);
-				if(groupCommandNames){
+				if (groupCommandNames) {
 					groupCommandNames.add(compositeKey);
 				}
 			}

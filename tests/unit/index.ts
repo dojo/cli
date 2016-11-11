@@ -8,6 +8,7 @@ const yargsVersionStub: SinonStub = stub();
 const commandLoaderStub: SinonStub = stub();
 const loadCommandsStub: SinonStub = stub().returns(Promise.resolve());
 const registerCommandsStub: SinonStub = stub();
+const fakePackageRoot = 'fakePackageRoot';
 let index: any;
 
 registerSuite({
@@ -24,6 +25,7 @@ registerSuite({
 
 		mockery.registerMock('yargs', { 'version': yargsVersionStub });
 		mockery.registerMock('pkg-dir', { 'sync': stub().returns('testDir') });
+		mockery.registerMock('./dirname', { 'default': fakePackageRoot });
 
 		index = require('intern/dojo/node!./../../src/index');
 	},

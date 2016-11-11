@@ -1,4 +1,4 @@
-import { bold, yellow } from 'chalk';
+import { bold } from 'chalk';
 
 export const helpUsage = `${bold('dojo help')}
 

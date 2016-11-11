@@ -1,12 +1,12 @@
 import * as yargs from 'yargs';
 import updateNotifier from './updateNotifier';
 import config from './config';
-import {loadCommands, LoadedCommands, YargsCommandNames} from './loadCommands';
+import {loadCommands, LoadedCommands } from './loadCommands';
 import registerCommands from './registerCommands';
 import { initCommandLoader, createBuiltInCommandLoader } from './command';
 import { join } from 'path';
 import dirname from './dirname';
-import { enumerateInstalledCommands, enumerateBuiltInCommands} from "./loadCommands";
+import { enumerateInstalledCommands, enumerateBuiltInCommands} from './loadCommands';
 const pkgDir = require('pkg-dir');
 
 const packagePath = pkgDir.sync(dirname);
@@ -22,21 +22,21 @@ const pkg = <any> require(packageJsonFilePath);
  */
 async function init() {
 	updateNotifier(pkg, 0);
-	//create loader funcs
+	// create loader funcs
 	const builtInCommandLoader = createBuiltInCommandLoader();
 	const installedCommandLoader = initCommandLoader(config.searchPrefix);
 	let builtInCommands: LoadedCommands, installedCommands: LoadedCommands;
 
-	try{
+	try {
 		const builtInCommandsPaths = await enumerateBuiltInCommands();
 		const installedCommandsPaths = await enumerateInstalledCommands(config);
 		builtInCommands = await loadCommands(builtInCommandsPaths, builtInCommandLoader);
 		installedCommands = await loadCommands(installedCommandsPaths, installedCommandLoader);
-		//combine the inbuilt and installed commands - last in wins when keys clash
+		// combine the inbuilt and installed commands - last in wins when keys clash
 		const commands = new Map([...installedCommands.commandsMap, ...builtInCommands.commandsMap]);
 		const yargsCommandNames = new Map([...installedCommands.yargsCommandNames, ...builtInCommands.yargsCommandNames]);
 		registerCommands(yargs, commands, yargsCommandNames);
-	} catch (err){
+	} catch (err) {
 		console.log(`Some commands are not available: ${err}`);
 	}
 

@@ -1,6 +1,6 @@
 import { CommandHelper, Helper } from './interfaces';
 import { Yargs } from 'yargs';
-import {CommandsMap} from "./command";
+import {CommandsMap} from './command';
 
 /**
  * The Helper that is passed to each command's 'run' function. Provides
@@ -8,7 +8,7 @@ import {CommandsMap} from "./command";
  * a CommandHelper that allows tasks to 'run' and check the existance of
  * other tasks.
  */
-export default class helper implements Helper {
+export default class HelperClass implements Helper {
 	constructor(commandHelper: CommandHelper, yargs: Yargs, context: any, commandsMap: CommandsMap) {
 		this.command = commandHelper;
 		this.yargs = yargs;

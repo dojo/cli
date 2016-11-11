@@ -1,4 +1,4 @@
-import {CommandsMap, CommandWrapper} from '../command';
+import {CommandsMap } from '../command';
 import { Command, Helper } from '../interfaces';
 import dirname from '../dirname';
 
@@ -10,13 +10,14 @@ const david = require('david');
 const pkgDir = require('pkg-dir');
 const packagePath = pkgDir.sync(dirname);
 
-const versionCurrentVersion = `
+// exported for tests
+export const versionCurrentVersion = `
 You are currently running dojo-cli {version}
 `;
-const versionNoRegisteredCommands = `
+export const versionNoRegisteredCommands = `
 There are no registered commands available.`;
-const versionNoVersion = yellow('package.json missing');
-const versionRegisteredCommands = `
+export const versionNoVersion = yellow('package.json missing');
+export const versionRegisteredCommands = `
 The currently installed groups are:
 `;
 const INBUILT_COMMAND_VERSION = 'inbuilt';
@@ -63,7 +64,7 @@ export interface VersionArgs extends Argv {
 
 function run(helper: Helper, args: VersionArgs): Promise<any> {
 	const checkOutdated = args.outdated !== undefined;
-	if(checkOutdated){
+	if (checkOutdated) {
 		console.log('Fetching latest version information...');
 	}
 
@@ -82,8 +83,8 @@ function readPackageDetails(packageDir: string): PackageDetails {
 	try {
 		data = require(join(packageDir, 'package.json'));
 	} catch (e) {
-		//rather than add another prop to Command, declare the command to be builtin by setting its version
-		if(isBuiltInCommand(packageDir)) {
+		// rather than add another prop to Command, declare the command to be builtin by setting its version
+		if (isBuiltInCommand(packageDir)) {
 			data.version = INBUILT_COMMAND_VERSION;
 		}
 	}
@@ -101,7 +102,7 @@ function readPackageDetails(packageDir: string): PackageDetails {
  * @param {CommandsMap} commandsMap
  * @returns {{name, version, group}[]}
  */
-function buildVersions(commandsMap: CommandsMap):Promise<any> {
+function buildVersions(commandsMap: CommandsMap): Promise<any> {
 	/*
 	 * commandsMap comes in as a map of [command-name, command]. The command has a default command,
 	 * the map will actually contain two entries for one command, on for the default command, one for the real,
@@ -123,8 +124,8 @@ function buildVersions(commandsMap: CommandsMap):Promise<any> {
 				group
 			};
 		})
-		.filter((val, idx, arr) => {
-			//remove inbuilt commands or commands that dont have a valid version in the package.json
+		.filter((val) => {
+			// remove inbuilt commands or commands that dont have a valid version in the package.json
 			return val.version !== versionNoVersion && val.version !== INBUILT_COMMAND_VERSION;
 		})
 		.sort((a, b) => a.group > b.group ? 1 : -1);
@@ -139,27 +140,27 @@ function buildVersions(commandsMap: CommandsMap):Promise<any> {
  * @returns {{name, version, group}[]}
  */
 function areCommandsOutdated(moduleVersions: ModuleVersion[]): Promise<any> {
-	//convert [ModuleVersion] = [{commandPackageName: commandPackageVersion}]
-	var deps: {}[] = moduleVersions
+	// convert [ModuleVersion] = [{commandPackageName: commandPackageVersion}]
+	let deps: {}[] = moduleVersions
 		.map((command) => {
-			let obj:any = {};
+			let obj: any = {};
 			obj[command.name] = command.version;
-			return obj
+			return obj;
 		});
 
-	//create fake manifest (package.json) with just the dev-dependencies that we want to check
+	// create fake manifest (package.json) with just the dev-dependencies that we want to check
 	const manifest = {
 		devDependencies: deps
 	};
 
 	return new Promise((resolve, reject) => {
-		//we want to fetch the latest stable version for our devDependencies
-		david.getUpdatedDependencies(manifest, { dev: true, stable: true }, function (er : any, deps: any) {
-			if(er){
+		// we want to fetch the latest stable version for our devDependencies
+		david.getUpdatedDependencies(manifest, { dev: true, stable: true }, function (er: any, deps: any) {
+			if (er) {
 				reject(er);
 			}
 			resolve(moduleVersions.map((command) => {
-				const canBeUpdated = deps[command.name];    //david returns all deps that can be updated
+				const canBeUpdated = deps[command.name];    // david returns all deps that can be updated
 				const versionStr = canBeUpdated ?
 					`${command.version} ${yellow(`(can be updated to ${deps[command.name].stable})`)}.` :
 					`${command.version} (on latest stable version).`;
@@ -167,7 +168,7 @@ function areCommandsOutdated(moduleVersions: ModuleVersion[]): Promise<any> {
 					name: command.name,
 					version: versionStr,
 					group: command.group
-				}
+				};
 			}));
 		});
 	});
@@ -178,12 +179,12 @@ function areCommandsOutdated(moduleVersions: ModuleVersion[]): Promise<any> {
  * @param commandPath path to the command module
  * @returns {boolean}
  */
-function isBuiltInCommand(commandPath : string) : boolean {
+function isBuiltInCommand(commandPath: string): boolean {
 	/*__dirname seems best as the only way to truly know if a command is built in, is by location.
 	* Since this module is a built in command, we can use our location.
 	* This was preferable to using packageDir and relative paths, because we may alter where we build to (_build/src...)
 	*/
-	return commandPath.startsWith(join(__dirname));
+	return commandPath.startsWith(join(dirname));
 }
 
 /**
@@ -200,15 +201,15 @@ function createVersionsString(commandsMap: CommandsMap, checkOutdated: boolean):
 	const versionProm = buildVersions(commandsMap);
 
 	return versionProm
-		.then((commandVersions : ModuleVersion[]) => {
-			if(checkOutdated){
+		.then((commandVersions: ModuleVersion[]) => {
+			if (checkOutdated) {
 				return areCommandsOutdated(commandVersions)
 					.then((commandVersions: ModuleVersion[]) => createOutput(myPackageDetails, commandVersions));
 			} else {
 				return createOutput(myPackageDetails, commandVersions);
 			}
 	}, (err) => {
-		return `Something went wrong trying to fetch command versions ${err}`
+		return `Something went wrong trying to fetch command versions ${err}`;
 	});
 }
 
@@ -218,7 +219,7 @@ function createVersionsString(commandsMap: CommandsMap, checkOutdated: boolean):
  * @param commandVersions
  * @returns {string}
  */
-function createOutput(myPackageDetails: PackageDetails, commandVersions: ModuleVersion[]){
+function createOutput(myPackageDetails: PackageDetails, commandVersions: ModuleVersion[]) {
 	let output = '';
 	if (commandVersions.length) {
 		output += versionRegisteredCommands;
