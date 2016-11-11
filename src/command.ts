@@ -17,7 +17,7 @@ export type CommandsMap = Map<string, CommandWrapper>;
  * 		- 'dojo-cli-serve-dist'
  */
 export function initCommandLoader(searchPrefix: string): (path: string) => CommandWrapper {
-	const commandRegExp = new RegExp(`${searchPrefix}(.*)-(.*)`);
+	const commandRegExp = new RegExp(`${searchPrefix}-(.*)-(.*)`);
 
 	return function load(path: string): CommandWrapper {
 		let module = require(path);
