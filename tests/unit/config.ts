@@ -1,6 +1,5 @@
 import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
-import * as mockery from 'mockery';
 import { resolve } from 'path';
 
 const config = require('intern/dojo/node!./../../src/config').default;
@@ -8,12 +7,6 @@ const expectedSearchPrefix = 'dojo-cli';
 
 registerSuite({
 	name: 'config',
-	'setup'() {
-	},
-	'teardown'() {
-		mockery.deregisterAll();
-		mockery.disable();
-	},
 	'Should provide a search prefix'() {
 		const prefix = config.searchPrefix;
 		assert.isTrue(typeof prefix === 'string');
