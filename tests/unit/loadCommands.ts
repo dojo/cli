@@ -34,7 +34,7 @@ registerSuite({
 	'afterEach'() {
 		consoleStub.restore();
 	},
-	'successful load': {
+	'successful enumeration': {
 		'beforeEach'() {
 			loadStub.onFirstCall().returns(commandWrapper1);
 			loadStub.onSecondCall().returns(commandWrapper2);
@@ -48,7 +48,9 @@ registerSuite({
 			const testFixtureDirForCommands = join(pathResolve('.'), '/_build/tests/support/commands');
 			const builtInPaths = await enumBuiltInCommands(testFixtureDirForCommands);
 			assert.isTrue(builtInPaths.length === 1);
-		},
+		}
+	},
+	'unsuccessful enumeration': {
 		async 'Should fail to find installed commands that dont exist'() {
 			config.searchPrefix = 'bad-prefix';
 			const badPrefixPaths = await enumInstalledCommands(config);
@@ -60,6 +62,12 @@ registerSuite({
 		async 'Should fail to find built in commands that dont exist'() {
 			const badBuiltInPaths = await enumBuiltInCommands('dirThatDoesNotExist');
 			assert.isTrue(badBuiltInPaths.length === 0);
+		}
+	},
+	'successful load': {
+		'beforeEach'() {
+			loadStub.onFirstCall().returns(commandWrapper1);
+			loadStub.onSecondCall().returns(commandWrapper2);
 		},
 		async 'Should set first loaded command of each group to be the default'() {
 			const { commandsMap } = await loadCommands(yargsStub, config, loadStub);
