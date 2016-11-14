@@ -2,7 +2,6 @@ import { Config } from './config';
 import { CommandsMap, CommandWrapper } from './command';
 import * as globby from 'globby';
 import { resolve as pathResolve, join } from 'path';
-import dirname  from './dirname';
 
 export type YargsCommandNames = Map<string, Set<string>>
 
@@ -17,7 +16,7 @@ function setDefaultGroup(commandsMap: CommandsMap, commandName: string, commandW
 
 /**
  * Enumerate all the installed commands and return their absolute paths
- * N.B. we cant return globby's promise as its not a native node Promise, but a 'pinky-promise' - LOL
+ * N.B. we return globby's promise (its not a native node Promise, but a 'pinky-promise' wrapper) - LOL
  * @param config
  * @returns {Promise<string []>} the paths of all installed commands
  */
@@ -28,11 +27,12 @@ export async function enumerateInstalledCommands (config: Config): Promise <stri
 
 /**
  * Enumerate all the builtIn commands and return their absolute paths
+ * @param path string path to check for built-in commands
  * @returns {Promise<string []>} the paths of all builtIn commands
  */
-export async function enumerateBuiltInCommands (): Promise <string []> {
-	const builtInCommandParentDirGlob = join(dirname, '/commands/*.js');
-	return globby(builtInCommandParentDirGlob);
+export async function enumerateBuiltInCommands (path: string): Promise <string []> {
+	const builtInCommandParentDirGlob = join(path, '/*.js');
+	return globby(builtInCommandParentDirGlob, (<globby.Options> { ignore: '**/*.map' }));
 }
 
 /**

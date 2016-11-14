@@ -1,7 +1,6 @@
 import { join } from 'path';
-import dirname from './dirname';
 const pkgDir = require('pkg-dir');
-const packagePath = pkgDir.sync(dirname);
+const packagePath = pkgDir.sync(__dirname);
 
 export type Config = {
 	searchPaths: string[],

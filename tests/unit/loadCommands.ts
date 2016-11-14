@@ -2,14 +2,18 @@ import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
 import { stub, SinonStub } from 'sinon';
 import { getCommandWrapper, getYargsStub } from '../support/testHelper';
-import * as mockery from 'mockery';
-const loadCommands = require('intern/dojo/node!../../src/loadCommands').default;
-
-const fakePackageRoot = 'fakePackageRoot';
+import { join, resolve as pathResolve } from 'path';
+const enumBuiltInCommands = require('intern/dojo/node!../../src/loadCommands').enumerateBuiltInCommands;
+const enumInstalledCommands = require('intern/dojo/node!../../src/loadCommands').enumerateInstalledCommands;
+const loadCommands = require('intern/dojo/node!../../src/loadCommands').loadCommands;
 
 const config = {
 	searchPaths: [ '_build/tests/support' ],
 	searchPrefix: 'test-prefix'
+};
+const badConfig = {
+	searchPaths: [ 'just/garbage', 'yep/really/bad/paths/here' ],
+	searchPrefix: 'bad-prefix'
 };
 
 let loadStub: SinonStub;
@@ -20,19 +24,12 @@ let consoleStub: SinonStub;
 
 registerSuite({
 	name: 'loadCommands',
-	'setup'() {
-		mockery.enable({
-			warnOnUnregistered: false
-		});
-
-		mockery.registerMock('./dirname', {'default': fakePackageRoot});
-	},
 	'beforeEach'() {
-			consoleStub = stub(console, 'error');
-			commandWrapper1 = getCommandWrapper('command1');
-			commandWrapper2 = getCommandWrapper('command2');
-			yargsStub = getYargsStub();
-			loadStub = stub();
+		consoleStub = stub(console, 'error');
+		commandWrapper1 = getCommandWrapper('command1');
+		commandWrapper2 = getCommandWrapper('command2');
+		yargsStub = getYargsStub();
+		loadStub = stub();
 	},
 	'afterEach'() {
 		consoleStub.restore();
@@ -42,12 +39,27 @@ registerSuite({
 			loadStub.onFirstCall().returns(commandWrapper1);
 			loadStub.onSecondCall().returns(commandWrapper2);
 		},
-		async 'Should search given paths for prefixed command files'() {
-			await loadCommands(yargsStub, config, loadStub);
-			assert.isTrue(loadStub.calledTwice);
-			const loadPath = loadStub.firstCall.args[0];
-			assert.isTrue(loadPath.indexOf(config.searchPaths[0]) > -1);
-			assert.isTrue(loadPath.indexOf(config.searchPrefix) > -1);
+		async 'Should successfully enumerate installed commands'() {
+			const installedPaths = await enumInstalledCommands(config);
+			assert.isTrue(installedPaths.length === 2);
+		},
+		async 'Should successfully enumerate builtin commands'() {
+			// tests are run in package-dir
+			const testFixtureDirForCommands = join(pathResolve('.'), '/_build/tests/support/commands');
+			const builtInPaths = await enumBuiltInCommands(testFixtureDirForCommands);
+			assert.isTrue(builtInPaths.length === 1);
+		},
+		async 'Should fail to find installed commands that dont exist'() {
+			config.searchPrefix = 'bad-prefix';
+			const badPrefixPaths = await enumInstalledCommands(config);
+			assert.isTrue(badPrefixPaths.length === 0);
+
+			const badInstalledPaths = await enumInstalledCommands(badConfig);
+			assert.isTrue(badInstalledPaths.length === 0);
+		},
+		async 'Should fail to find built in commands that dont exist'() {
+			const badBuiltInPaths = await enumBuiltInCommands('dirThatDoesNotExist');
+			assert.isTrue(badBuiltInPaths.length === 0);
 		},
 		async 'Should set first loaded command of each group to be the default'() {
 			const { commandsMap } = await loadCommands(yargsStub, config, loadStub);

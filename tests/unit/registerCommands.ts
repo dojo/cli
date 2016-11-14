@@ -32,7 +32,7 @@ registerSuite({
 			warnOnUnregistered: false
 		});
 
-		mockery.registerMock('./dirname', {'default': 'fakePackageRoot'});
+		mockery.registerMock('dirname', {'default': 'fakePackageRoot'});
 	},
 	'beforeEach'() {
 		yargsStub = getYargsStub();
