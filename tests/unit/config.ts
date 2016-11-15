@@ -16,17 +16,17 @@ registerSuite({
 		const paths = config.searchPaths;
 		assert.equal(3, paths.length);
 	},
-	'Should look in the global package node_modules first'() {
+	'Should look in current working directory node_modules first'() {
 		const paths = config.searchPaths;
-		const expectedPath = resolve('node_modules');
-		assert.equal(paths[0], expectedPath);
+		assert.equal(paths[0], 'node_modules');
 	},
 	'Should look in global peer packages second'() {
 		const paths = config.searchPaths;
 		assert.equal(paths[1], resolve('..'));
 	},
-	'Should look in current working directory node_modules last'() {
+	'Should look in the global package node_modules last'() {
 		const paths = config.searchPaths;
-		assert.equal(paths[2], 'node_modules');
+		const expectedPath = resolve('node_modules');
+		assert.equal(paths[2], expectedPath);
 	}
 });

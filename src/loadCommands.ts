@@ -50,7 +50,10 @@ export default async function (yargs: Yargs, config: Config, load: (path: string
 
 						yargsCommandNames[group] = new Set();
 					}
-					commandsMap.set(compositeKey, commandWrapper);
+
+					if (!commandsMap.has(compositeKey)) {
+						commandsMap.set(compositeKey, commandWrapper);
+					}
 
 					const groupCommandNames = yargsCommandNames[group];
 					groupCommandNames.add(compositeKey);
