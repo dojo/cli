@@ -73,9 +73,8 @@ export async function loadCommands(paths: string[], load: (path: string) => Comm
 				}
 			}
 			catch (error) {
-				const rethrow = new Error(`Failed to load module ${path}`);
-				rethrow.stack = error.stack;
-				reject(rethrow);
+				error.message = `Failed to load module ${path}\nNested error: ${error.message}`;
+				reject(error);
 			}
 		});
 

@@ -1,3 +1,55 @@
+import { beforeEach, afterEach, describe, it } from 'intern!bdd';
+import * as assert from 'intern/chai!assert';
+import MockModule from '../../support/MockModule';
+import { throwImmediatly } from '../../support/util';
+import * as sinon from 'sinon';
+
+describe('main', () => {
+
+	let moduleUnderTest: any;
+	let mockModule: MockModule;
+	let mockWebpack: any;
+	let mockWebpackConfig: any;
+	let sandbox: sinon.SinonSandbox;
+
+	beforeEach(() => {
+		sandbox = sinon.sandbox.create();
+		mockModule = new MockModule('../../../src/commands/version');
+		mockModule.dependencies(['./webpack.config', 'webpack', 'webpack-dev-server']);
+		mockWebpack = mockModule.getMock('webpack');
+		mockWebpackConfig = mockModule.getMock('./webpack.config');
+		moduleUnderTest = mockModule.getModuleUnderTest().default;
+		sandbox.stub(console, 'log');
+	});
+
+	afterEach(() => {
+		sandbox.restore();
+		mockModule.destroy();
+	});
+
+	it('should register supported arguments', () => {
+		const helper = { yargs: { option: sandbox.stub() } };
+		moduleUnderTest.register(helper);
+		assert.deepEqual(
+			helper.yargs.option.firstCall.args,
+			[ 'w', { alias: 'watch', describe: 'watch and serve' } ]
+		);
+		assert.deepEqual(
+			helper.yargs.option.secondCall.args,
+			[ 'p', { alias: 'port', describe: 'port to serve on when using --watch', type: 'number' }],
+		);
+	});
+
+	it('should run compile and log results on success', () => {
+		mockWebpack.run = sandbox.stub().yields(false, 'some stats');
+		return moduleUnderTest.run({}, {}).then(() => {
+			assert.isTrue(mockWebpack.run.calledOnce);
+			assert.isTrue((<sinon.SinonStub> console.log).calledWith('some stats'));
+		});
+	});
+
+});
+
 import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
 import { CommandsMap, CommandWrapper } from '../../../src/command';
