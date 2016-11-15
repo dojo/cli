@@ -73,7 +73,7 @@ export async function loadCommands(paths: string[], load: (path: string) => Comm
 				}
 			}
 			catch (error) {
-				reject(`Failed to load module: ${path}, error: ${error.message}`);
+				reject(new Error(`Failed to load module ${path}`, error));
 			}
 		});
 

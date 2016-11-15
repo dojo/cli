@@ -1,9 +1,8 @@
 import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
 import { stub, SinonStub } from 'sinon';
-import * as mockery from 'mockery';
 import { getCommandsMap, getYargsStub, GroupDef } from '../support/testHelper';
-import { versionRegisteredCommands } from '../../src/commands/version';
+// const { versionRegisteredCommands } = require('intern/dojo/node!../../src/commands/version');
 
 const { 'default': registerCommands } = require('intern/dojo/node!../../src/registerCommands');
 const defaultCommandWrapper = require('intern/dojo/node!../support/test-prefix-foo-bar');
@@ -27,13 +26,6 @@ const errorMessage = 'test error message';
 
 registerSuite({
 	name: 'registerCommands',
-	'setup'() {
-		mockery.enable({
-			warnOnUnregistered: false
-		});
-
-		mockery.registerMock('dirname', {'default': 'fakePackageRoot'});
-	},
 	'beforeEach'() {
 		yargsStub = getYargsStub();
 		commandsMap = getCommandsMap(groupDef);
@@ -110,7 +102,7 @@ registerSuite({
 			}
 		}
 	},
-	'version': {
+/*	'version': {
 		'version option'() {
 			commandsMap.set('group1', defaultCommandWrapper);
 			const key = 'group1-command1';
@@ -140,5 +132,5 @@ registerSuite({
 			assert.isTrue(consoleStub.calledOnce);
 			assert.include(output, versionRegisteredCommands);
 		}
-	}
+	}*/
 });

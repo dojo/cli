@@ -44,7 +44,7 @@ registerSuite({
 			assert.isTrue(installedPaths.length === 2);
 		},
 		async 'Should successfully enumerate builtin commands'() {
-			// tests are run in package-dir
+			// tests are run in package-dir (from cli, using grunt test) - FIX to use pkg-dir
 			const testFixtureDirForCommands = join(pathResolve('.'), '/_build/tests/support/commands');
 			const builtInPaths = await enumBuiltInCommands(testFixtureDirForCommands);
 			assert.isTrue(builtInPaths.length === 1);
@@ -52,8 +52,9 @@ registerSuite({
 	},
 	'unsuccessful enumeration': {
 		async 'Should fail to find installed commands that dont exist'() {
-			config.searchPrefix = 'bad-prefix';
-			const badPrefixPaths = await enumInstalledCommands(config);
+			const cloneConfig = JSON.parse(JSON.stringify(config)); // trashy copy - better than post test reset
+			cloneConfig.searchPrefix = 'bad-prefix';
+			const badPrefixPaths = await enumInstalledCommands(cloneConfig);
 			assert.isTrue(badPrefixPaths.length === 0);
 
 			const badInstalledPaths = await enumInstalledCommands(badConfig);
@@ -70,41 +71,48 @@ registerSuite({
 			loadStub.onSecondCall().returns(commandWrapper2);
 		},
 		async 'Should set first loaded command of each group to be the default'() {
-			const { commandsMap } = await loadCommands(yargsStub, config, loadStub);
+			const installedPaths = await enumInstalledCommands(config);
+			const { commandsMap } = await loadCommands(installedPaths, loadStub);
+
 			assert.isTrue(loadStub.calledTwice);
 			assert.equal(3, commandsMap.size);
 			assert.equal(commandWrapper1, commandsMap.get(commandWrapper1.group));
 			assert.equal(commandWrapper1, commandsMap.get(`${commandWrapper1.group}-${commandWrapper1.name}`));
+		},
+		async 'should apply loading precedence to duplicate commands'() {
+			const duplicateCommandName = 'command1';
+			const duplicateGroupName = 'foo';
+			const commandWrapperDuplicate = getCommandWrapper(duplicateCommandName);
+			loadStub.onFirstCall().returns(commandWrapper1);
+			loadStub.onSecondCall().returns(commandWrapperDuplicate);
+
+			const installedPaths = await enumInstalledCommands(config);
+			const { yargsCommandNames } = await loadCommands(installedPaths, loadStub);
+
+			assert.isTrue(loadStub.calledTwice);
+			const groupCommandSet = yargsCommandNames.get(duplicateGroupName);
+
+			assert.equal(1, groupCommandSet.size);
+			assert.isTrue(groupCommandSet.has(`${duplicateGroupName}-${duplicateCommandName}`));
 		}
 	},
-	async 'failed load'() {
-		const failConfig = {
-			searchPaths: [ '_build/tests/support' ],
-			searchPrefix: 'esmodule-fail'
-		};
-		loadStub.onFirstCall().throws();
+	'unsuccessful load': {
+		async 'Should fail to load modules that dont satisfy the Command interface'() {
+			const failConfig = {
+				searchPaths: [ '_build/tests/support' ],
+				searchPrefix: 'esmodule-fail'
+			};
+			const installedPaths = await enumInstalledCommands(failConfig);
 
-		try {
-			await loadCommands(yargsStub, failConfig, loadStub);
+			loadStub.onFirstCall().throws();
+			try {
+				await loadCommands(installedPaths, loadStub);
+			}
+			catch (error) {
+				assert.isTrue(error instanceof Error);
+				assert.isTrue(error.message.indexOf('Failed to load module') > -1);
+			}
 		}
-		catch (error) {
-			assert.isTrue(error instanceof Error);
-			assert.isTrue(error.message.indexOf('Failed to load module') > -1);
-		}
-	},
-	async 'should apply loading precedence to duplicate commands'() {
-		const duplicateCommandName = 'command1';
-		const duplicateGroupName = 'foo';
-		const commandWrapperDuplicate = getCommandWrapper(duplicateCommandName);
-		loadStub.onFirstCall().returns(commandWrapper1);
-		loadStub.onSecondCall().returns(commandWrapperDuplicate);
-
-		const { yargsCommandNames } = await loadCommands(yargsStub, config, loadStub);
-		assert.isTrue(loadStub.calledTwice);
-		const groupCommandSet = yargsCommandNames[ duplicateGroupName ];
-
-		assert.equal(1, groupCommandSet.size);
-		assert.isTrue(groupCommandSet.has(`${duplicateGroupName}-${duplicateCommandName}`));
 	}
 
 });
