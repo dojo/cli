@@ -1,5 +1,4 @@
 import { CommandsMap } from './command';
-import dirname from './dirname';
 import {
 	versionNoRegisteredCommands,
 	versionRegisteredCommands,
@@ -9,7 +8,7 @@ import {
 import { join } from 'path';
 
 const pkgDir = require('pkg-dir');
-const packagePath = pkgDir.sync(dirname);
+const packagePath = pkgDir.sync(__dirname);
 
 /**
  * The details of one command group's module.
