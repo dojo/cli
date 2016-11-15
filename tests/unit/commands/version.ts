@@ -1,25 +1,29 @@
 import { beforeEach, afterEach, describe, it } from 'intern!bdd';
 import * as assert from 'intern/chai!assert';
 import MockModule from '../../support/MockModule';
-import { throwImmediatly } from '../../support/util';
 import * as sinon from 'sinon';
 
-describe('main', () => {
+import { join, resolve as pathResolve } from 'path';
+
+import { CommandsMap, CommandWrapper } from '../../../src/command';
+import { getCommandWrapperWithConfiguration } from '../../support/testHelper';
+
+describe('version command', () => {
 
 	let moduleUnderTest: any;
 	let mockModule: MockModule;
-	let mockWebpack: any;
-	let mockWebpackConfig: any;
+	let mockDavid: any;
+	let mockPkgDir: any;
 	let sandbox: sinon.SinonSandbox;
 
 	beforeEach(() => {
 		sandbox = sinon.sandbox.create();
-		mockModule = new MockModule('../../../src/commands/version');
-		mockModule.dependencies(['./webpack.config', 'webpack', 'webpack-dev-server']);
-		mockWebpack = mockModule.getMock('webpack');
-		mockWebpackConfig = mockModule.getMock('./webpack.config');
+		mockModule = new MockModule('../../src/commands/version');
+		mockModule.dependencies(['david', 'pkg-dir']);
+		mockDavid = mockModule.getMock('david');
+		mockPkgDir = mockModule.getMock('pkg-dir');
 		moduleUnderTest = mockModule.getModuleUnderTest().default;
-		sandbox.stub(console, 'log');
+		// sandbox.stub(console, 'log');
 	});
 
 	afterEach(() => {
@@ -32,52 +36,18 @@ describe('main', () => {
 		moduleUnderTest.register(helper);
 		assert.deepEqual(
 			helper.yargs.option.firstCall.args,
-			[ 'w', { alias: 'watch', describe: 'watch and serve' } ]
-		);
-		assert.deepEqual(
-			helper.yargs.option.secondCall.args,
-			[ 'p', { alias: 'port', describe: 'port to serve on when using --watch', type: 'number' }],
+			[ 'outdated', {
+				alias: 'outdated',
+				describe: 'Output a list of installed commands that can be updated to a more recent stable version.',
+				demand: false,
+				type: 'string'
+			} ]
 		);
 	});
 
-	it('should run compile and log results on success', () => {
-		mockWebpack.run = sandbox.stub().yields(false, 'some stats');
-		return moduleUnderTest.run({}, {}).then(() => {
-			assert.isTrue(mockWebpack.run.calledOnce);
-			assert.isTrue((<sinon.SinonStub> console.log).calledWith('some stats'));
-		});
-	});
-
-});
-
-import * as registerSuite from 'intern!object';
-import * as assert from 'intern/chai!assert';
-import { CommandsMap, CommandWrapper } from '../../../src/command';
-import { getCommandWrapperWithConfiguration } from '../../support/testHelper';
-const { readPackageDetails, buildVersions, versionNoRegisteredCommands, versionNoVersion, versionRegisteredCommands,
-'default': createVersionsString } = require('intern/dojo/node!../../../src/commands/version');
-
-registerSuite({
-	name: 'text',
-
-	readPackageDetails: {
-		validPackage() {
-			const details = readPackageDetails('../tests/support/valid-package');
-
-			assert.equal(details.name, 'Test Package 1');
-			assert.equal(details.version, '1.0.0');
-		},
-
-		missingPackage() {
-			const details = readPackageDetails('../tests/support');
-
-			assert.equal(details.name, '../tests/support');
-			assert.equal(details.version, versionNoVersion);
-		}
-	},
-
-	buildVersions() {
-
+	it('should run and return current versions on success', () => {
+		mockPkgDir.ctor.sync = sandbox.stub().returns(join(pathResolve('.'), '/_build/tests/support/valid-package'));
+		const goodVersion = '';
 		const commandWrapper1 = getCommandWrapperWithConfiguration({
 				group: 'apple',
 				name: 'test',
@@ -94,47 +64,10 @@ registerSuite({
 			['apple', commandWrapper1]
 		]);
 
-		const commands = buildVersions(commandMap);
+		const helper = {commandsMap: commandMap, command: 'version'};
+		return moduleUnderTest.run(helper, {}).then(() => {
+			assert.isTrue((<sinon.SinonStub> console.log).calledWith(goodVersion));
+		});
+	});
 
-		assert.equal(commands.length, 2, 'There should be two commands');
-		assert.equal(commands[0].name, 'Test Package 1');
-		assert.equal(commands[0].version, '1.0.0');
-		assert.equal(commands[0].group, 'apple');
-
-		assert.equal(commands[1].name, '../tests/support');
-		assert.equal(commands[1].version, versionNoVersion);
-		assert.equal(commands[1].group, 'banana');
-	},
-
-	'createCommand': {
-		'no commands'() {
-			const commandMap: CommandsMap = new Map<string, CommandWrapper>();
-
-			assert.include(createVersionsString(commandMap), versionNoRegisteredCommands);
-		},
-
-		'commands'() {
-			const commandWrapper1 = getCommandWrapperWithConfiguration({
-					group: 'apple',
-					name: 'test',
-					path: '../tests/support/valid-package'
-				}),
-				commandWrapper2 = getCommandWrapperWithConfiguration({
-					group: 'banana',
-					name: 'test 2',
-					path: '../tests/support'
-				});
-
-			const commandMap: CommandsMap = new Map<string, CommandWrapper>([
-				['apple', commandWrapper1],
-				['banana', commandWrapper2]
-			]);
-
-			const output = createVersionsString(commandMap);
-
-			assert.include(output, versionRegisteredCommands);
-			assert.include(output, 'apple (Test Package 1) 1.0.0');
-			assert.include(output, 'banana (../tests/support) ' + versionNoVersion) ;
-		}
-	}
 });

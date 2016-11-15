@@ -1,6 +1,5 @@
 import {CommandsMap } from '../command';
 import { Command, Helper } from '../interfaces';
-import dirname from '../dirname';
 
 import { join } from 'path';
 
@@ -8,7 +7,6 @@ import { Yargs, Argv } from 'yargs';
 import { yellow } from 'chalk';
 const david = require('david');
 const pkgDir = require('pkg-dir');
-const packagePath = pkgDir.sync(dirname);
 
 // exported for tests
 export const versionCurrentVersion = `
@@ -20,7 +18,7 @@ export const versionNoVersion = yellow('package.json missing');
 export const versionRegisteredCommands = `
 The currently installed groups are:
 `;
-const INBUILT_COMMAND_VERSION = 'inbuilt';
+const INBUILT_COMMAND_VERSION = '__IN_BUILT_COMMAND__';
 
 /**
  * The details of one command group's module.
@@ -184,7 +182,7 @@ function isBuiltInCommand(commandPath: string): boolean {
 	* Since this module is a built in command, we can use our location.
 	* This was preferable to using packageDir and relative paths, because we may alter where we build to (_build/src...)
 	*/
-	return commandPath.startsWith(join(dirname));
+	return commandPath.startsWith(join(__dirname));
 }
 
 /**
@@ -196,8 +194,10 @@ function isBuiltInCommand(commandPath: string): boolean {
  * @returns {string} the stdout output
  */
 function createVersionsString(commandsMap: CommandsMap, checkOutdated: boolean): Promise<string> {
+	const packagePath = pkgDir.sync(__dirname);
 
 	const myPackageDetails = readPackageDetails(packagePath);
+
 	const versionProm = buildVersions(commandsMap);
 
 	return versionProm

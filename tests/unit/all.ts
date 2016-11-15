@@ -6,5 +6,4 @@ import './loadCommands';
 import './registerCommands';
 import './text';
 import './updateNotifier';
-// import './commands/version';
-
+import './commands/version';
