@@ -73,7 +73,9 @@ export async function loadCommands(paths: string[], load: (path: string) => Comm
 				}
 			}
 			catch (error) {
-				reject(new Error(`Failed to load module ${path}`, error));
+				const rethrow = new Error(`Failed to load module ${path}`);
+				rethrow.stack = error.stack;
+				reject(rethrow);
 			}
 		});
 

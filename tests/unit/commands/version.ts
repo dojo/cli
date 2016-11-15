@@ -1,9 +1,9 @@
 import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
-import { CommandsMap, CommandWrapper } from '../../src/command';
-import { getCommandWrapperWithConfiguration } from '../support/testHelper';
-import { versionNoRegisteredCommands, versionNoVersion, versionRegisteredCommands } from '../../src/commands/version';
-const { readPackageDetails, buildVersions, 'default': createVersionsString } = require('intern/dojo/node!../../src/version');
+import { CommandsMap, CommandWrapper } from '../../../src/command';
+import { getCommandWrapperWithConfiguration } from '../../support/testHelper';
+const { readPackageDetails, buildVersions, versionNoRegisteredCommands, versionNoVersion, versionRegisteredCommands,
+'default': createVersionsString } = require('intern/dojo/node!../../../src/commands/version');
 
 registerSuite({
 	name: 'text',
