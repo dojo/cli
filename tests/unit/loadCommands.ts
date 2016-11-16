@@ -3,17 +3,22 @@ import * as assert from 'intern/chai!assert';
 import { stub, SinonStub } from 'sinon';
 import { getCommandWrapper, getYargsStub } from '../support/testHelper';
 import { join, resolve as pathResolve } from 'path';
+import { Config } from '../../src/config';
 const enumBuiltInCommands = require('intern/dojo/node!../../src/loadCommands').enumerateBuiltInCommands;
 const enumInstalledCommands = require('intern/dojo/node!../../src/loadCommands').enumerateInstalledCommands;
 const loadCommands = require('intern/dojo/node!../../src/loadCommands').loadCommands;
 
-const config = {
+
+// tests are run in package-dir (from cli, using grunt test) - FIX to use pkg-dir
+const config: Config = {
 	searchPaths: [ '_build/tests/support' ],
-	searchPrefix: 'test-prefix'
+	searchPrefix: 'test-prefix',
+	builtInCommandLocation: join(pathResolve('.'), '/_build/tests/support/commands')
 };
-const badConfig = {
+const badConfig: Config = {
 	searchPaths: [ 'just/garbage', 'yep/really/bad/paths/here' ],
-	searchPrefix: 'bad-prefix'
+	searchPrefix: 'bad-prefix',
+	builtInCommandLocation : 'dirThatDoesNotExist'
 };
 
 let loadStub: SinonStub;
@@ -44,9 +49,7 @@ registerSuite({
 			assert.isTrue(installedPaths.length === 2);
 		},
 		async 'Should successfully enumerate builtin commands'() {
-			// tests are run in package-dir (from cli, using grunt test) - FIX to use pkg-dir
-			const testFixtureDirForCommands = join(pathResolve('.'), '/_build/tests/support/commands');
-			const builtInPaths = await enumBuiltInCommands(testFixtureDirForCommands);
+			const builtInPaths = await enumBuiltInCommands(config);
 			assert.isTrue(builtInPaths.length === 1);
 		}
 	},
@@ -61,7 +64,7 @@ registerSuite({
 			assert.isTrue(badInstalledPaths.length === 0);
 		},
 		async 'Should fail to find built in commands that dont exist'() {
-			const badBuiltInPaths = await enumBuiltInCommands('dirThatDoesNotExist');
+			const badBuiltInPaths = await enumBuiltInCommands(badConfig);
 			assert.isTrue(badBuiltInPaths.length === 0);
 		}
 	},

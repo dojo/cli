@@ -4,7 +4,8 @@ const packagePath = pkgDir.sync(__dirname);
 
 export type Config = {
 	searchPaths: string[],
-	searchPrefix: string
+	searchPrefix: string,
+	builtInCommandLocation: string
 };
 
 export default <Config> {
@@ -13,5 +14,6 @@ export default <Config> {
 		join(packagePath, '..'),
 		'node_modules'
 	],
-	searchPrefix: 'dojo-cli'
+	searchPrefix: 'dojo-cli',
+	builtInCommandLocation: join(packagePath, '/commands')
 };

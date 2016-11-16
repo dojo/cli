@@ -23,7 +23,7 @@ describe('version command', () => {
 		mockDavid = mockModule.getMock('david');
 		mockPkgDir = mockModule.getMock('pkg-dir');
 		moduleUnderTest = mockModule.getModuleUnderTest().default;
-		// sandbox.stub(console, 'log');
+		//sandbox.stub(console, 'log');
 	});
 
 	afterEach(() => {
@@ -47,7 +47,7 @@ describe('version command', () => {
 
 	it('should run and return current versions on success', () => {
 		mockPkgDir.ctor.sync = sandbox.stub().returns(join(pathResolve('.'), '/_build/tests/support/valid-package'));
-		const goodVersion = '';
+		const goodVersion = `There are no registered commands available.\nYou are currently running dojo-cli 1.0.0\n`;
 		const commandWrapper1 = getCommandWrapperWithConfiguration({
 				group: 'apple',
 				name: 'test',

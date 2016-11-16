@@ -27,11 +27,11 @@ export async function enumerateInstalledCommands (config: Config): Promise <stri
 
 /**
  * Enumerate all the builtIn commands and return their absolute paths
- * @param path string path to check for built-in commands
+ * @param config
  * @returns {Promise<string []>} the paths of all builtIn commands
  */
-export async function enumerateBuiltInCommands (path: string): Promise <string []> {
-	const builtInCommandParentDirGlob = join(path, '/*.js');
+export async function enumerateBuiltInCommands (config: Config): Promise <string []> {
+	const builtInCommandParentDirGlob = join(config.builtInCommandLocation, '/*.js');
 	return globby(builtInCommandParentDirGlob, (<globby.Options> { ignore: '**/*.map' }));
 }
 

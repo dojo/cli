@@ -28,7 +28,7 @@ async function init() {
 
 	try {
 		// look for commands in a 'commands` subdir of our current location
-		const builtInCommandsPaths = await enumerateBuiltInCommands(join(__dirname, '/commands'));
+		const builtInCommandsPaths = await enumerateBuiltInCommands(config);
 		const installedCommandsPaths = await enumerateInstalledCommands(config);
 
 		const builtInCommands = await loadCommands(builtInCommandsPaths, builtInCommandLoader);
