@@ -196,7 +196,7 @@ function isBuiltInCommand(commandPath: string): boolean {
 function createVersionsString(commandsMap: CommandsMap, checkOutdated: boolean): Promise<string> {
 	const packagePath = pkgDir.sync(__dirname);
 
-	const myPackageDetails = readPackageDetails(packagePath);
+	const myPackageDetails = readPackageDetails(packagePath);	//fetch the cli's package details
 
 	const versionProm = buildVersions(commandsMap);
 
