@@ -8,6 +8,7 @@ import { join, resolve as pathResolve } from 'path';
 import { CommandsMap, CommandWrapper } from '../../../src/command';
 import { getCommandWrapperWithConfiguration } from '../../support/testHelper';
 const validPackageInfo = require('intern/dojo/node!../../support/valid-package/package.json');
+const anotherValidPackageInfo = require('intern/dojo/node!../../support/another-valid-package/package.json');
 
 describe('version command', () => {
 
@@ -25,7 +26,7 @@ describe('version command', () => {
 		mockPkgDir = mockModule.getMock('pkg-dir');
 		mockPkgDir.ctor.sync = sandbox.stub().returns(join(pathResolve('.'), '/_build/tests/support/valid-package'));
 		moduleUnderTest = mockModule.getModuleUnderTest().default;
-		// sandbox.stub(console, 'log');
+		sandbox.stub(console, 'log');
 	});
 
 	afterEach(() => {
@@ -58,16 +59,22 @@ describe('version command', () => {
 	});
 
 	it('should run and return current versions on success', () => {
-		const installedCommandWrapper = getCommandWrapperWithConfiguration({
+		const installedCommandWrapper1 = getCommandWrapperWithConfiguration({
 				group: 'apple',
 				name: 'test',
 				path: join(pathResolve('.'), '_build/tests/support/valid-package')
 			});
+		const installedCommandWrapper2 = getCommandWrapperWithConfiguration({
+			group: 'orange',
+			name: 'anotherTest',
+			path: join(pathResolve('.'), '_build/tests/support/another-valid-package')
+		});
 
-		const expectedOutput = `${outputPrefix()}The currently installed groups are:\n\n${installedCommandWrapper.group} (${validPackageInfo.name}) ${validPackageInfo.version}\n${outputSuffix()}`;
+		const expectedOutput = `${outputPrefix()}The currently installed groups are:\n\n${installedCommandWrapper1.group} (${validPackageInfo.name}) ${validPackageInfo.version}\n${installedCommandWrapper2.group} (${anotherValidPackageInfo.name}) ${anotherValidPackageInfo.version}\n${outputSuffix()}`;
 
 		const commandMap: CommandsMap = new Map<string, CommandWrapper>([
-			['installedCommand1', installedCommandWrapper],
+			['installedCommand1', installedCommandWrapper1],
+			['installedCommand2', installedCommandWrapper2]
 		]);
 
 		const helper = {commandsMap: commandMap, command: 'version'};
@@ -86,14 +93,14 @@ describe('version command', () => {
 		const builtInCommandWrapper = getCommandWrapperWithConfiguration({
 			group: 'orange',
 			name: 'anotherTest',
-			path: join(pathResolve('.'), '/commands/builtInCommand.js')
+			path: join(pathResolve('.'), '/_build/src/commands/builtInCommand.js')
 		});
 
 		const expectedOutput = `${outputPrefix()}The currently installed groups are:\n\n${installedCommandWrapper.group} (${validPackageInfo.name}) ${validPackageInfo.version}\n${outputSuffix()}`;
 
 		const commandMap: CommandsMap = new Map<string, CommandWrapper>([
 			['installedCommand1', installedCommandWrapper],
-			['builtInCommand1', builtInCommandWrapper],
+			['builtInCommand1', builtInCommandWrapper]
 		]);
 
 		const helper = {commandsMap: commandMap, command: 'version'};
@@ -118,10 +125,34 @@ describe('version command', () => {
 			['installedCommand1', installedCommandWrapper]
 		]);
 
-		const helper = {commandsMap: commandMap, command: 'version', };
+		const helper = {commandsMap: commandMap, command: 'version' };
 		return moduleUnderTest.run(helper, {'outdated': true}).then(() => {
 			assert.equal('Fetching latest version information...', (<sinon.SinonStub> console.log).args[0][0]);
 			assert.equal(expectedOutput, (<sinon.SinonStub> console.log).args[1][0]);
+		});
+	});
+
+	it('should return an error if fetching latest versions fails', () => {
+		const davidError = new Error('ugh - oh noes');
+		mockDavid.getUpdatedDependencies = sandbox.stub().yields(davidError, null);
+		const installedCommandWrapper = getCommandWrapperWithConfiguration({
+			group: 'apple',
+			name: 'test',
+			path: join(pathResolve('.'), '_build/tests/support/valid-package')
+		});
+
+		const expectedOutput = `Something went wrong trying to fetch command versions: ${davidError.message}`;
+
+		const commandMap: CommandsMap = new Map<string, CommandWrapper>([
+			['installedCommand1', installedCommandWrapper]
+		]);
+
+		const helper = {commandsMap: commandMap, command: 'version' };
+		return moduleUnderTest.run(helper, {'outdated': true}).then(() => {
+			assert.equal('Fetching latest version information...', (<sinon.SinonStub> console.log).args[0][0]);
+			assert.equal(expectedOutput, (<sinon.SinonStub> console.log).args[1][0]);
+		}, () => {
+			assert.isTrue(false);   // not sure how to test a promise is not rejected - sinon-as-promised?
 		});
 	});
 

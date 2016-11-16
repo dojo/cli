@@ -182,8 +182,6 @@ function isBuiltInCommand(commandPath: string): boolean {
 	* Since this module is a built in command, we can use our location.
 	* This was preferable to using packageDir and relative paths, because we may alter where we build to (_build/src...)
 	*/
-	console.log(__dirname);
-	console.log(commandPath);
 	return commandPath.startsWith(join(__dirname));
 }
 
@@ -198,7 +196,7 @@ function isBuiltInCommand(commandPath: string): boolean {
 function createVersionsString(commandsMap: CommandsMap, checkOutdated: boolean): Promise<string> {
 	const packagePath = pkgDir.sync(__dirname);
 
-	const myPackageDetails = readPackageDetails(packagePath);	//fetch the cli's package details
+	const myPackageDetails = readPackageDetails(packagePath);	// fetch the cli's package details
 
 	const versionProm = buildVersions(commandsMap);
 
@@ -206,12 +204,13 @@ function createVersionsString(commandsMap: CommandsMap, checkOutdated: boolean):
 		.then((commandVersions: ModuleVersion[]) => {
 			if (checkOutdated) {
 				return areCommandsOutdated(commandVersions)
-					.then((commandVersions: ModuleVersion[]) => createOutput(myPackageDetails, commandVersions));
+					.then((commandVersions: ModuleVersion[]) => createOutput(myPackageDetails, commandVersions),
+						(err) => {
+							return `Something went wrong trying to fetch command versions: ${err.message}`;
+						});
 			} else {
 				return createOutput(myPackageDetails, commandVersions);
 			}
-	}, (err) => {
-		return `Something went wrong trying to fetch command versions ${err}`;
 	});
 }
 

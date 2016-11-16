@@ -8,7 +8,6 @@ const enumBuiltInCommands = require('intern/dojo/node!../../src/loadCommands').e
 const enumInstalledCommands = require('intern/dojo/node!../../src/loadCommands').enumerateInstalledCommands;
 const loadCommands = require('intern/dojo/node!../../src/loadCommands').loadCommands;
 
-
 // tests are run in package-dir (from cli, using grunt test) - FIX to use pkg-dir
 const config: Config = {
 	searchPaths: [ '_build/tests/support' ],
