@@ -25,7 +25,7 @@ describe('version command', () => {
 		mockPkgDir = mockModule.getMock('pkg-dir');
 		mockPkgDir.ctor.sync = sandbox.stub().returns(join(pathResolve('.'), '/_build/tests/support/valid-package'));
 		moduleUnderTest = mockModule.getModuleUnderTest().default;
-		sandbox.stub(console, 'log');
+		// sandbox.stub(console, 'log');
 	});
 
 	afterEach(() => {
