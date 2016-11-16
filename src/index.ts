@@ -21,12 +21,12 @@ const pkg = <any> require(packageJsonFilePath);
  * - Runs the specified command
  */
 async function init() {
-	updateNotifier(pkg, 0);
-
-	const builtInCommandLoader = createBuiltInCommandLoader();
-	const installedCommandLoader = initCommandLoader(config.searchPrefix);
-
 	try {
+		updateNotifier(pkg, 0);
+
+		const builtInCommandLoader = createBuiltInCommandLoader();
+		const installedCommandLoader = initCommandLoader(config.searchPrefix);
+
 		// look for commands in a 'commands` subdir of our current location
 		const builtInCommandsPaths = await enumerateBuiltInCommands(config);
 		const installedCommandsPaths = await enumerateInstalledCommands(config);
