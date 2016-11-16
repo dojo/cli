@@ -3,6 +3,8 @@ import * as assert from 'intern/chai!assert';
 import { getCommandsMap, GroupDef } from '../support/testHelper';
 const command = require('intern/dojo/node!../../src/command');
 const expectedCommand = require('intern/dojo/node!../support/test-prefix-foo-bar');
+const expectedBuiltInCommand = require('intern/dojo/node!../support/commands/test-prefix-foo-bar');
+const invalidBuiltInCommand = require('intern/dojo/node!../support/commands/invalid-built-in-command');
 const expectedEsModuleCommand = require('intern/dojo/node!../support/esmodule-prefix-foo-bar').default;
 
 const testGroup = 'foo';
@@ -28,6 +30,10 @@ function getCommandPath(prefix: string): string {
 	return `../tests/support/${prefix}-${testGroup}-${testName}`;
 }
 
+function getBuiltInCommandPath(invalid: boolean): string {
+	return invalid ? `../tests/support/commands/invalid-built-in-command` : `../tests/support/commands/test-prefix-foo-bar`;
+}
+
 registerSuite({
 	name: 'command',
 	'load': {
@@ -47,6 +53,23 @@ registerSuite({
 		},
 		'Should get run function from loaded file'() {
 			assert.equal(expectedCommand.run, commandWrapper.run);
+		}
+	},
+	'load built in command': {
+		'beforeEach'() {
+			loader = command.createBuiltInCommandLoader();
+			commandWrapper = loader(getBuiltInCommandPath(false));
+		},
+		'Should get group, description and name loaded file'() {
+			assert.equal(expectedBuiltInCommand.description, commandWrapper.description);
+			assert.equal(expectedBuiltInCommand.description, commandWrapper.description);
+			assert.equal(expectedBuiltInCommand.description, commandWrapper.description);
+		},
+		'Should get register function from loaded file'() {
+			assert.equal(expectedBuiltInCommand.register, commandWrapper.register);
+		},
+		'Should get run function from loaded file'() {
+			assert.equal(expectedBuiltInCommand.run, commandWrapper.run);
 		}
 	},
 	'load esmodule default': {
@@ -75,6 +98,21 @@ registerSuite({
 		'Should throw an error when attempting to load'() {
 			try {
 				commandWrapper = loader(getCommandPath(testEsModuleFailSearchPrefix));
+				assert.fail(null, null, 'Should not get here');
+			}
+			catch (error) {
+				assert.isTrue(error instanceof Error);
+				assert.isTrue(error.message.indexOf('does not satisfy the Command interface') > -1);
+			}
+		}
+	},
+	'load builtin command that does not meet Command interface': {
+		'setup'() {
+			loader = command.createBuiltInCommandLoader();
+		},
+		'Should throw an error when attempting to load'() {
+			try {
+				commandWrapper = loader(getBuiltInCommandPath(true));
 				assert.fail(null, null, 'Should not get here');
 			}
 			catch (error) {

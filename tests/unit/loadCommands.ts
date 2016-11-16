@@ -49,7 +49,7 @@ registerSuite({
 		},
 		async 'Should successfully enumerate builtin commands'() {
 			const builtInPaths = await enumBuiltInCommands(config);
-			assert.isTrue(builtInPaths.length === 1);
+			assert.isTrue(builtInPaths.length === 2);   // includes invalid commands
 		}
 	},
 	'unsuccessful enumeration': {
