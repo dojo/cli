@@ -46,14 +46,13 @@ registerSuite({
 		mockery.registerMock('yargs', { 'version': yargsVersionStub });
 		mockery.registerMock('pkg-dir', { 'sync': stub().returns('testDir') });
 		mockery.registerMock('console', { 'log': consoleStub()});
-
-		index = require('intern/dojo/node!./../../src/index');
 	},
 	'teardown'() {
 		mockery.deregisterAll();
 		mockery.disable();
 	},
 	'Should call functions in order'() {
+		index = require('intern/dojo/node!./../../src/index');
 		assert.isTrue(updateNotifierStub.calledOnce, 'should call update notifier');
 
 		assert.isTrue(builtInCommandLoaderStub.calledOnce, 'should call builtin command loader');
@@ -70,12 +69,13 @@ registerSuite({
 		assert.isTrue(registerCommandsStub.calledAfter(loadCommandsStub), 'should call register commands after load commands');
 	},
 	'Should catch runtime errors'() {
+		index = require('intern/dojo/node!./../../src/index');
 		const errMessage = 'ugh - oh noes';
 		const expectedError = new Error(errMessage);
 		builtInCommandLoaderStub = stub().throws(expectedError);
 
 		assert.isTrue(updateNotifierStub.calledOnce, 'should call update notifier');
-
+		
 		assert.throw(builtInCommandLoaderStub, Error, errMessage);
 		assert.equal(`Some commands are not available: ${errMessage}`, consoleStub.args[0][0]);
 	}
