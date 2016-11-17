@@ -15,5 +15,5 @@ export default <Config> {
 		'node_modules'
 	],
 	searchPrefix: 'dojo-cli',
-	builtInCommandLocation: join(packagePath, '/_build/src/commands')
+	builtInCommandLocation: join(__dirname, '/commands')  // better to be relative to this file (like an import) than link to publish structure
 };
