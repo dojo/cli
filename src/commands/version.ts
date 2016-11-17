@@ -155,7 +155,7 @@ function areCommandsOutdated(moduleVersions: ModuleVersion[]): Promise<any> {
 
 	return new Promise((resolve, reject) => {
 		// we want to fetch the latest stable version for our devDependencies
-		david.getUpdatedDependencies(manifest, { dev: true, stable: true }, function (er: any, deps: {[dependencyName: string]: string }) {
+		david.getUpdatedDependencies(manifest, { dev: true, stable: true }, function (er: any, deps: {[dependencyName: string]: {stable: string }}) {
 			if (er) {
 				reject(er);
 			}
