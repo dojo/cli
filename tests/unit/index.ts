@@ -45,7 +45,7 @@ registerSuite({
 
 		mockery.registerMock('yargs', { 'version': yargsVersionStub });
 		mockery.registerMock('pkg-dir', { 'sync': stub().returns('testDir') });
-		mockery.registerMock('console', { 'log': consoleStub()});
+		//mockery.registerMock('console', { 'log': consoleStub()});
 
 		index = require('intern/dojo/node!./../../src/index');
 	},

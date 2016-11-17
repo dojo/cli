@@ -24,7 +24,9 @@ async function init() {
 	try {
 		updateNotifier(pkg, 0);
 
+		console.log('before');
 		const builtInCommandLoader = createBuiltInCommandLoader();
+		console.log('after');
 		const installedCommandLoader = initCommandLoader(config.searchPrefix);
 
 		// look for commands in a 'commands` subdir of our current location
