@@ -10,9 +10,9 @@ export type Config = {
 
 export default <Config> {
 	searchPaths: [
-		join(packagePath, 'node_modules'),
+		'node_modules',
 		join(packagePath, '..'),
-		'node_modules'
+		join(packagePath, 'node_modules')
 	],
 	searchPrefix: 'dojo-cli',
 	builtInCommandLocation: join(__dirname, '/commands')  // better to be relative to this file (like an import) than link to publish structure

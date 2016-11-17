@@ -62,10 +62,12 @@ export async function loadCommands(paths: string[], load: (path: string) => Comm
 				if (!commandsMap.has(group)) {
 					// First of each type will be 'default' for now
 					setDefaultGroup(commandsMap, group, commandWrapper);
-
-					yargsCommandNames.set(group, new Set());
+						yargsCommandNames[group] = new Set();
 				}
-				commandsMap.set(compositeKey, commandWrapper);
+
+				if (!commandsMap.has(compositeKey)) {
+					commandsMap.set(compositeKey, commandWrapper);
+				}
 
 				const groupCommandNames = yargsCommandNames.get(group);
 				if (groupCommandNames) {
