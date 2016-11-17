@@ -141,7 +141,9 @@ function areCommandsOutdated(moduleVersions: ModuleVersion[]): Promise<any> {
 	// convert [ModuleVersion] = [{commandPackageName: commandPackageVersion}]
 	let deps: {}[] = moduleVersions
 		.map((command) => {
-			let obj: any = {};
+			let obj: {
+				[commandName: string]: string
+			} = {};
 			obj[command.name] = command.version;
 			return obj;
 		});
@@ -153,7 +155,7 @@ function areCommandsOutdated(moduleVersions: ModuleVersion[]): Promise<any> {
 
 	return new Promise((resolve, reject) => {
 		// we want to fetch the latest stable version for our devDependencies
-		david.getUpdatedDependencies(manifest, { dev: true, stable: true }, function (er: any, deps: any) {
+		david.getUpdatedDependencies(manifest, { dev: true, stable: true }, function (er: any, deps: {[dependencyName: string]: string }) {
 			if (er) {
 				reject(er);
 			}

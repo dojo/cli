@@ -4,7 +4,6 @@ import { getCommandsMap, GroupDef } from '../support/testHelper';
 const command = require('intern/dojo/node!../../src/command');
 const expectedCommand = require('intern/dojo/node!../support/test-prefix-foo-bar');
 const expectedBuiltInCommand = require('intern/dojo/node!../support/commands/test-prefix-foo-bar');
-const invalidBuiltInCommand = require('intern/dojo/node!../support/commands/invalid-built-in-command');
 const expectedEsModuleCommand = require('intern/dojo/node!../support/esmodule-prefix-foo-bar').default;
 
 const testGroup = 'foo';

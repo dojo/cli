@@ -6,7 +6,7 @@ import { SinonStub, stub } from 'sinon';
 const updateNotifierStub: SinonStub = stub();
 const yargsVersionStub: SinonStub = stub();
 const installedCommandLoaderStub: SinonStub = stub();
-const builtInCommandLoaderStub: SinonStub = stub();
+let builtInCommandLoaderStub: SinonStub = stub();
 const builtInCommandEnumeratorStub: SinonStub = stub();
 const installedCommandEnumeratorStub: SinonStub = stub();
 const loadCommandsStub: SinonStub = stub().returns(Promise.resolve({
@@ -45,7 +45,7 @@ registerSuite({
 
 		mockery.registerMock('yargs', { 'version': yargsVersionStub });
 		mockery.registerMock('pkg-dir', { 'sync': stub().returns('testDir') });
-		//mockery.registerMock('console', { 'log': consoleStub()});
+		mockery.registerMock('console', { 'log': consoleStub()});
 
 		index = require('intern/dojo/node!./../../src/index');
 	},
@@ -68,20 +68,15 @@ registerSuite({
 
 		assert.isTrue(registerCommandsStub.calledOnce, 'should call register commands');
 		assert.isTrue(registerCommandsStub.calledAfter(loadCommandsStub), 'should call register commands after load commands');
-		mockery.deregisterMock('./command');
 	},
 	'Should catch runtime errors'() {
-		const badLoader: SinonStub = stub().throws(new Error('ugh - oh noes'));
-		mockery.registerMock('./command', {
-			'createBuiltInCommandLoader': badLoader,
-			'initCommandLoader': installedCommandLoaderStub });
+		const errMessage = 'ugh - oh noes';
+		const expectedError = new Error(errMessage);
+		builtInCommandLoaderStub = stub().throws(expectedError);
 
 		assert.isTrue(updateNotifierStub.calledOnce, 'should call update notifier');
 
-		assert.isTrue(builtInCommandLoaderStub.calledOnce, 'should call builtin command loader');
-
-		assert.throw(badLoader, Error, 'ugh - oh noes');
-
-		assert.equal('Some commands are not available: ugh - oh noes', consoleStub.args[0][0]);
+		assert.throw(builtInCommandLoaderStub, Error, errMessage);
+		assert.equal(`Some commands are not available: ${errMessage}`, consoleStub.args[0][0]);
 	}
 });
