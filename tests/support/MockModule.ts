@@ -1,4 +1,5 @@
-///<reference path="../../typings/modules/requirejs/index.d.ts"/>
+import { RootRequire } from 'dojo-interfaces/loader';
+declare const require: RootRequire;
 
 import * as mockery from 'mockery';
 import * as sinon from 'sinon';

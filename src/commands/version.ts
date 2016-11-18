@@ -21,7 +21,7 @@ const INBUILT_COMMAND_VERSION = '__IN_BUILT_COMMAND__';
 /**
  * The details of one command group's module.
  */
-export interface ModuleVersion {
+interface ModuleVersion {
 	name: string;
 	version: string;
 	group: string;

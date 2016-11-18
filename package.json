@@ -36,6 +36,7 @@
   },
   "devDependencies": {
     "codecov.io": "0.1.6",
+    "dojo-interfaces": "^2.0.0-alpha.6",
     "dojo-loader": ">=2.0.0-beta.7",
     "dts-generator": "~1.7.0",
     "glob": "^7.0.3",
@@ -52,7 +53,6 @@
     "istanbul": "^0.4.3",
     "mockery": "^1.7.0",
     "remap-istanbul": "^0.6.4",
-    "requirejs": "^2.3.2",
     "sinon": "^1.17.5",
     "tslint": "^3.11.0",
     "typescript": "2.0.2"
