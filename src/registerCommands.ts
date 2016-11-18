@@ -45,7 +45,7 @@ export default function(yargs: Yargs, commandsMap: CommandsMap, yargsCommandName
 						return run(helper, argv).catch(reportError);
 					}
 				)
-					.strict();
+				.strict();
 			});
 			return yargs;
 		},

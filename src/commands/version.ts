@@ -36,11 +36,11 @@ interface PackageDetails {
 }
 
 function register(helper: Helper): Yargs {
-	helper.yargs.option('outdated', {
+	helper.yargs.option('o', {
 		alias: 'outdated',
-		describe: 'Output a list of installed commands that can be updated to a more recent stable version.',
+		describe: 'Output a list of installed commands and check if any can be updated to a more recent stable version.',
 		demand: false,
-		type: 'string'
+		type: 'boolean'
 	});
 	return helper.yargs;
 }
