@@ -39,11 +39,11 @@ describe('version command', () => {
 		moduleUnderTest.register(helper);
 		assert.deepEqual(
 			helper.yargs.option.firstCall.args,
-			[ 'outdated', {
+			[ 'o', {
 				alias: 'outdated',
-				describe: 'Output a list of installed commands that can be updated to a more recent stable version.',
+				describe: 'Output a list of installed commands and check if any can be updated to a more recent stable version.',
 				demand: false,
-				type: 'string'
+				type: 'boolean'
 			} ]
 		);
 	});
