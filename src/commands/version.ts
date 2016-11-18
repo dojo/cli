@@ -1,8 +1,6 @@
 import {CommandsMap } from '../command';
-import { Command, Helper } from '../interfaces';
-
+import { Helper } from '../interfaces';
 import { join } from 'path';
-
 import { Yargs, Argv } from 'yargs';
 import { yellow } from 'chalk';
 const david = require('david');
@@ -32,19 +30,10 @@ export interface ModuleVersion {
 /**
  * Important information to be retrieved from a module's package.json
  */
-export interface PackageDetails {
+interface PackageDetails {
 	name: string;
 	version: string;
 }
-
-const versionCommand: Command = {
-	name: 'version',
-	group: 'version',
-	description: 'Provides version information for all installed commands and the cli itself.',
-	register,
-	run
-};
-export default versionCommand;
 
 function register(helper: Helper): Yargs {
 	helper.yargs.option('outdated', {
@@ -56,7 +45,7 @@ function register(helper: Helper): Yargs {
 	return helper.yargs;
 }
 
-export interface VersionArgs extends Argv {
+interface VersionArgs extends Argv {
 	outdated: string;
 }
 
@@ -155,9 +144,9 @@ function areCommandsOutdated(moduleVersions: ModuleVersion[]): Promise<any> {
 
 	return new Promise((resolve, reject) => {
 		// we want to fetch the latest stable version for our devDependencies
-		david.getUpdatedDependencies(manifest, { dev: true, stable: true }, function (er: any, deps: {[dependencyName: string]: {stable: string }}) {
-			if (er) {
-				reject(er);
+		david.getUpdatedDependencies(manifest, { dev: true, stable: true }, function (err: any, deps: {[dependencyName: string]: {stable: string }}) {
+			if (err) {
+				reject(err);
 			}
 			resolve(moduleVersions.map((command) => {
 				const canBeUpdated = deps[command.name];    // david returns all deps that can be updated
@@ -184,7 +173,7 @@ function isBuiltInCommand(commandPath: string): boolean {
 	* Since this module is a built in command, we can use our location.
 	* This was preferable to using packageDir and relative paths, because we may alter where we build to (_build/src...)
 	*/
-	return commandPath.startsWith(join(__dirname));
+	return commandPath.startsWith(__dirname);
 }
 
 /**
@@ -197,9 +186,7 @@ function isBuiltInCommand(commandPath: string): boolean {
  */
 function createVersionsString(commandsMap: CommandsMap, checkOutdated: boolean): Promise<string> {
 	const packagePath = pkgDir.sync(__dirname);
-
 	const myPackageDetails = readPackageDetails(packagePath);	// fetch the cli's package details
-
 	const versionProm = buildVersions(commandsMap);
 
 	return versionProm
@@ -237,3 +224,11 @@ function createOutput(myPackageDetails: PackageDetails, commandVersions: ModuleV
 	output += versionCurrentVersion.replace('\{version\}', myPackageDetails.version);
 	return output;
 }
+
+export default {
+	name: 'version',
+	group: 'version',
+	description: 'Provides version information for all installed commands and the cli itself.',
+	register,
+	run
+};
