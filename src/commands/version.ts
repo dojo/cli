@@ -226,9 +226,9 @@ function createOutput(myPackageDetails: PackageDetails, commandVersions: ModuleV
 }
 
 export default {
-	name: 'version',
+	name: '',
 	group: 'version',
-	description: 'Provides version information for all installed commands and the cli itself.',
+	description: 'provides version information for all installed commands and the cli itself.',
 	register,
 	run
 };
