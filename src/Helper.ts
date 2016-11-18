@@ -1,6 +1,6 @@
 import { CommandHelper, Helper } from './interfaces';
 import { Yargs } from 'yargs';
-import {CommandsMap} from './command';
+import { CommandsMap } from './command';
 
 /**
  * The Helper that is passed to each command's 'run' function. Provides

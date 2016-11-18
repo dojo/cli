@@ -1,7 +1,7 @@
 import * as yargs from 'yargs';
 import updateNotifier from './updateNotifier';
 import config from './config';
-import {loadCommands } from './loadCommands';
+import { loadCommands } from './loadCommands';
 import registerCommands from './registerCommands';
 import { initCommandLoader, createBuiltInCommandLoader } from './command';
 import { join } from 'path';

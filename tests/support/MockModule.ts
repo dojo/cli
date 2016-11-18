@@ -1,3 +1,5 @@
+///<reference path="../../typings/modules/requirejs/index.d.ts"/>
+
 import * as mockery from 'mockery';
 import * as sinon from 'sinon';
 

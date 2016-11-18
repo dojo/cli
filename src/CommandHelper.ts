@@ -12,7 +12,7 @@ function getCommand(commandsMap: CommandsMap, group: string, commandName?: strin
  * CommandHelper class which is passed into each command's run function
  * allowing commands to call one another. Provides 'run' and 'exists' functions
  */
-export default class SomeClass implements CommandHelper {
+export default class CommandHelperClass implements CommandHelper {
 	constructor(commandsMap: CommandsMap, context: any) {
 		this.commandsMap = commandsMap;
 		this.context = context;
