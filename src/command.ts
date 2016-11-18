@@ -37,7 +37,7 @@ export function initCommandLoader(searchPrefix: string): (path: string) => Comma
 				path
 			};
 		} catch (err) {
-			throw new Error(`Path: ${path} returned module that does not satisfy the Command interface`);
+			throw new Error(`Path: ${path} returned module that does not satisfy the Command interface. ${err}`);
 		}
 	};
 }
