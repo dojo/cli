@@ -111,6 +111,28 @@ describe('version command', () => {
 
 	it('should run and return current versions and latest stable version on success', () => {
 		const latestStableInfo: any = {};
+		mockDavid.getUpdatedDependencies = sandbox.stub().yields(null, latestStableInfo);
+		const installedCommandWrapper = getCommandWrapperWithConfiguration({
+			group: 'apple',
+			name: 'test',
+			path: join(pathResolve('.'), '_build/tests/support/valid-package')
+		});
+
+		const expectedOutput = `${outputPrefix()}The currently installed groups are:\n\n${installedCommandWrapper.group} (${validPackageInfo.name}) ${validPackageInfo.version} (on latest stable version).\n${outputSuffix()}`;
+
+		const commandMap: CommandsMap = new Map<string, CommandWrapper>([
+			['installedCommand1', installedCommandWrapper]
+		]);
+
+		const helper = {commandsMap: commandMap, command: 'version' };
+		return moduleUnderTest.run(helper, {'outdated': true}).then(() => {
+			assert.equal('Fetching latest version information...', (<sinon.SinonStub> console.log).args[0][0]);
+			assert.equal(expectedOutput, (<sinon.SinonStub> console.log).args[1][0]);
+		});
+	});
+
+	it('should run and return current versions and upgrade to latest stable version on success', () => {
+		const latestStableInfo: any = {};
 		latestStableInfo[validPackageInfo.name] = {'stable': '1.2.3'};
 		mockDavid.getUpdatedDependencies = sandbox.stub().yields(null, latestStableInfo);
 		const installedCommandWrapper = getCommandWrapperWithConfiguration({

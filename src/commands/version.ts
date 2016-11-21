@@ -1,4 +1,4 @@
-import {CommandsMap } from '../command';
+import { CommandsMap } from '../command';
 import { Helper } from '../interfaces';
 import { join } from 'path';
 import { Yargs, Argv } from 'yargs';
