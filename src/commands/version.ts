@@ -140,18 +140,21 @@ function register(helper: Helper): Yargs {
  */
 function readPackageDetails(packageDir: string): PackageDetails {
 	let data: any = {};
-	try {
-		data = require(join(packageDir, 'package.json'));
-	} catch (e) {
-		// rather than add another prop to Command, declare the command to be builtin by setting its version
-		if (isBuiltInCommand(packageDir)) {
-			data.version = INBUILT_COMMAND_VERSION;
+	// rather than add another prop to Command, declare the command to be builtin by setting its version
+	if (isBuiltInCommand(packageDir)) {
+		data.version = INBUILT_COMMAND_VERSION;
+	} else {
+		try {
+			data = require(join(packageDir, 'package.json'));
+		} catch (e) {
+			data.name = packageDir;
+			data.version = versionNoVersion;
 		}
 	}
 
 	return {
-		name: data.name || packageDir,
-		version: data.version || versionNoVersion
+		name: data.name,
+		version: data.version
 	};
 }
 
