@@ -45,11 +45,11 @@ registerSuite({
 		},
 		async 'Should successfully enumerate installed commands'() {
 			const installedPaths = await enumInstalledCommands(config);
-			assert.isTrue(installedPaths.length === 2);
+			assert.equal(installedPaths.length, 2);
 		},
 		async 'Should successfully enumerate builtin commands'() {
 			const builtInPaths = await enumBuiltInCommands(config);
-			assert.isTrue(builtInPaths.length === 2);   // includes invalid commands
+			assert.equal(builtInPaths.length, 2);   // includes invalid commands
 		}
 	},
 	'unsuccessful enumeration': {
@@ -57,14 +57,14 @@ registerSuite({
 			const cloneConfig = JSON.parse(JSON.stringify(config)); // trashy copy - better than post test reset
 			cloneConfig.searchPrefix = 'bad-prefix';
 			const badPrefixPaths = await enumInstalledCommands(cloneConfig);
-			assert.isTrue(badPrefixPaths.length === 0);
+			assert.equal(badPrefixPaths.length, 0);
 
 			const badInstalledPaths = await enumInstalledCommands(badConfig);
-			assert.isTrue(badInstalledPaths.length === 0);
+			assert.equal(badInstalledPaths.length, 0);
 		},
 		async 'Should fail to find built in commands that dont exist'() {
 			const badBuiltInPaths = await enumBuiltInCommands(badConfig);
-			assert.isTrue(badBuiltInPaths.length === 0);
+			assert.equal(badBuiltInPaths.length, 0);
 		}
 	},
 	'successful load': {

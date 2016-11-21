@@ -21,18 +21,18 @@ export default function(yargs: Yargs, commandsMap: CommandsMap, yargsCommandName
 	const commandHelper = new CommandHelper(commandsMap, helperContext);
 	const helper = new Helper(commandHelper, yargs, helperContext, commandsMap);
 
-	yargsCommandNames.forEach((val, key, map) => {
-		const groupDescription = getGroupDescription(val, commandsMap);
-		const defaultCommand = <CommandWrapper> commandsMap.get(key);
+	yargsCommandNames.forEach((commandOptions, commandName) => {
+		const groupDescription = getGroupDescription(commandOptions, commandsMap);
+		const defaultCommand = <CommandWrapper> commandsMap.get(commandName);
 		const defaultCommandAvailable = !!(defaultCommand && defaultCommand.register && defaultCommand.run);
 		const reportError = (error: Error) => console.error(chalk.red.bold(error.message));
-		yargs.command(key, groupDescription, (yargs: Yargs) => {
+		yargs.command(commandName, groupDescription, (yargs: Yargs) => {
 			// Register the default command so that options show
 			if (defaultCommandAvailable) {
 				defaultCommand.register(helper);
 			}
 
-			val.forEach((command: string) => {
+			commandOptions.forEach((command: string) => {
 				const {name, description, register, run} = <CommandWrapper> commandsMap.get(command);
 				yargs.command(
 					name,

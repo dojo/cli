@@ -35,88 +35,8 @@ interface PackageDetails {
 	version: string;
 }
 
-function register(helper: Helper): Yargs {
-	helper.yargs.option('o', {
-		alias: 'outdated',
-		describe: 'Output a list of installed commands and check if any can be updated to a more recent stable version.',
-		demand: false,
-		type: 'boolean'
-	});
-	return helper.yargs;
-}
-
 interface VersionArgs extends Argv {
 	outdated: string;
-}
-
-function run(helper: Helper, args: VersionArgs): Promise<any> {
-	const checkOutdated = args.outdated !== undefined;
-	if (checkOutdated) {
-		console.log('Fetching latest version information...');
-	}
-
-	return createVersionsString(helper.commandsMap, checkOutdated)
-		.then((data) => console.log(data));
-}
-
-/**
- * Read information about a package/module, if available, or return default values.
- *
- * @param {string} packageDir The directory containing the package.json file.
- * @returns {{name: (any|string), version: any}}
- */
-function readPackageDetails(packageDir: string): PackageDetails {
-	let data: any = {};
-	try {
-		data = require(join(packageDir, 'package.json'));
-	} catch (e) {
-		// rather than add another prop to Command, declare the command to be builtin by setting its version
-		if (isBuiltInCommand(packageDir)) {
-			data.version = INBUILT_COMMAND_VERSION;
-		}
-	}
-
-	return {
-		name: data.name || packageDir,
-		version: data.version || versionNoVersion
-	};
-}
-
-/**
- * Iterate through a CommandsMap and retrieve the module details of each module referenced in the
- * CommandsMap. The returned list is sorted in alphabetical order, by group.
- *
- * @param {CommandsMap} commandsMap
- * @returns {{name, version, group}[]}
- */
-function buildVersions(commandsMap: CommandsMap): Promise<any> {
-	/*
-	 * commandsMap comes in as a map of [command-name, command]. The command has a default command,
-	 * the map will actually contain two entries for one command, on for the default command, one for the real,
-	 * expanded, command.
-	 *
-	 * Loop over commandsMap and create a new map with one entry per command, then loop over each entry and extract
-	 * the package details.
-	 */
-	const consolidatedCommands = [ ...new Map<string, string>([ ...commandsMap ]
-		.map(([, command]) => <[string, string]> [ command.path, command.group ])) ];
-
-	const versionInfo = consolidatedCommands
-		.map(([path, group]) => {
-			const { name, version } = readPackageDetails(path);
-
-			return {
-				name,
-				version,
-				group
-			};
-		})
-		.filter((val) => {
-			// remove inbuilt commands or commands that dont have a valid version in the package.json
-			return val.version !== versionNoVersion && val.version !== INBUILT_COMMAND_VERSION;
-		})
-		.sort((a, b) => a.group > b.group ? 1 : -1);
-	return Promise.resolve(versionInfo);
 }
 
 /**
@@ -128,7 +48,7 @@ function buildVersions(commandsMap: CommandsMap): Promise<any> {
  */
 function areCommandsOutdated(moduleVersions: ModuleVersion[]): Promise<any> {
 	// convert [ModuleVersion] = [{commandPackageName: commandPackageVersion}]
-	let deps: {}[] = moduleVersions
+	const deps: {}[] = moduleVersions
 		.map((command) => {
 			let obj: {
 				[commandName: string]: string
@@ -170,37 +90,10 @@ function areCommandsOutdated(moduleVersions: ModuleVersion[]): Promise<any> {
  */
 function isBuiltInCommand(commandPath: string): boolean {
 	/*__dirname seems best as the only way to truly know if a command is built in, is by location.
-	* Since this module is a built in command, we can use our location.
-	* This was preferable to using packageDir and relative paths, because we may alter where we build to (_build/src...)
-	*/
+	 * Since this module is a built in command, we can use our location.
+	 * This was preferable to using packageDir and relative paths, because we may alter where we build to (_build/src...)
+	 */
 	return commandPath.startsWith(__dirname);
-}
-
-/**
- * Returns a string describing the command group, module name, and module version of each
- * command referenced in a specified CommandsMap. This is used to print the string.
- *
- * @param {CommandsMap} commandsMap maps of commands to output the versions for
- * @param {boolean} checkOutdated should we check if there is a later stable version available for the command
- * @returns {string} the stdout output
- */
-function createVersionsString(commandsMap: CommandsMap, checkOutdated: boolean): Promise<string> {
-	const packagePath = pkgDir.sync(__dirname);
-	const myPackageDetails = readPackageDetails(packagePath);	// fetch the cli's package details
-	const versionProm = buildVersions(commandsMap);
-
-	return versionProm
-		.then((commandVersions: ModuleVersion[]) => {
-			if (checkOutdated) {
-				return areCommandsOutdated(commandVersions)
-					.then((commandVersions: ModuleVersion[]) => createOutput(myPackageDetails, commandVersions),
-						(err) => {
-							return `Something went wrong trying to fetch command versions: ${err.message}`;
-						});
-			} else {
-				return createOutput(myPackageDetails, commandVersions);
-			}
-	});
 }
 
 /**
@@ -223,6 +116,112 @@ function createOutput(myPackageDetails: PackageDetails, commandVersions: ModuleV
 
 	output += versionCurrentVersion.replace('\{version\}', myPackageDetails.version);
 	return output;
+}
+
+function register(helper: Helper): Yargs {
+	helper.yargs.option('o', {
+		alias: 'outdated',
+		describe: 'Output a list of installed commands and check if any can be updated to a more recent stable version.',
+		demand: false,
+		type: 'boolean'
+	});
+	return helper.yargs;
+}
+
+/**
+ * Read information about a package/module, if available, or return default values.
+ *
+ * @param {string} packageDir The directory containing the package.json file.
+ * @returns {{name: (any|string), version: any}}
+ */
+function readPackageDetails(packageDir: string): PackageDetails {
+	let data: any = {};
+	try {
+		data = require(join(packageDir, 'package.json'));
+	} catch (e) {
+		// rather than add another prop to Command, declare the command to be builtin by setting its version
+		if (isBuiltInCommand(packageDir)) {
+			data.version = INBUILT_COMMAND_VERSION;
+		}
+	}
+
+	return {
+		name: data.name || packageDir,
+		version: data.version || versionNoVersion
+	};
+}
+
+/**
+ * Iterate through a CommandsMap and retrieve the module details of each module referenced in the
+ * CommandsMap. The returned list is sorted in alphabetical order, by group.
+ *
+ * @param {CommandsMap} commandsMap
+ * @returns {{name, version, group}[]}
+ */
+function buildVersions(commandsMap: CommandsMap): ModuleVersion[] {
+	/*
+	 * commandsMap comes in as a map of [command-name, command]. The command has a default command,
+	 * the map will actually contain two entries for one command, on for the default command, one for the real,
+	 * expanded, command.
+	 *
+	 * Loop over commandsMap and create a new map with one entry per command, then loop over each entry and extract
+	 * the package details.
+	 */
+	const consolidatedCommands = [ ...new Map<string, string>([ ...commandsMap ]
+		.map(([, command]) => <[string, string]> [ command.path, command.group ])) ];
+
+	const versionInfo = consolidatedCommands
+		.map(([path, group]) => {
+			const { name, version } = readPackageDetails(path);
+
+			return {
+				name,
+				version,
+				group
+			};
+		})
+		.filter((val) => {
+			// remove inbuilt commands or commands that dont have a valid version in the package.json
+			return val.version !== versionNoVersion && val.version !== INBUILT_COMMAND_VERSION;
+		})
+		.sort((a, b) => a.group > b.group ? 1 : -1);
+	return versionInfo;
+}
+
+/**
+ * Returns a string describing the command group, module name, and module version of each
+ * command referenced in a specified CommandsMap. This is used to print the string.
+ *
+ * @param {CommandsMap} commandsMap maps of commands to output the versions for
+ * @param {boolean} checkOutdated should we check if there is a later stable version available for the command
+ * @returns {string} the stdout output
+ */
+function createVersionsString(commandsMap: CommandsMap, checkOutdated: boolean): Promise<string> {
+	const packagePath = pkgDir.sync(__dirname);
+	const myPackageDetails = readPackageDetails(packagePath);	// fetch the cli's package details
+	const versions: ModuleVersion[] = buildVersions(commandsMap);
+
+	if (checkOutdated) {
+		return areCommandsOutdated(versions)
+			.then((commandVersions: ModuleVersion[]) => createOutput(myPackageDetails, commandVersions),
+				(err) => {
+					return `Something went wrong trying to fetch command versions: ${err.message}`;
+				});
+	} else {
+		return Promise.resolve(createOutput(myPackageDetails, versions));
+	}
+}
+
+function run(helper: Helper, args: VersionArgs): Promise<any> {
+	const checkOutdated = args.outdated !== undefined;
+	if (checkOutdated) {
+		console.log('Fetching latest version information...');
+	}
+
+	return createVersionsString(helper.commandsMap, checkOutdated)
+		.then(function(data) {
+			console.log(data);
+		});
 }
 
 export default {
