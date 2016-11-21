@@ -101,7 +101,7 @@ registerSuite({
 			}
 			catch (error) {
 				assert.isTrue(error instanceof Error);
-				assert.isTrue(error.message.indexOf('does not satisfy the Command interface') > -1);
+				assert.equal(error.message, `Path: ../tests/support/esmodule-fail-foo-bar returned module that does not satisfy the Command interface. Error: Module does not satisfy the Command interface`);
 			}
 		}
 	},

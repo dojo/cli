@@ -39,6 +39,10 @@ interface VersionArgs extends Argv {
 	outdated: string;
 }
 
+type DavidDependencies = {
+	[dependencyName: string]: { stable: string }
+}
+
 /**
  * Iterate through a ModuleVersions and output if the module can be updated to a later version.
  * Version checks are async calls to npm - so module repository dependant for now.
@@ -64,7 +68,7 @@ function areCommandsOutdated(moduleVersions: ModuleVersion[]): Promise<any> {
 
 	return new Promise((resolve, reject) => {
 		// we want to fetch the latest stable version for our devDependencies
-		david.getUpdatedDependencies(manifest, { dev: true, stable: true }, function (err: any, deps: {[dependencyName: string]: {stable: string }}) {
+		david.getUpdatedDependencies(manifest, { dev: true, stable: true }, function (err: any, deps: DavidDependencies) {
 			if (err) {
 				reject(err);
 			}

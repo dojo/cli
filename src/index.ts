@@ -1,11 +1,10 @@
 import * as yargs from 'yargs';
 import updateNotifier from './updateNotifier';
 import config from './config';
-import { loadCommands } from './loadCommands';
+import { loadCommands, enumerateInstalledCommands, enumerateBuiltInCommands } from './loadCommands';
 import registerCommands from './registerCommands';
 import { initCommandLoader, createBuiltInCommandLoader } from './command';
 import { join } from 'path';
-import { enumerateInstalledCommands, enumerateBuiltInCommands} from './loadCommands';
 const pkgDir = require('pkg-dir');
 
 const packagePath = pkgDir.sync(__dirname);
@@ -41,7 +40,7 @@ async function init() {
 		// register all the command with yargs and allow it to do the commands processing
 		registerCommands(yargs, commands, yargsCommandNames);
 	} catch (err) {
-		console.log(`Some commands are not available: ${err}`);
+		console.log(`Commands are not available: ${err}`);
 	}
 }
 init();

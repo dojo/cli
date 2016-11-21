@@ -151,8 +151,6 @@ describe('version command', () => {
 		return moduleUnderTest.run(helper, {'outdated': true}).then(() => {
 			assert.equal('Fetching latest version information...', (<sinon.SinonStub> console.log).args[0][0]);
 			assert.equal(expectedOutput, (<sinon.SinonStub> console.log).args[1][0]);
-		}, () => {
-			assert.isTrue(false);   // not sure how to test a promise is not rejected - sinon-as-promised?
 		});
 	});
 

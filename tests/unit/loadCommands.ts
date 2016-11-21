@@ -8,23 +8,28 @@ const enumBuiltInCommands = require('intern/dojo/node!../../src/loadCommands').e
 const enumInstalledCommands = require('intern/dojo/node!../../src/loadCommands').enumerateInstalledCommands;
 const loadCommands = require('intern/dojo/node!../../src/loadCommands').loadCommands;
 
-// tests are run in package-dir (from cli, using grunt test) - FIX to use pkg-dir
-const config: Config = {
-	searchPaths: [ '_build/tests/support' ],
-	searchPrefix: 'test-prefix',
-	builtInCommandLocation: join(pathResolve('.'), '/_build/tests/support/commands')
-};
-const badConfig: Config = {
-	searchPaths: [ 'just/garbage', 'yep/really/bad/paths/here' ],
-	searchPrefix: 'bad-prefix',
-	builtInCommandLocation : 'dirThatDoesNotExist'
-};
-
 let loadStub: SinonStub;
 let yargsStub: any;
 let commandWrapper1: any;
 let commandWrapper2: any;
 let consoleStub: SinonStub;
+let goodConfig: Config;
+
+function config(invalid: boolean): Config {
+	// tests are run in package-dir (from cli, using grunt test) - FIX to use pkg-dir
+	const config: Config = {
+		searchPaths: [ '_build/tests/support' ],
+		searchPrefix: 'test-prefix',
+		builtInCommandLocation: join(pathResolve('.'), '/_build/tests/support/commands')
+	};
+	const badConfig: Config = {
+		searchPaths: [ 'just/garbage', 'yep/really/bad/paths/here' ],
+		searchPrefix: 'bad-prefix',
+		builtInCommandLocation : 'dirThatDoesNotExist'
+	};
+
+	return invalid ? badConfig : config;
+}
 
 registerSuite({
 	name: 'loadCommands',
@@ -34,6 +39,7 @@ registerSuite({
 		commandWrapper2 = getCommandWrapper('command2');
 		yargsStub = getYargsStub();
 		loadStub = stub();
+		goodConfig = config(false);
 	},
 	'afterEach'() {
 		consoleStub.restore();
@@ -44,26 +50,25 @@ registerSuite({
 			loadStub.onSecondCall().returns(commandWrapper2);
 		},
 		async 'Should successfully enumerate installed commands'() {
-			const installedPaths = await enumInstalledCommands(config);
+			const installedPaths = await enumInstalledCommands(goodConfig);
 			assert.equal(installedPaths.length, 2);
 		},
 		async 'Should successfully enumerate builtin commands'() {
-			const builtInPaths = await enumBuiltInCommands(config);
+			const builtInPaths = await enumBuiltInCommands(goodConfig);
 			assert.equal(builtInPaths.length, 2);   // includes invalid commands
 		}
 	},
 	'unsuccessful enumeration': {
 		async 'Should fail to find installed commands that dont exist'() {
-			const cloneConfig = JSON.parse(JSON.stringify(config)); // trashy copy - better than post test reset
-			cloneConfig.searchPrefix = 'bad-prefix';
-			const badPrefixPaths = await enumInstalledCommands(cloneConfig);
+			goodConfig.searchPrefix = 'bad-prefix';
+			const badPrefixPaths = await enumInstalledCommands(goodConfig);
 			assert.equal(badPrefixPaths.length, 0);
 
-			const badInstalledPaths = await enumInstalledCommands(badConfig);
+			const badInstalledPaths = await enumInstalledCommands(config((true)));
 			assert.equal(badInstalledPaths.length, 0);
 		},
 		async 'Should fail to find built in commands that dont exist'() {
-			const badBuiltInPaths = await enumBuiltInCommands(badConfig);
+			const badBuiltInPaths = await enumBuiltInCommands(config(true));
 			assert.equal(badBuiltInPaths.length, 0);
 		}
 	},
@@ -71,9 +76,10 @@ registerSuite({
 		'beforeEach'() {
 			loadStub.onFirstCall().returns(commandWrapper1);
 			loadStub.onSecondCall().returns(commandWrapper2);
+			goodConfig = config(false);
 		},
 		async 'Should set first loaded command of each group to be the default'() {
-			const installedPaths = await enumInstalledCommands(config);
+			const installedPaths = await enumInstalledCommands(goodConfig);
 			const { commandsMap } = await loadCommands(installedPaths, loadStub);
 
 			assert.isTrue(loadStub.calledTwice);
@@ -88,7 +94,7 @@ registerSuite({
 			loadStub.onFirstCall().returns(commandWrapper1);
 			loadStub.onSecondCall().returns(commandWrapperDuplicate);
 
-			const installedPaths = await enumInstalledCommands(config);
+			const installedPaths = await enumInstalledCommands(goodConfig);
 			const { yargsCommandNames } = await loadCommands(installedPaths, loadStub);
 
 			assert.isTrue(loadStub.calledTwice);
