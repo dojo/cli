@@ -1,9 +1,9 @@
 import './command';
+import './CommandHelper';
 import './config';
 import './index';
-import './text';
 import './loadCommands';
 import './registerCommands';
+import './text';
 import './updateNotifier';
-import './version';
-import './CommandHelper';
+import './commands/version';

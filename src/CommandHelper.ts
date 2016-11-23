@@ -22,7 +22,8 @@ export default class implements CommandHelper {
 	run(group: string, commandName?: string, args?: yargs.Argv): Promise<any> {
 		const command = getCommand(this.commandsMap, group, commandName);
 		if (command) {
-			return command.run(new Helper(this, yargs, this.context), args);
+			const helper = new Helper(this, yargs, this.context, this.commandsMap);
+			return command.run(helper, args);
 		}
 		else {
 			return Promise.reject(new Error('The command does not exist'));

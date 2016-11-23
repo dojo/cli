@@ -17,10 +17,6 @@ registerSuite({
 		return tests;
 	})([
 		'helpUsage',
-		'helpEpilog',
-		'versionDescription',
-		'versionNoRegisteredCommands',
-		'versionRegisteredCommands',
-		'versionCurrentVersion'
+		'helpEpilog'
 	])
 });

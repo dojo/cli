@@ -51,20 +51,22 @@ The CLI has the following format:
 
 e.g. 
 
-`dojo help`
+`dojo build`
 
-where `help` is the group, and no command is specified, so the default help command is run. 
+where `build` is the group, and no command is specified, so the default build command is run.
+The above will output generic help information.
 
-This will output generic help information.
+`dojo build custombuild`
 
-`dojo create help`
+where `build` is the group and `custombuild` is an installed command.
 
-where `create` is the group and `help` is the command. This will output help for the `create` group.
+The CLI has the following in-built options:
 
-The CLI has the following basic commands:
+`dojo -h, --help` - provides a list of help as detailed above.
 
-`dojo help` - provides a list of help as detailed above.
-`dojo -v` - provides the current version of the CLI
+The CLI has the following in-built groups:
+
+`dojo version` - provides information on the versions of installed commands and the cli itself.
 
 ## How do I contribute?
 
