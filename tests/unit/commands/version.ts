@@ -58,6 +58,25 @@ describe('version command', () => {
 		});
 	});
 
+	it(`should run and return 'no registered commands' when passed an invalid path to an installed command`, () => {
+		const noCommandOutput = `${outputPrefix()}There are no registered commands available.${outputSuffix()}`;
+
+		const badCommandWrapper = getCommandWrapperWithConfiguration({
+			group: 'apple',
+			name: 'test',
+			path: join(pathResolve('.'), 'path/that/does/not/exist')
+		});
+
+		const commandMap: CommandsMap = new Map<string, CommandWrapper>([
+			['badCommand', badCommandWrapper]
+		]);
+
+		const helper = {commandsMap: commandMap, command: 'version'};
+		return moduleUnderTest.run(helper, {}).then(() => {
+			assert.equal(noCommandOutput, (<sinon.SinonStub> console.log).args[0][0]);
+		});
+	});
+
 	it('should run and return current versions on success', () => {
 		const installedCommandWrapper1 = getCommandWrapperWithConfiguration({
 				group: 'apple',
