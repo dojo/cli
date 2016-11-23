@@ -111,7 +111,7 @@ describe('cli main module', () => {
 
 			it('does', () => {
 				assert.throw(mockCommand.createBuiltInCommandLoader, Error, errMessage);
-				assert.equal(`Commands are not available: Error: ${errMessage}`, (<OrigSinon.SinonStub> console.log).args[0][0]);
+				assert.equal((<OrigSinon.SinonStub> console.log).args[0][0], `Commands are not available: Error: ${errMessage}`);
 			});
 		});
 
