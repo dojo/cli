@@ -73,7 +73,7 @@ describe('version command', () => {
 		]);
 
 		const helper = {commandsMap: commandMap, command: 'version'};
-		return moduleUnderTest.run(helper, {}).then(() => {
+		return moduleUnderTest.run(helper, { outdated: false }).then(() => {
 			assert.isTrue(mockDavid.getUpdatedDependencies.notCalled);
 			assert.equal((<sinon.SinonStub> console.log).args[0][0], noCommandOutput);
 		});
@@ -99,7 +99,7 @@ describe('version command', () => {
 		]);
 
 		const helper = {commandsMap: commandMap, command: 'version'};
-		return moduleUnderTest.run(helper, {}).then(() => {
+		return moduleUnderTest.run(helper, { outdated: false }).then(() => {
 			assert.isTrue(mockDavid.getUpdatedDependencies.notCalled);
 			assert.equal((<sinon.SinonStub> console.log).args[0][0], expectedOutput);
 		});
@@ -148,7 +148,7 @@ describe('version command', () => {
 		]);
 
 		const helper = {commandsMap: commandMap, command: 'version' };
-		return moduleUnderTest.run(helper, {'outdated': true}).then(() => {
+		return moduleUnderTest.run(helper, { 'outdated': true }).then(() => {
 			assert.equal('Fetching latest version information...', (<sinon.SinonStub> console.log).args[0][0]);
 			assert.equal((<sinon.SinonStub> console.log).args[1][0], expectedOutput);
 		});
@@ -171,7 +171,7 @@ describe('version command', () => {
 		]);
 
 		const helper = {commandsMap: commandMap, command: 'version' };
-		return moduleUnderTest.run(helper, {'outdated': true}).then(() => {
+		return moduleUnderTest.run(helper, { 'outdated': true }).then(() => {
 			assert.equal('Fetching latest version information...', (<sinon.SinonStub> console.log).args[0][0]);
 			assert.equal((<sinon.SinonStub> console.log).args[1][0], expectedOutput);
 		});
@@ -193,7 +193,7 @@ describe('version command', () => {
 		]);
 
 		const helper = {commandsMap: commandMap, command: 'version' };
-		return moduleUnderTest.run(helper, {'outdated': true}).then(() => {
+		return moduleUnderTest.run(helper, { 'outdated': true }).then(() => {
 			assert.equal('Fetching latest version information...', (<sinon.SinonStub> console.log).args[0][0]);
 			assert.equal((<sinon.SinonStub> console.log).args[1][0], expectedOutput);
 		});
