@@ -128,7 +128,7 @@ describe('version command', () => {
 		});
 	});
 
-	it('should run and return current versions and latest stable version on success', () => {
+	it('should run and return current versions and latest version on success', () => {
 		const latestStableInfo: any = {};
 		mockDavid.getUpdatedDependencies = sandbox.stub().yields(null, latestStableInfo);
 		const installedCommandWrapper = getCommandWrapperWithConfiguration({
@@ -150,9 +150,9 @@ describe('version command', () => {
 		});
 	});
 
-	it('should run and return current versions and upgrade to latest stable version on success', () => {
+	it('should run and return current versions and upgrade to latest version on success', () => {
 		const latestStableInfo: any = {};
-		latestStableInfo[validPackageInfo.name] = {'stable': '1.2.3'};
+		latestStableInfo[validPackageInfo.name] = {'latest': '1.2.3'};
 		mockDavid.getUpdatedDependencies = sandbox.stub().yields(null, latestStableInfo);
 		const installedCommandWrapper = getCommandWrapperWithConfiguration({
 			group: 'apple',
@@ -160,7 +160,7 @@ describe('version command', () => {
 			path: join(pathResolve('.'), '_build/tests/support/valid-package')
 		});
 
-		const expectedOutput = `${outputPrefix()}The currently installed groups are:\n\n${installedCommandWrapper.group} (${validPackageInfo.name}) ${validPackageInfo.version} \u001b[33m(can be updated to ${latestStableInfo[validPackageInfo.name].stable})\u001b[39m.\n${outputSuffix()}`;
+		const expectedOutput = `${outputPrefix()}The currently installed groups are:\n\n${installedCommandWrapper.group} (${validPackageInfo.name}) ${validPackageInfo.version} \u001b[33m(can be updated to ${latestStableInfo[validPackageInfo.name].latest})\u001b[39m.\n${outputSuffix()}`;
 
 		const commandMap: CommandsMap = new Map<string, CommandWrapper>([
 			['installedCommand1', installedCommandWrapper]
