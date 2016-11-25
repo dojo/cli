@@ -35,7 +35,7 @@ interface PackageDetails {
 	version: string;
 }
 
-interface VersionArgs extends Argv {
+export interface VersionArgs extends Argv {
 	outdated: string;
 }
 
