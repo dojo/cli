@@ -40,7 +40,10 @@ export interface VersionArgs extends Argv {
 }
 
 type DavidDependencies = {
-	[dependencyName: string]: { stable: string }
+	[dependencyName: string]: {
+		stable: string;
+		latest: string;
+	}
 }
 
 /**
@@ -51,15 +54,11 @@ type DavidDependencies = {
  * @returns {{name, version, group}[]}
  */
 function areCommandsOutdated(moduleVersions: ModuleVersion[]): Promise<any> {
-	// convert [ModuleVersion] = [{commandPackageName: commandPackageVersion}]
-	const deps: {}[] = moduleVersions
-		.map((command) => {
-			let obj: {
-				[commandName: string]: string
-			} = {};
-			obj[command.name] = command.version;
-			return obj;
-		});
+	const deps: { [index: string]: string } = {};
+
+	moduleVersions.forEach((command) => {
+		deps[command.name] = command.version;
+	});
 
 	// create fake manifest (package.json) with just the dev-dependencies that we want to check
 	const manifest = {
@@ -68,14 +67,14 @@ function areCommandsOutdated(moduleVersions: ModuleVersion[]): Promise<any> {
 
 	return new Promise((resolve, reject) => {
 		// we want to fetch the latest stable version for our devDependencies
-		david.getUpdatedDependencies(manifest, { dev: true, stable: true }, function (err: any, deps: DavidDependencies) {
+		david.getUpdatedDependencies(manifest, { dev: true }, function (err: any, deps: DavidDependencies) {
 			if (err) {
 				reject(err);
 			}
 			resolve(moduleVersions.map((command) => {
 				const canBeUpdated = deps[command.name];    // david returns all deps that can be updated
 				const versionStr = canBeUpdated ?
-					`${command.version} ${yellow(`(can be updated to ${deps[command.name].stable})`)}.` :
+					`${command.version} ${yellow(`(can be updated to ${deps[command.name].latest})`)}.` :
 					`${command.version} (on latest stable version).`;
 				return {
 					name: command.name,
