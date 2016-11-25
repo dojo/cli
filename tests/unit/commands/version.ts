@@ -53,7 +53,7 @@ describe('version command', () => {
 		const commandMap: CommandsMap = new Map<string, CommandWrapper>();
 
 		const helper = {commandsMap: commandMap, command: 'version'};
-		return moduleUnderTest.run(helper, {}).then(() => {
+		return moduleUnderTest.run(helper, { outdated: false }).then(() => {
 			assert.isTrue(mockDavid.getUpdatedDependencies.notCalled);
 			assert.equal((<sinon.SinonStub> console.log).args[0][0], noCommandOutput);
 		});
