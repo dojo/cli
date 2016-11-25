@@ -36,7 +36,7 @@ interface PackageDetails {
 }
 
 export interface VersionArgs extends Argv {
-	outdated: string;
+	outdated: boolean;
 }
 
 type DavidDependencies = {
@@ -219,7 +219,7 @@ function createVersionsString(commandsMap: CommandsMap, checkOutdated: boolean):
 }
 
 function run(helper: Helper, args: VersionArgs): Promise<any> {
-	const checkOutdated = args.outdated !== undefined;
+	const checkOutdated = args.outdated;
 	if (checkOutdated) {
 		console.log('Fetching latest version information...');
 	}
