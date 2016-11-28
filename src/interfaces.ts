@@ -10,7 +10,6 @@ export interface Helper {
 	yargs: Yargs;
 	command: CommandHelper;
 	context: any;
-	commandsMap: CommandsMap;
 }
 
 /**

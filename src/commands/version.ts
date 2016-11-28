@@ -5,6 +5,7 @@ import { Yargs, Argv } from 'yargs';
 import { yellow } from 'chalk';
 const david = require('david');
 const pkgDir = require('pkg-dir');
+import { allCommands } from '../AllCommands';
 
 // exported for tests
 export const versionCurrentVersion = `
@@ -224,7 +225,7 @@ function run(helper: Helper, args: VersionArgs): Promise<any> {
 		console.log('Fetching latest version information...');
 	}
 
-	return createVersionsString(helper.commandsMap, checkOutdated)
+	return createVersionsString(allCommands.commands, checkOutdated)
 		.then(function(data) {
 			console.log(data);
 		});
