@@ -19,7 +19,7 @@ export default function(yargs: Yargs, commandsMap: CommandsMap, yargsCommandName
 	const helperContext = {};
 
 	const commandHelper = new CommandHelper(commandsMap, helperContext);
-	const helper = new Helper(commandHelper, yargs, helperContext, commandsMap);
+	const helper = new Helper(commandHelper, yargs, helperContext);
 
 	yargsCommandNames.forEach((commandOptions, commandName) => {
 		const groupDescription = getGroupDescription(commandOptions, commandsMap);

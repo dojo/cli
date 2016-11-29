@@ -1,5 +1,4 @@
 import { Argv, Yargs } from 'yargs';
-import { CommandsMap } from './command';
 
 export interface CommandHelper {
 	run(group: string, commandName?: string, args?: Argv): Promise<any>;
