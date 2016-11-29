@@ -9,6 +9,7 @@ import { join, resolve as pathResolve } from 'path';
 
 import { CommandsMap, CommandWrapper } from '../../../src/command';
 import { getCommandWrapperWithConfiguration } from '../../support/testHelper';
+import { LoadedCommands } from '../../../src/loadCommands';
 const validPackageInfo = require('intern/dojo/node!../../support/valid-package/package.json');
 const anotherValidPackageInfo = require('intern/dojo/node!../../support/another-valid-package/package.json');
 
@@ -19,7 +20,7 @@ describe('version command', () => {
 	let mockDavid: any;
 	let mockPkgDir: any;
 	let mockAllCommands: any;
-	let sandbox: OrigSinon.SinonSandbox;
+	let sandbox: sinon.SinonSandbox;
 
 	beforeEach(() => {
 		sandbox = sinon.sandbox.create();
@@ -27,8 +28,8 @@ describe('version command', () => {
 		mockModule.dependencies(['david', 'pkg-dir', '../allCommands']);
 		mockDavid = mockModule.getMock('david');
 		mockPkgDir = mockModule.getMock('pkg-dir');
-		mockAllCommands = mockModule.getMock('../allCommands');
 		mockPkgDir.ctor.sync = sandbox.stub().returns(join(pathResolve('.'), '/_build/tests/support/valid-package'));
+		mockAllCommands = mockModule.getMock('../allCommands');
 		sandbox.stub(console, 'log');
 		moduleUnderTest = mockModule.getModuleUnderTest().default;
 	});
@@ -57,7 +58,7 @@ describe('version command', () => {
 		const commandMap: CommandsMap = new Map<string, CommandWrapper>();
 
 		const helper = {command: 'version'};
-		mockAllCommands = sandbox.stub().resolves(commandMap);
+		mockAllCommands.default = sandbox.stub().resolves({commandsMap: commandMap});
 		return moduleUnderTest.run(helper, { outdated: false }).then(() => {
 			assert.isTrue(mockDavid.getUpdatedDependencies.notCalled);
 			assert.equal((<OrigSinon.SinonStub> console.log).args[0][0], noCommandOutput);
@@ -76,8 +77,9 @@ describe('version command', () => {
 		const commandMap: CommandsMap = new Map<string, CommandWrapper>([
 			['badCommand', badCommandWrapper]
 		]);
+		mockAllCommands.default = sandbox.stub().resolves({commandsMap: commandMap});
 
-		const helper = {commandsMap: commandMap, command: 'version'};
+		const helper = {command: 'version'};
 		return moduleUnderTest.run(helper, { outdated: false }).then(() => {
 			assert.isTrue(mockDavid.getUpdatedDependencies.notCalled);
 			assert.equal((<OrigSinon.SinonStub> console.log).args[0][0], noCommandOutput);
@@ -102,8 +104,8 @@ describe('version command', () => {
 			['installedCommand1', installedCommandWrapper1],
 			['installedCommand2', installedCommandWrapper2]
 		]);
-
-		const helper = {commandsMap: commandMap, command: 'version'};
+		mockAllCommands.default = sandbox.stub().resolves({commandsMap: commandMap});
+		const helper = {command: 'version'};
 		return moduleUnderTest.run(helper, { outdated: false }).then(() => {
 			assert.isTrue(mockDavid.getUpdatedDependencies.notCalled);
 			assert.equal((<OrigSinon.SinonStub> console.log).args[0][0], expectedOutput);
@@ -130,7 +132,8 @@ describe('version command', () => {
 			['builtInCommand1', builtInCommandWrapper]
 		]);
 
-		const helper = {commandsMap: commandMap, command: 'version'};
+		const helper = {command: 'version'};
+		mockAllCommands.default = sandbox.stub().resolves({commandsMap: commandMap});
 		return moduleUnderTest.run(helper, { outdated: false }).then(() => {
 			assert.isTrue(mockDavid.getUpdatedDependencies.notCalled);
 			assert.equal((<OrigSinon.SinonStub> console.log).args[0][0], expectedOutput);
@@ -152,7 +155,8 @@ describe('version command', () => {
 			['installedCommand1', installedCommandWrapper]
 		]);
 
-		const helper = {commandsMap: commandMap, command: 'version' };
+		const helper = {command: 'version' };
+		mockAllCommands.default = sandbox.stub().resolves({commandsMap: commandMap});
 		return moduleUnderTest.run(helper, { 'outdated': true }).then(() => {
 			assert.equal('Fetching latest version information...', (<OrigSinon.SinonStub> console.log).args[0][0]);
 			assert.equal((<OrigSinon.SinonStub> console.log).args[1][0], expectedOutput);
@@ -175,7 +179,8 @@ describe('version command', () => {
 			['installedCommand1', installedCommandWrapper]
 		]);
 
-		const helper = {commandsMap: commandMap, command: 'version' };
+		const helper = {command: 'version' };
+		mockAllCommands.default = sandbox.stub().resolves({commandsMap: commandMap});
 		return moduleUnderTest.run(helper, { 'outdated': true }).then(() => {
 			assert.equal('Fetching latest version information...', (<OrigSinon.SinonStub> console.log).args[0][0]);
 			assert.equal((<OrigSinon.SinonStub> console.log).args[1][0], expectedOutput);
@@ -197,7 +202,8 @@ describe('version command', () => {
 			['installedCommand1', installedCommandWrapper]
 		]);
 
-		const helper = {commandsMap: commandMap, command: 'version' };
+		const helper = {command: 'version' };
+		mockAllCommands.default = sandbox.stub().resolves({commandsMap: commandMap});
 		return moduleUnderTest.run(helper, { 'outdated': true }).then(() => {
 			assert.equal('Fetching latest version information...', (<OrigSinon.SinonStub> console.log).args[0][0]);
 			assert.equal((<OrigSinon.SinonStub> console.log).args[1][0], expectedOutput);

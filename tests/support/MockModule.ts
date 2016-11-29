@@ -3,6 +3,7 @@ declare const require: RootRequire;
 
 import * as mockery from 'mockery';
 import * as sinon from 'sinon';
+import { resolve as pathResolve } from 'path';
 
 const dojoNodePlugin = 'intern/dojo/node';
 
@@ -18,7 +19,14 @@ function unload(modulePath: string): void {
 }
 
 function resolvePath(basePath: string, modulePath: string): string {
-	return modulePath.replace('./', `${basePath}/`);
+
+	if (modulePath.startsWith('./')) {
+		return modulePath.replace('./', `${basePath}/`);
+	} else if (modulePath.startsWith('..')) {
+		return modulePath.replace('../', `${basePath.substr(0, basePath.lastIndexOf('/'))}/`;
+	} else {
+		return modulePath;
+	}
 }
 
 function getBasePath(modulePath: string): string {
