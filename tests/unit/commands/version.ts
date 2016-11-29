@@ -9,7 +9,6 @@ import { join, resolve as pathResolve } from 'path';
 
 import { CommandsMap, CommandWrapper } from '../../../src/command';
 import { getCommandWrapperWithConfiguration } from '../../support/testHelper';
-import { LoadedCommands } from '../../../src/loadCommands';
 const validPackageInfo = require('intern/dojo/node!../../support/valid-package/package.json');
 const anotherValidPackageInfo = require('intern/dojo/node!../../support/another-valid-package/package.json');
 

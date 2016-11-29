@@ -25,8 +25,10 @@ export function reset(): void {
 
 export default async function loadAllCommands(): Promise<LoadedCommands> {
 	if (loaded) {
+		console.log('already loaded');
 		return Promise.resolve(commands);
 	}
+	console.log('loading');
 
 	const builtInCommandLoader = createBuiltInCommandLoader();
 	const installedCommandLoader = initCommandLoader(config.searchPrefix);
