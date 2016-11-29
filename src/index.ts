@@ -5,10 +5,6 @@ import { join } from 'path';
 import { allCommands } from './AllCommands';
 const pkgDir = require('pkg-dir');
 
-const packagePath = pkgDir.sync(__dirname);
-const packageJsonFilePath = join(packagePath, 'package.json');
-const pkg = <any> require(packageJsonFilePath);
-
 /**
  * Runs the CLI
  * - Sets up the update notifier to check for updates of the cli
@@ -17,6 +13,10 @@ const pkg = <any> require(packageJsonFilePath);
  */
 async function init() {
 	try {
+		const packagePath = pkgDir.sync(__dirname);
+		const packageJsonFilePath = join(packagePath, 'package.json');
+		const pkg = <any> require(packageJsonFilePath);
+
 		updateNotifier(pkg, 0);
 		await allCommands.init();
 		registerCommands(yargs, allCommands.commands, allCommands.yargsCommandNames);

@@ -226,9 +226,7 @@ function run(helper: Helper, args: VersionArgs): Promise<any> {
 	}
 
 	return createVersionsString(allCommands.commands, checkOutdated)
-		.then(function(data) {
-			console.log(data);
-		});
+		.then(console.log);
 }
 
 export default {
