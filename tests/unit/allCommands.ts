@@ -45,7 +45,7 @@ describe('AllCommands', () => {
 
 			it('should run loadCommands to completion', () => {
 				return moduleUnderTest.default()
-					.then(() => {
+					.then(function() {
 						assert.isTrue(mockCommand.createBuiltInCommandLoader.calledOnce, 'should call builtin command loader');
 						assert.isTrue(mockCommand.initCommandLoader.calledOnce, 'should call installed command loader');
 

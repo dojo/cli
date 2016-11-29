@@ -23,7 +23,7 @@ function resolvePath(basePath: string, modulePath: string): string {
 	if (modulePath.startsWith('./')) {
 		return modulePath.replace('./', `${basePath}/`);
 	} else if (modulePath.startsWith('..')) {
-		return modulePath.replace('../', `${basePath.substr(0, basePath.lastIndexOf('/'))}/`;
+		return modulePath.replace('../', `${basePath.substr(0, basePath.lastIndexOf('/'))}/`);
 	} else {
 		return modulePath;
 	}
