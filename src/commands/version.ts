@@ -3,9 +3,9 @@ import { Helper } from '../interfaces';
 import { join } from 'path';
 import { Yargs, Argv } from 'yargs';
 import { yellow } from 'chalk';
+import allCommands from '../allCommands';
 const david = require('david');
 const pkgDir = require('pkg-dir');
-import { allCommands } from '../AllCommands';
 
 // exported for tests
 export const versionCurrentVersion = `
@@ -225,8 +225,11 @@ function run(helper: Helper, args: VersionArgs): Promise<any> {
 		console.log('Fetching latest version information...');
 	}
 
-	return createVersionsString(allCommands.commands, checkOutdated)
-		.then(console.log);
+	return allCommands()
+		.then((commands) => {
+			return createVersionsString(commands.commandsMap, checkOutdated)
+				.then(console.log);
+		});
 }
 
 export default {

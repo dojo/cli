@@ -1,7 +1,9 @@
 import { beforeEach, afterEach, describe, it } from 'intern!bdd';
 import * as assert from 'intern/chai!assert';
 import MockModule from '../../support/MockModule';
-import * as sinon from 'sinon';
+import * as OrigSinon from 'sinon';
+const sap = require('sinon-as-promised');
+const sinon = new sap(Promise);
 
 import { join, resolve as pathResolve } from 'path';
 
@@ -16,17 +18,19 @@ describe('version command', () => {
 	let mockModule: MockModule;
 	let mockDavid: any;
 	let mockPkgDir: any;
-	let sandbox: sinon.SinonSandbox;
+	let mockAllCommands: any;
+	let sandbox: OrigSinon.SinonSandbox;
 
 	beforeEach(() => {
 		sandbox = sinon.sandbox.create();
 		mockModule = new MockModule('../../src/commands/version');
-		mockModule.dependencies(['david', 'pkg-dir']);
+		mockModule.dependencies(['david', 'pkg-dir', '../allCommands']);
 		mockDavid = mockModule.getMock('david');
 		mockPkgDir = mockModule.getMock('pkg-dir');
+		mockAllCommands = mockModule.getMock('../allCommands');
 		mockPkgDir.ctor.sync = sandbox.stub().returns(join(pathResolve('.'), '/_build/tests/support/valid-package'));
-		moduleUnderTest = mockModule.getModuleUnderTest().default;
 		sandbox.stub(console, 'log');
+		moduleUnderTest = mockModule.getModuleUnderTest().default;
 	});
 
 	afterEach(() => {
@@ -52,10 +56,11 @@ describe('version command', () => {
 		const noCommandOutput = `${outputPrefix()}There are no registered commands available.${outputSuffix()}`;
 		const commandMap: CommandsMap = new Map<string, CommandWrapper>();
 
-		const helper = {commandsMap: commandMap, command: 'version'};
+		const helper = {command: 'version'};
+		mockAllCommands = sandbox.stub().resolves(commandMap);
 		return moduleUnderTest.run(helper, { outdated: false }).then(() => {
 			assert.isTrue(mockDavid.getUpdatedDependencies.notCalled);
-			assert.equal((<sinon.SinonStub> console.log).args[0][0], noCommandOutput);
+			assert.equal((<OrigSinon.SinonStub> console.log).args[0][0], noCommandOutput);
 		});
 	});
 
@@ -75,7 +80,7 @@ describe('version command', () => {
 		const helper = {commandsMap: commandMap, command: 'version'};
 		return moduleUnderTest.run(helper, { outdated: false }).then(() => {
 			assert.isTrue(mockDavid.getUpdatedDependencies.notCalled);
-			assert.equal((<sinon.SinonStub> console.log).args[0][0], noCommandOutput);
+			assert.equal((<OrigSinon.SinonStub> console.log).args[0][0], noCommandOutput);
 		});
 	});
 
@@ -101,7 +106,7 @@ describe('version command', () => {
 		const helper = {commandsMap: commandMap, command: 'version'};
 		return moduleUnderTest.run(helper, { outdated: false }).then(() => {
 			assert.isTrue(mockDavid.getUpdatedDependencies.notCalled);
-			assert.equal((<sinon.SinonStub> console.log).args[0][0], expectedOutput);
+			assert.equal((<OrigSinon.SinonStub> console.log).args[0][0], expectedOutput);
 		});
 	});
 
@@ -128,7 +133,7 @@ describe('version command', () => {
 		const helper = {commandsMap: commandMap, command: 'version'};
 		return moduleUnderTest.run(helper, { outdated: false }).then(() => {
 			assert.isTrue(mockDavid.getUpdatedDependencies.notCalled);
-			assert.equal((<sinon.SinonStub> console.log).args[0][0], expectedOutput);
+			assert.equal((<OrigSinon.SinonStub> console.log).args[0][0], expectedOutput);
 		});
 	});
 
@@ -149,8 +154,8 @@ describe('version command', () => {
 
 		const helper = {commandsMap: commandMap, command: 'version' };
 		return moduleUnderTest.run(helper, { 'outdated': true }).then(() => {
-			assert.equal('Fetching latest version information...', (<sinon.SinonStub> console.log).args[0][0]);
-			assert.equal((<sinon.SinonStub> console.log).args[1][0], expectedOutput);
+			assert.equal('Fetching latest version information...', (<OrigSinon.SinonStub> console.log).args[0][0]);
+			assert.equal((<OrigSinon.SinonStub> console.log).args[1][0], expectedOutput);
 		});
 	});
 
@@ -172,8 +177,8 @@ describe('version command', () => {
 
 		const helper = {commandsMap: commandMap, command: 'version' };
 		return moduleUnderTest.run(helper, { 'outdated': true }).then(() => {
-			assert.equal('Fetching latest version information...', (<sinon.SinonStub> console.log).args[0][0]);
-			assert.equal((<sinon.SinonStub> console.log).args[1][0], expectedOutput);
+			assert.equal('Fetching latest version information...', (<OrigSinon.SinonStub> console.log).args[0][0]);
+			assert.equal((<OrigSinon.SinonStub> console.log).args[1][0], expectedOutput);
 		});
 	});
 
@@ -194,8 +199,8 @@ describe('version command', () => {
 
 		const helper = {commandsMap: commandMap, command: 'version' };
 		return moduleUnderTest.run(helper, { 'outdated': true }).then(() => {
-			assert.equal('Fetching latest version information...', (<sinon.SinonStub> console.log).args[0][0]);
-			assert.equal((<sinon.SinonStub> console.log).args[1][0], expectedOutput);
+			assert.equal('Fetching latest version information...', (<OrigSinon.SinonStub> console.log).args[0][0]);
+			assert.equal((<OrigSinon.SinonStub> console.log).args[1][0], expectedOutput);
 		});
 	});
 

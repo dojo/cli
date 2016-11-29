@@ -2,7 +2,7 @@ import * as yargs from 'yargs';
 import updateNotifier from './updateNotifier';
 import registerCommands from './registerCommands';
 import { join } from 'path';
-import { allCommands } from './AllCommands';
+import commandLoader from './allCommands';
 const pkgDir = require('pkg-dir');
 
 /**
@@ -18,8 +18,8 @@ async function init() {
 		const pkg = <any> require(packageJsonFilePath);
 
 		updateNotifier(pkg, 0);
-		await allCommands.init();
-		registerCommands(yargs, allCommands.commands, allCommands.yargsCommandNames);
+		const allCommands = await commandLoader();
+		registerCommands(yargs, allCommands.commandsMap, allCommands.yargsCommandNames);
 	} catch (err) {
 		console.log(`Commands are not available: ${err}`);
 	}

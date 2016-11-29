@@ -1,3 +1,4 @@
+import './allCommands';
 import './command';
 import './CommandHelper';
 import './config';
