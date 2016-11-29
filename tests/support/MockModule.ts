@@ -3,7 +3,6 @@ declare const require: RootRequire;
 
 import * as mockery from 'mockery';
 import * as sinon from 'sinon';
-import { resolve as pathResolve } from 'path';
 
 const dojoNodePlugin = 'intern/dojo/node';
 

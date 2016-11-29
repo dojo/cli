@@ -25,10 +25,8 @@ export function reset(): void {
 
 export default async function loadAllCommands(): Promise<LoadedCommands> {
 	if (loaded) {
-		console.log('already loaded');
 		return Promise.resolve(commands);
 	}
-	console.log('loading');
 
 	const builtInCommandLoader = createBuiltInCommandLoader();
 	const installedCommandLoader = initCommandLoader(config.searchPrefix);
@@ -38,10 +36,8 @@ export default async function loadAllCommands(): Promise<LoadedCommands> {
 	const builtInCommands = await loadCommands(builtInCommandsPaths, builtInCommandLoader);
 	const installedCommands = await loadCommands(installedCommandsPaths, installedCommandLoader);
 
-	const cmds = new Map([...installedCommands.commandsMap, ...builtInCommands.commandsMap]);
-	commands.commandsMap = cmds;
+	commands.commandsMap = new Map([...installedCommands.commandsMap, ...builtInCommands.commandsMap]);
 	commands.yargsCommandNames = new Map([...installedCommands.yargsCommandNames, ...builtInCommands.yargsCommandNames]);
-
 	loaded = true;
 
 	return Promise.resolve(commands);
