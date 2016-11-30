@@ -35,7 +35,6 @@ describe('AllCommands', () => {
 					])
 				});
 				moduleUnderTest = mockModule.getModuleUnderTest();
-				// sandbox.stub(console, 'log');
 			});
 
 			afterEach(() => {
@@ -45,10 +44,9 @@ describe('AllCommands', () => {
 
 			it('should run loadCommands to completion', () => {
 				return moduleUnderTest.default()
-					.then(function() {
+					.then(function(){
 						assert.isTrue(mockCommand.createBuiltInCommandLoader.calledOnce, 'should call builtin command loader');
 						assert.isTrue(mockCommand.initCommandLoader.calledOnce, 'should call installed command loader');
-
 						assert.isTrue(mockLoadCommands.enumerateBuiltInCommands.calledOnce, 'should call builtin command enumerator');
 						assert.isTrue(mockLoadCommands.enumerateInstalledCommands.calledOnce, 'should call installed command enumerator');
 						assert.isTrue(mockLoadCommands.enumerateInstalledCommands.calledAfter(mockLoadCommands.enumerateBuiltInCommands));
@@ -57,6 +55,7 @@ describe('AllCommands', () => {
 							'should call loadcommands after both enumerations');
 					});
 			});
+
 			it('should perform initialsation only once', () => {
 				return moduleUnderTest.default()
 					.then(function(){

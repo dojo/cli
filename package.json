@@ -35,6 +35,7 @@
     "yargs": "^4.8.1"
   },
   "devDependencies": {
+    "@types/sinon-as-promised": "^4.0.5",
     "codecov.io": "0.1.6",
     "dojo-interfaces": "^2.0.0-alpha.6",
     "dojo-loader": ">=2.0.0-beta.7",

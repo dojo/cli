@@ -27,7 +27,6 @@ export default async function loadAllCommands(): Promise<LoadedCommands> {
 	if (loaded) {
 		return Promise.resolve(commands);
 	}
-
 	const builtInCommandLoader = createBuiltInCommandLoader();
 	const installedCommandLoader = initCommandLoader(config.searchPrefix);
 
@@ -39,6 +38,5 @@ export default async function loadAllCommands(): Promise<LoadedCommands> {
 	commands.commandsMap = new Map([...installedCommands.commandsMap, ...builtInCommands.commandsMap]);
 	commands.yargsCommandNames = new Map([...installedCommands.yargsCommandNames, ...builtInCommands.yargsCommandNames]);
 	loaded = true;
-
 	return Promise.resolve(commands);
 }
