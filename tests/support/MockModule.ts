@@ -17,8 +17,23 @@ function unload(modulePath: string): void {
 	require.undef(`${plugin}!${abs}`);
 }
 
-function resolvePath(basePath: string, modulePath: string): string {
-	return modulePath.replace('./', `${basePath}/`);
+function resolvePath(base: string, mid: string): string {
+	const isRelative = mid.match(/\.\//);
+	let result = base;
+	if (isRelative) {
+		if (mid.match(/^\.\//)) {
+			mid = mid.replace(/\.\//, '');
+		}
+		const up = mid.match(/^(\.\.\/)/);
+		if (up) {
+			const chunks = base.split('/');
+			chunks.splice(chunks.length - (up.length - 1));
+			result = chunks.join('/');
+			mid = mid.replace(/\.\.\//g, '');
+		}
+		mid = result + '/' + mid;
+	}
+	return mid;
 }
 
 function getBasePath(modulePath: string): string {
@@ -41,6 +56,12 @@ export default class MockModule {
 	}
 
 	dependencies(dependencies: string[]): void {
+		unload(this.moduleUnderTestPath);
+
+		dependencies
+			.map((dep) => resolvePath(this.basePath, dep))
+			.map((dep) => unload(dep));
+
 		dependencies.forEach((dependencyName) => {
 			let dependency = load(resolvePath(this.basePath, dependencyName));
 			const mock: any = {};
@@ -71,7 +92,7 @@ export default class MockModule {
 	}
 
 	getModuleUnderTest(): any {
-		mockery.enable({ warnOnUnregistered: false });
+		mockery.enable({ warnOnUnregistered: false, useCleanCache: true });
 		const allowable = require.toUrl(this.moduleUnderTestPath) + '.js';
 		mockery.registerAllowable(allowable, true);
 		return load(this.moduleUnderTestPath);
@@ -79,6 +100,9 @@ export default class MockModule {
 
 	destroy(): void {
 		unload(this.moduleUnderTestPath);
+		Object.keys(this.mocks)
+			.map((dep) => resolvePath(this.basePath, dep))
+			.map((dep) => unload(dep));
 		this.sandbox.restore();
 		mockery.deregisterAll();
 		mockery.disable();
