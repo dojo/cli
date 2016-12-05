@@ -1,4 +1,4 @@
-import { Yargs, Argv } from 'yargs';
+import { Yargs, Argv, Options } from 'yargs';
 import { getGroupDescription, CommandsMap, CommandWrapper } from './command';
 import CommandHelper from './CommandHelper';
 import Helper from './Helper';
@@ -29,7 +29,12 @@ export default function(yargs: Yargs, commandsMap: CommandsMap, yargsCommandName
 		yargs.command(commandName, groupDescription, (yargs: Yargs) => {
 			// Register the default command so that options show
 			if (defaultCommandAvailable) {
-				defaultCommand.register(helper);
+				defaultCommand.register((() => {
+					return (key: string, options: Options) => {
+						options.group = defaultCommand.name;
+						yargs.option(key, options);
+					};
+				})());
 			}
 
 			commandOptions.forEach((command: string) => {
@@ -38,7 +43,12 @@ export default function(yargs: Yargs, commandsMap: CommandsMap, yargsCommandName
 					name,
 					description,
 					(yargs: Yargs) => {
-						register(helper);
+						register((() => {
+							return (key: string, options: Options) => {
+								options.group = command;
+								yargs.option(key, options);
+							};
+						})());
 						return yargs;
 					},
 					(argv: Argv) => {

@@ -1,4 +1,4 @@
-import { Argv, Yargs } from 'yargs';
+import { Argv, Yargs, Options } from 'yargs';
 
 export interface CommandHelper {
 	run(group: string, commandName?: string, args?: Argv): Promise<any>;
@@ -16,7 +16,7 @@ export interface Helper {
  */
 export interface Command {
 	description: string;
-	register(helper: Helper): Yargs;
+	register(options: (key: string, options: Options) => void): void;
 	run(helper: Helper, args?: Argv): Promise<any>;
 	name?: string;
 	group?: string;
