@@ -38,10 +38,10 @@ describe('version command', () => {
 	});
 
 	it('should register supported arguments', () => {
-		const helper = { yargs: { option: sandbox.stub() } };
-		moduleUnderTest.register(helper);
+		const options = sandbox.stub();
+		moduleUnderTest.register(options);
 		assert.deepEqual(
-			helper.yargs.option.firstCall.args,
+			options.args[0],
 			[ 'o', {
 				alias: 'outdated',
 				describe: 'Output a list of installed commands and check if any can be updated to a more recent stable version.',
