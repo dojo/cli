@@ -29,12 +29,10 @@ export default function(yargs: Yargs, commandsMap: CommandsMap, yargsCommandName
 		yargs.command(commandName, groupDescription, (yargs: Yargs) => {
 			// Register the default command so that options show
 			if (defaultCommandAvailable) {
-				defaultCommand.register((() => {
-					return (key: string, options: Options) => {
-						options.group = defaultCommand.name;
-						yargs.option(key, options);
-					};
-				})());
+				defaultCommand.register((key: string, options: Options) => {
+					options.group = defaultCommand.name;
+					yargs.option(key, options);
+				});
 			}
 
 			commandOptions.forEach((command: string) => {
@@ -43,12 +41,10 @@ export default function(yargs: Yargs, commandsMap: CommandsMap, yargsCommandName
 					name,
 					description,
 					(yargs: Yargs) => {
-						register((() => {
-							return (key: string, options: Options) => {
-								options.group = command;
-								yargs.option(key, options);
-							};
-						})());
+						register((key: string, options: Options) => {
+							options.group = command;
+							yargs.option(key, options);
+						});
 						return yargs;
 					},
 					(argv: Argv) => {
