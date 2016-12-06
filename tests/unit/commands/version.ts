@@ -41,7 +41,7 @@ describe('version command', () => {
 		const options = sandbox.stub();
 		moduleUnderTest.register(options);
 		assert.deepEqual(
-			options.args[0],
+			options.firstCall.args,
 			[ 'o', {
 				alias: 'outdated',
 				describe: 'Output a list of installed commands and check if any can be updated to a more recent stable version.',

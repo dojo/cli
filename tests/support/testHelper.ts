@@ -17,7 +17,7 @@ export interface CommandWrapperConfig {
 	runs?: boolean;
 }
 
-export function getCommandsMap(groupDef: GroupDef) {
+export function getCommandsMap(groupDef: GroupDef, withOptions?: boolean) {
 	const commands = new Map();
 
 	groupDef.forEach((group) => {
@@ -28,7 +28,9 @@ export function getCommandsMap(groupDef: GroupDef) {
 				name: command.commandName,
 				group: group.groupName,
 				description: compositeKey,
-				register: stub().returns(compositeKey),
+				register: (withOptions ?
+					stub().callsArgWith(0, 'key', {}) : 
+					stub()).returns(compositeKey),
 				runStub,
 				run: runStub.returns(command.fails ?
 					Promise.reject(new Error(compositeKey)) :
@@ -41,7 +43,7 @@ export function getCommandsMap(groupDef: GroupDef) {
 	return commands;
 };
 
-const yargsFunctions = [ 'demand', 'usage', 'epilog', 'help', 'alias', 'strict' ];
+const yargsFunctions = [ 'demand', 'usage', 'epilog', 'help', 'alias', 'strict', 'option' ];
 export function getYargsStub() {
 	const yargsStub: any = {};
 	yargsFunctions.forEach((fnc) => {

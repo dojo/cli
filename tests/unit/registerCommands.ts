@@ -67,6 +67,11 @@ registerSuite({
 		yargsStub.command.secondCall.args[3]();
 		assert.isTrue(run.calledOnce);
 	},
+	'Should call into register method'() {
+		const key = 'group1-command1';
+		registerCommands(yargsStub, getCommandsMap(groupDef, true), createYargsCommandNames({'group1': new Set([ key ])}));
+		assert.isTrue(yargsStub.option.called);
+	},
 	'default command': {
 		'beforeEach'() {
 			defaultRegisterStub = stub(defaultCommandWrapper, 'register');
