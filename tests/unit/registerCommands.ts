@@ -74,7 +74,7 @@ registerSuite({
 	},
 	'default command': {
 		'beforeEach'() {
-			defaultRegisterStub = stub(defaultCommandWrapper, 'register');
+			defaultRegisterStub = stub(defaultCommandWrapper, 'register').callsArgWith(0, 'key', {});
 			defaultRunStub = stub(defaultCommandWrapper, 'run').returns(Promise.resolve());
 			commandsMap.set('group1', defaultCommandWrapper);
 			const key = 'group1-command1';

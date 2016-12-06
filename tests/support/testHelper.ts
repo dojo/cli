@@ -29,7 +29,7 @@ export function getCommandsMap(groupDef: GroupDef, withOptions?: boolean) {
 				group: group.groupName,
 				description: compositeKey,
 				register: (withOptions ?
-					stub().callsArgWith(0, 'key', {}) : 
+					stub().callsArgWith(0, 'key', {}) :
 					stub()).returns(compositeKey),
 				runStub,
 				run: runStub.returns(command.fails ?
