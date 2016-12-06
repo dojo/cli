@@ -17,7 +17,7 @@ export interface CommandWrapperConfig {
 	runs?: boolean;
 }
 
-export function getCommandsMap(groupDef: GroupDef, withOptions?: boolean) {
+export function getCommandsMap(groupDef: GroupDef) {
 	const commands = new Map();
 
 	groupDef.forEach((group) => {
