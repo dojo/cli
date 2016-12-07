@@ -42,7 +42,7 @@ export default function(yargs: Yargs, commandsMap: CommandsMap, yargsCommandName
 					description,
 					(yargs: Yargs) => {
 						register((key: string, options: Options) => {
-							options.group = command;
+							options.group = name;
 							yargs.option(key, options);
 						});
 						return yargs;

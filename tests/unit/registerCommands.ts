@@ -69,7 +69,7 @@ registerSuite({
 	},
 	'Should call into register method'() {
 		const key = 'group1-command1';
-		registerCommands(yargsStub, getCommandsMap(groupDef, true), createYargsCommandNames({'group1': new Set([ key ])}));
+		registerCommands(yargsStub, commandsMap, createYargsCommandNames({'group1': new Set([ key ])}));
 		assert.isTrue(yargsStub.option.called);
 	},
 	'default command': {
