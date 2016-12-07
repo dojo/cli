@@ -71,6 +71,7 @@ registerSuite({
 		const key = 'group1-command1';
 		registerCommands(yargsStub, commandsMap, createYargsCommandNames({'group1': new Set([ key ])}));
 		assert.isTrue(yargsStub.option.called);
+		assert.equal(yargsStub.option.firstCall.args[1].group, 'command1');
 	},
 	'default command': {
 		'beforeEach'() {
@@ -86,6 +87,7 @@ registerSuite({
 		},
 		'Should register the default command'() {
 			assert.isTrue(defaultRegisterStub.calledOnce);
+			assert.equal(yargsStub.option.secondCall.args[1].group, 'command1');
 		},
 		'Should run default command when yargs called with only group name'() {
 			yargsStub.command.firstCall.args[3]({'_': ['group']});
