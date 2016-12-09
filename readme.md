@@ -68,7 +68,7 @@ The CLI has the following in-built groups:
 
 `dojo version` - provides information on the versions of installed commands and the cli itself.
 
-To use non-basic groups and commands like `dojo create app` or `dojo build` you need to install them separately, e.g. with `npm i dojo-cli-create-app -g`.
+`dojo create app` and `dojo build` are not installed by default with dojo-cli. To use them, you must install them separately, e.g. with `npm i dojo-cli-create-app -g`.
 
 ## How do I contribute?
 
