@@ -49,7 +49,7 @@ The CLI has the following format:
 
 `dojo group [command]` - where [command] is optional
 
-e.g. 
+e.g.
 
 `dojo build`
 
@@ -67,6 +67,8 @@ The CLI has the following in-built options:
 The CLI has the following in-built groups:
 
 `dojo version` - provides information on the versions of installed commands and the cli itself.
+
+`dojo create app` and `dojo build` are not installed by default with dojo-cli. To use them, you must install them separately, e.g. with `npm i dojo-cli-create-app -g`.
 
 ## How do I contribute?
 
