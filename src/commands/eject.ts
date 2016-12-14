@@ -15,11 +15,11 @@ export interface EjectArgs extends Argv {
 const appPath = pkgDir.sync(process.cwd());
 
 /**
- * Helper - add npm dependencies to package.jsonn
+ * Helper - add npm configuration to package.jsonn
  * @param {NpmPackage} package
  * @returns {void}
  */
-function handleNpmDependencies(pkg: NpmPackage): void {
+function handleNpmConfiguration(pkg: NpmPackage): void {
 	const appPackage = require(join(appPath, 'package.json'));
 
 	Object.keys(pkg.devDependencies).forEach(function (dependency) {
@@ -33,6 +33,8 @@ function handleNpmDependencies(pkg: NpmPackage): void {
 	});
 
 	Object.keys(pkg.scripts).forEach(function (script) {
+		console.log('  Adding ' + yellow(script) + ' to scripts');
+		// TODO: check for collisions
 		appPackage.scripts[script] = pkg.scripts[script];
 	});
 
@@ -94,7 +96,7 @@ function copyFiles(files: string[]): void {
 		const newPath = file.replace(longestCommonPath, '');
 		console.log('  Copying ' + yellow(file) + ' to the project which will now be located at: ' + join(appPath, newPath));
 		if (fs.existsSync(join(appPath, newPath))) {
-			throw Error(`File already exists: ${newPath}`);
+			throw Error(`File already exists: ${join(appPath, newPath)}`);
 		}
 		const content = fs
 			.readFileSync(file, 'utf8')
@@ -116,6 +118,7 @@ function register(helper: Helper): Yargs {
 }
 
 function run(helper: Helper, args: EjectArgs): Promise<any> {
+	// TODO: add in prompt
 	return allCommands()
 		.then((commands) => {
 			const toEject = [ ...commands.commandsMap ]
@@ -130,7 +133,7 @@ function run(helper: Helper, args: EjectArgs): Promise<any> {
 			else {
 				toEject.forEach(([ , command ]) => {
 					if (command.eject) {
-						command.eject(helper, handleNpmDependencies, copyFiles);
+						command.eject(helper, handleNpmConfiguration, copyFiles);
 					}
 					else {
 						throw Error(`'eject' not defined for command ${command.group}/${command.name}`);
