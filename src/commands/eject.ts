@@ -1,40 +1,53 @@
-// import { CommandsMap } from '../command';
-// import * as fs from 'fs';
-import { Helper } from '../interfaces';
+import * as fs from 'fs';
+import { Helper, NpmPackage } from '../interfaces';
 import { join } from 'path';
 import { Yargs, Argv } from 'yargs';
 import { yellow } from 'chalk';
 import allCommands from '../allCommands';
+const spawnSync = require('cross-spawn');
 const pkgDir = require('pkg-dir');
-
-// TODO: define message templates
-// const cannotFindCommand = '';
-// const areYouSure = '';
-
-const appPath = pkgDir.sync(process.cwd());
 
 export interface EjectArgs extends Argv {
 	group?: string;
 	command?: string;
-}
+};
+
+const appPath = pkgDir.sync(process.cwd());
 
 /**
  * Helper - add npm dependencies to package.jsonn
- * @param dependencies
+ * @param {NpmPackage} package
  * @returns {void}
  */
-function handleNpmDependencies(dependencies: string[]): void {
+function handleNpmDependencies(pkg: NpmPackage): void {
+	const appPackage = require(join(appPath, 'package.json'));
 
+	Object.keys(pkg.devDependencies).forEach(function (dependency) {
+		console.log('  Adding ' + yellow(dependency) + ' to devDependencies');
+		appPackage.devDependencies[dependency] = pkg.devDependencies[dependency];
+	});
+
+	Object.keys(pkg.dependencies).forEach(function (dependency) {
+		console.log('  Adding ' + yellow(dependency) + ' to dependencies');
+		appPackage.dependencies[dependency] = pkg.dependencies[dependency];
+	});
+
+	Object.keys(pkg.scripts).forEach(function (script) {
+		appPackage.scripts[script] = pkg.scripts[script];
+	});
+
+	console.log(yellow('Running npm install...'));
+	spawnSync('npm', ['install'], { stdio: 'inherit' });
 }
 
 /**
  * Helper - copy files to current project root
- * @param files
+ * @param {string[]} files - an array of fully-qualified file paths
  * @returns {void}
  */
 function copyFiles(files: string[]): void {
 	const map: { [name: string]: number } = {};
-	
+
 	// collect a map of the partial paths and their usage counts 
 	files.forEach((filePath: string) => {
 		const parts: string[] = filePath.split('/');
@@ -70,28 +83,23 @@ function copyFiles(files: string[]): void {
 
 	// create those paths in the current project
 	folders.forEach((folder) => {
-		console.log('mkdir: ' + join(appPath, folder));
-		// fs.mkdirSync(join(appPath, folder));
+		console.log('creating folder: ' + join(appPath, folder));
+		fs.mkdirSync(join(appPath, folder));
 	});
 
 	// copy over files to the current project
 	console.log();
-	console.log(yellow('Copying files into ' + appPath));
+	console.log(yellow('Copying files into current project at: ' + appPath));
 	files.forEach(function(file) {
 		const newPath = file.replace(longestCommonPath, '');
-		console.log('  Adding ' + yellow(file) + ' to the project');
-		// if (fs.existsSync(join(appPath, newPath)) {
-			// file already exists ERROR
-		// }
-		// var content = fs
-		// 	.readFileSync(file, 'utf8')
-			// // Remove dead code from .js files on eject
-			// .replace(/\/\/ @remove-on-eject-begin([\s\S]*?)\/\/ @remove-on-eject-end/mg, '')
-			// // Remove dead code from .applescript files on eject
-			// .replace(/-- @remove-on-eject-begin([\s\S]*?)-- @remove-on-eject-end/mg, '')
-		// 	.trim() + '\n';
-		// fs.writeFileSync(join(appPath, newPath), content);
-		console.log('writing file to: ' + join(appPath, newPath));
+		console.log('  Copying ' + yellow(file) + ' to the project which will now be located at: ' + join(appPath, newPath));
+		if (fs.existsSync(join(appPath, newPath))) {
+			throw Error(`File already exists: ${newPath}`);
+		}
+		const content = fs
+			.readFileSync(file, 'utf8')
+			.trim() + '\n';
+		fs.writeFileSync(join(appPath, newPath), content);
 	});
 }
 
@@ -108,13 +116,6 @@ function register(helper: Helper): Yargs {
 }
 
 function run(helper: Helper, args: EjectArgs): Promise<any> {
-	// TODO: inspect args to see which groups/commands to eject.
-	//       if no groups specified eject all commands
-	//       if group but no command specified eject all commands under that group
-	//       if group and command specified eject that command
-	//       else throw error
-	// TODO: if not error print warning
-	// TODO: if warning accepted execute eject(s)
 	return allCommands()
 		.then((commands) => {
 			const toEject = [ ...commands.commandsMap ]
@@ -122,12 +123,6 @@ function run(helper: Helper, args: EjectArgs): Promise<any> {
 					return (!args.group || args.group === command.group) &&
 						(!args.command || args.command === command.name);
 				});
-
-			copyFiles([
-				'/user/a/b/c/d/e/script.js',
-				'/user/a/b/c/script2.js',
-				'/user/a/b/c/d/script.js'
-			]);
 
 			if (!toEject.length) {
 				throw Error('nothing to do');

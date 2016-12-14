@@ -13,6 +13,18 @@ export interface Helper {
 
 export type OptionsHelper = (key: string, options: Options) => void;
 
+export interface NpmPackage {
+	devDependencies: {
+		[name: string]: string
+	};
+	dependencies: {
+		[name: string]: string
+	};
+	scripts: {
+		[name: string]: string
+	};
+};
+
 /**
  * Inbuilt commands specify their name and group - installed commands have these props parsed out of their package dir name
  */
@@ -20,6 +32,7 @@ export interface Command {
 	description: string;
 	register(options: OptionsHelper): void;
 	run(helper: Helper, args?: Argv): Promise<any>;
+	eject?(helper: Helper, npm: (pkg: NpmPackage) => void, files: (files: string[]) => void): void;
 	name?: string;
 	group?: string;
 }
