@@ -23,22 +23,24 @@ function handleNpmConfiguration(pkg: NpmPackage): void {
 	const appPackage = require(join(appPath, 'package.json'));
 
 	Object.keys(pkg.devDependencies).forEach(function (dependency) {
-		console.log('  Adding ' + yellow(dependency) + ' to devDependencies');
+		console.log(`->->adding ${yellow(dependency)} to devDependencies`);
 		appPackage.devDependencies[dependency] = pkg.devDependencies[dependency];
 	});
 
 	Object.keys(pkg.dependencies).forEach(function (dependency) {
-		console.log('  Adding ' + yellow(dependency) + ' to dependencies');
+		console.log(`->->adding ${yellow(dependency)} to dependencies`);
 		appPackage.dependencies[dependency] = pkg.dependencies[dependency];
 	});
 
 	Object.keys(pkg.scripts).forEach(function (script) {
-		console.log('  Adding ' + yellow(script) + ' to scripts');
-		// TODO: check for collisions
+		console.log(`->->adding ${yellow(script)} to scripts`);
+		if (appPackage.scripts[script]) {
+			throw Error(`package script ${yellow(script)} already exists`);
+		}
 		appPackage.scripts[script] = pkg.scripts[script];
 	});
 
-	console.log(yellow('Running npm install...'));
+	console.log(yellow('running npm install...'));
 	spawnSync('npm', ['install'], { stdio: 'inherit' });
 }
 
@@ -85,22 +87,19 @@ function copyFiles(files: string[]): void {
 
 	// create those paths in the current project
 	folders.forEach((folder) => {
-		console.log('creating folder: ' + join(appPath, folder));
+		console.log(`creating folder: ${join(appPath, folder)}`);
 		fs.mkdirSync(join(appPath, folder));
 	});
 
 	// copy over files to the current project
-	console.log();
-	console.log(yellow('Copying files into current project at: ' + appPath));
+	console.log(yellow(`copying files into current project at: ${appPath}`));
 	files.forEach(function(file) {
 		const newPath = file.replace(longestCommonPath, '');
-		console.log('  Copying ' + yellow(file) + ' to the project which will now be located at: ' + join(appPath, newPath));
+		console.log(`->->copying ${yellow(file)} to the project which will now be located at: ${join(appPath, newPath)}`);
 		if (fs.existsSync(join(appPath, newPath))) {
 			throw Error(`File already exists: ${join(appPath, newPath)}`);
 		}
-		const content = fs
-			.readFileSync(file, 'utf8')
-			.trim() + '\n';
+		const content = fs.readFileSync(file, 'utf8').trim() + '\n';
 		fs.writeFileSync(join(appPath, newPath), content);
 	});
 }
