@@ -32,7 +32,7 @@ export interface Command {
 	description: string;
 	register(options: OptionsHelper): void;
 	run(helper: Helper, args?: Argv): Promise<any>;
-	eject?(helper: Helper, npm: (pkg: NpmPackage) => void, files: (files: string[]) => void): void;
+	eject?(helper: Helper, npm: (pkg: NpmPackage) => Promise<void>, files: (files: string[]) => void): void;
 	name?: string;
 	group?: string;
 }
