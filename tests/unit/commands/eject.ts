@@ -19,6 +19,7 @@ describe('eject command', () => {
 	let mockFsExtra: any;
 	let mockInquirer: any;
 	let mockNpmInstall: any;
+	let mockPackageJson: any;
 	let mockAllCommands: any;
 	let sandbox: sinon.SinonSandbox;
 
@@ -29,7 +30,7 @@ describe('eject command', () => {
 	beforeEach(() => {
 		sandbox = sinon.sandbox.create();
 		mockModule = new MockModule('../../src/commands/eject');
-		mockModule.dependencies(['inquirer', 'fs', 'fs-extra', 'pkg-dir', '../allCommands', '../npmInstall']);
+		mockModule.dependencies(['inquirer', 'fs', 'fs-extra', 'pkg-dir', '../allCommands', '../npmInstall', `${ejectPackagePath}/package.json`]);
 		mockPkgDir = mockModule.getMock('pkg-dir');
 		mockPkgDir.ctor.sync = sandbox.stub().returns(ejectPackagePath);
 		mockFs = mockModule.getMock('fs');
@@ -38,6 +39,19 @@ describe('eject command', () => {
 		mockInquirer.prompt = sandbox.stub().resolves({ eject: true });
 		mockAllCommands = mockModule.getMock('../allCommands');
 		mockNpmInstall = mockModule.getMock('../npmInstall');
+		mockPackageJson = mockModule.getMock(`${ejectPackagePath}/package.json`);
+		mockPackageJson.dependencies = {
+			blah: '1.0.1',
+			blah2: '1.0.1'
+		};
+		mockPackageJson.devDependencies = {
+			blah: '1.0.1',
+			blah2: '1.0.1'
+		};
+		mockPackageJson.scripts = {
+			blah: 'pwd',
+			blah2: 'pwd'
+		};
 		sandbox.stub(console, 'log');
 		sandbox.stub(console, 'warn');
 		moduleUnderTest = mockModule.getModuleUnderTest().default;
@@ -235,6 +249,24 @@ describe('eject command', () => {
 			});
 		});
 
+		it(`should create npm sections if they don't exist`, () => {
+			const commandMap: CommandsMap = new Map<string, CommandWrapper>([
+				['apple', loadCommand('command-with-eject-success')]
+			]);
+			const helper = {command: 'eject'};
+			delete mockPackageJson.dependecies;
+			delete mockPackageJson.devDependecies;
+			delete mockPackageJson.scripts;
+			mockAllCommands.default = sandbox.stub().resolves({commandsMap: commandMap});
+			return moduleUnderTest.run(helper, {}).then(() => {
+				assert.isTrue(mockNpmInstall.default.called);
+				assert.equal((<sinon.SinonStub> console.log).args[0][0], addedNpmOutput('bar', 'devDependencies'));
+				assert.equal((<sinon.SinonStub> console.log).args[1][0], addedNpmOutput('foo', 'dependencies'));
+				assert.equal((<sinon.SinonStub> console.log).args[2][0], addedNpmOutput('baz', 'scripts'));
+				assert.equal((<sinon.SinonStub> console.log).args[3][0], underline('running npm install...'));
+			});
+		});
+
 		it('should throw warning if npm dependency collision is detected', () => {
 			const commandMap: CommandsMap = new Map<string, CommandWrapper>([
 				['apple', loadCommand('command-with-eject-duplicate-deps')]
@@ -247,7 +279,7 @@ describe('eject command', () => {
 			});
 		});
 
-		it('should throw warning if npm dev dependency collision is detected', () => {
+		it('should throw warning if npm devDependency collision is detected', () => {
 			const commandMap: CommandsMap = new Map<string, CommandWrapper>([
 				['apple', loadCommand('/command-with-eject-duplicate-dev-deps')]
 			]);
@@ -266,7 +298,7 @@ describe('eject command', () => {
 			const helper = {command: 'eject'};
 			mockAllCommands.default = sandbox.stub().resolves({commandsMap: commandMap});
 			return moduleUnderTest.run(helper, {}).catch((error: { message: string }) => {
-				assert.equal((<sinon.SinonStub> console.warn).args[0][0], errorNpmScript('blah'));
+				assert.equal(error.message, errorNpmScript('blah'));
 			});
 		});
 
@@ -280,8 +312,9 @@ describe('eject command', () => {
 				assert.equal((<sinon.SinonStub> console.log).args[4][0], `creating folder: ${yellow(join(ejectPackagePath, 'another-valid-package'))}`);
 				assert.equal((<sinon.SinonStub> console.log).args[5][0], `creating folder: ${yellow(join(ejectPackagePath, 'commands'))}`);
 				assert.equal((<sinon.SinonStub> console.log).args[6][0], underline(`\n\ncopying files into current project at: ${yellow(ejectPackagePath)}`));
-				assert.equal((<sinon.SinonStub> console.log).args[7][0], `	copying ${yellow(join(ejectPackagePath, '../another-valid-package/package.json'))} to the project which will now be located at: ${yellow(join(ejectPackagePath, 'another-valid-package/package.json'))}`);
-				assert.equal((<sinon.SinonStub> console.log).args[8][0], `	copying ${yellow(join(ejectPackagePath, '../commands/invalid-built-in-command.js'))} to the project which will now be located at: ${yellow(join(ejectPackagePath, 'commands/invalid-built-in-command.js'))}`);
+				assert.equal((<sinon.SinonStub> console.log).args[7][0], `	copying ${yellow(join(ejectPackagePath, '../blah.js'))} to the project which will now be located at: ${yellow(join(ejectPackagePath, 'blah.js'))}`);
+				assert.equal((<sinon.SinonStub> console.log).args[8][0], `	copying ${yellow(join(ejectPackagePath, '../another-valid-package/package.json'))} to the project which will now be located at: ${yellow(join(ejectPackagePath, 'another-valid-package/package.json'))}`);
+				assert.equal((<sinon.SinonStub> console.log).args[9][0], `	copying ${yellow(join(ejectPackagePath, '../commands/invalid-built-in-command.js'))} to the project which will now be located at: ${yellow(join(ejectPackagePath, 'commands/invalid-built-in-command.js'))}`);
 			});
 		});
 

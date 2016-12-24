@@ -10,3 +10,4 @@ import './text';
 import './updateNotifier';
 import './commands/eject';
 import './commands/version';
+import './bin/dojo';
