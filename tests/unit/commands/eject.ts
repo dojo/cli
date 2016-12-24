@@ -254,8 +254,8 @@ describe('eject command', () => {
 				['apple', loadCommand('command-with-eject-success')]
 			]);
 			const helper = {command: 'eject'};
-			delete mockPackageJson.dependecies;
-			delete mockPackageJson.devDependecies;
+			delete mockPackageJson.dependencies;
+			delete mockPackageJson.devDependencies;
 			delete mockPackageJson.scripts;
 			mockAllCommands.default = sandbox.stub().resolves({commandsMap: commandMap});
 			return moduleUnderTest.run(helper, {}).then(() => {
