@@ -312,8 +312,8 @@ describe('eject command', () => {
 				assert.equal((<sinon.SinonStub> console.log).args[4][0], `creating folder: ${yellow(join(ejectPackagePath, 'another-valid-package'))}`);
 				assert.equal((<sinon.SinonStub> console.log).args[5][0], `creating folder: ${yellow(join(ejectPackagePath, 'commands'))}`);
 				assert.equal((<sinon.SinonStub> console.log).args[6][0], underline(`\n\ncopying files into current project at: ${yellow(ejectPackagePath)}`));
-				assert.equal((<sinon.SinonStub> console.log).args[7][0], `	copying ${yellow(join(ejectPackagePath, '../blah.js'))} to the project which will now be located at: ${yellow(join(ejectPackagePath, 'blah.js'))}`);
-				assert.equal((<sinon.SinonStub> console.log).args[8][0], `	copying ${yellow(join(ejectPackagePath, '../another-valid-package/package.json'))} to the project which will now be located at: ${yellow(join(ejectPackagePath, 'another-valid-package/package.json'))}`);
+				assert.equal((<sinon.SinonStub> console.log).args[7][0], `	copying ${yellow(join(ejectPackagePath, '../another-valid-package/package.json'))} to the project which will now be located at: ${yellow(join(ejectPackagePath, 'another-valid-package/package.json'))}`);
+				assert.equal((<sinon.SinonStub> console.log).args[8][0], `	copying ${yellow(join(ejectPackagePath, '../blah.js'))} to the project which will now be located at: ${yellow(join(ejectPackagePath, 'blah.js'))}`);
 				assert.equal((<sinon.SinonStub> console.log).args[9][0], `	copying ${yellow(join(ejectPackagePath, '../commands/invalid-built-in-command.js'))} to the project which will now be located at: ${yellow(join(ejectPackagePath, 'commands/invalid-built-in-command.js'))}`);
 			});
 		});

@@ -80,7 +80,7 @@ function copyFiles(files: string[]): void {
 	});
 
 	// find the longest common path that is used across all files
-	let longestCommonPath = Object.keys(map).reduce((previous, current) => {
+	const longestCommonPath = Object.keys(map).reduceRight((previous, current) => {
 		if (map[current] === files.length) {
 			return previous.length > current.length ? previous : current;
 		}

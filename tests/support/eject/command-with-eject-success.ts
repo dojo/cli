@@ -21,8 +21,8 @@ export function eject(helper: any, npm: any, files: any) {
 	});
 
 	files([
-		__dirname + '/../blah.js',
 		__dirname + '/../another-valid-package/package.json',
+		__dirname + '/../blah.js',
 		__dirname + '/../commands/invalid-built-in-command.js'
 	]);
 }
