@@ -1,6 +1,6 @@
 import { existsSync } from 'fs';
 import { copySync, mkdirsSync } from 'fs-extra';
-import { join } from 'path';
+import { join, resolve as pathResolve } from 'path';
 import { Yargs, Argv } from 'yargs';
 import { red, yellow, underline } from 'chalk';
 import * as inquirer from 'inquirer';
@@ -24,32 +24,37 @@ const appPath = pkgDir.sync(process.cwd());
 async function handleNpmConfiguration(pkg: NpmPackage): Promise<void> {
 	const appPackage = require(join(appPath, 'package.json'));
 
-	Object.keys(pkg.devDependencies).forEach(function (dependency) {
+	Object.keys(pkg.devDependencies || {}).forEach(function (dependency) {
 		console.log(`	adding ${yellow(dependency)} to devDependencies`);
+		appPackage.devDependencies = appPackage.devDependencies || {};
 		if (appPackage.devDependencies[dependency]) {
-			console.warn(`${red('WARN')}    devDependency ${dependency} already exists at version '${appPackage.devDependencies[dependency]}' and will be overwritten by version ${pkg.devDependencies[dependency]}`);
+			console.warn(`${red('WARN')}    devDependency ${dependency} already exists at version '${appPackage.devDependencies[dependency]}' and will be overwritten by version '${pkg.devDependencies[dependency]}'`);
 		}
 		appPackage.devDependencies[dependency] = pkg.devDependencies[dependency];
 	});
 
-	Object.keys(pkg.dependencies).forEach(function (dependency) {
+	Object.keys(pkg.dependencies || {}).forEach(function (dependency) {
 		console.log(`	adding ${yellow(dependency)} to dependencies`);
-		if (appPackage.devDependencies[dependency]) {
-			console.warn(`${red('WARN')}    dependency ${dependency} already exists at version '${appPackage.dependencies[dependency]}' and will be overwritten by version ${pkg.dependencies[dependency]}`);
+		appPackage.dependencies = appPackage.dependencies || {};
+		if (appPackage.dependencies[dependency]) {
+			console.warn(`${red('WARN')}    dependency ${dependency} already exists at version '${appPackage.dependencies[dependency]}' and will be overwritten by version '${pkg.dependencies[dependency]}'`);
 		}
 		appPackage.dependencies[dependency] = pkg.dependencies[dependency];
 	});
 
-	Object.keys(pkg.scripts).forEach(function (script) {
+	Object.keys(pkg.scripts || {}).forEach(function (script) {
 		console.log(`	adding ${yellow(script)} to scripts`);
+		appPackage.scripts = appPackage.scripts || {};
 		if (appPackage.scripts[script]) {
 			throw Error(`package script ${yellow(script)} already exists`);
 		}
 		appPackage.scripts[script] = pkg.scripts[script];
 	});
 
-	console.log(underline('running npm install...'));
-	await npmInstall();
+	if (pkg.dependencies || pkg.devDependencies || pkg.scripts) {
+		console.log(underline('running npm install...'));
+		await npmInstall();
+	}
 }
 
 /**
@@ -62,7 +67,7 @@ function copyFiles(files: string[]): void {
 
 	// collect a map of partial paths and their usage counts 
 	files.forEach((filePath: string) => {
-		const parts: string[] = filePath.split('/');
+		const parts: string[] = pathResolve(filePath).split('/');
 		parts.forEach((part, index) => {
 			const localPath = parts.slice(0, index).join('/') + '/';
 			if (map[localPath]) {
@@ -85,11 +90,19 @@ function copyFiles(files: string[]): void {
 	// collect only the unique local folder paths
 	const folders: string[] = [];
 	files.forEach((filePath: string) => {
-		filePath = filePath.replace(longestCommonPath, '');
+		filePath = pathResolve(filePath).replace(longestCommonPath, '');
 		const parts = filePath.split('/');
 		parts.pop();
 		if (parts.length) {
 			folders.push(join(...parts));
+		}
+	});
+
+	// veify files don't already exist
+	files.forEach(function(filePath) {
+		const newPath = pathResolve(filePath).replace(longestCommonPath, '');
+		if (existsSync(join(appPath, newPath))) {
+			throw Error(`File already exists: ${join(appPath, newPath)}`);
 		}
 	});
 
@@ -100,14 +113,11 @@ function copyFiles(files: string[]): void {
 	});
 
 	// copy over files to the current project
-	console.log(underline(`copying files into current project at: ${yellow(appPath)}`));
-	files.forEach(function(file) {
-		const newPath = file.replace(longestCommonPath, '');
-		console.log(`	copying ${yellow(file)} to the project which will now be located at: ${join(appPath, newPath)}`);
-		if (existsSync(join(appPath, newPath))) {
-			throw Error(`File already exists: ${join(appPath, newPath)}`);
-		}
-		copySync(file, join(appPath, newPath));
+	console.log(underline(`\n\ncopying files into current project at: ${yellow(appPath)}`));
+	files.forEach(function(filePath) {
+		const newPath = pathResolve(filePath).replace(longestCommonPath, '');
+		console.log(`	copying ${yellow(pathResolve(filePath))} to the project which will now be located at: ${yellow(join(appPath, newPath))}`);
+		copySync(filePath, join(appPath, newPath));
 	});
 }
 
@@ -127,22 +137,28 @@ function run(helper: Helper, args: EjectArgs): Promise<any> {
 	return inquirer.prompt({
 		type: 'confirm',
 		name: 'eject',
-		message: 'Are you sure you want to eject (it is a permanent operation)?',
+		message: 'Are you sure you want to eject (this is a permanent operation)?',
 		default: false
 	}).then((answer: { eject: boolean }) => {
 		if (!answer.eject) {
-			console.log('Aborting eject');
-			process.exit(1);
+			throw Error('Aborting eject');
 		}
 		return allCommands()
 			.then((commands) => {
+				const map: { [name: string]: boolean } = { 'eject/': true, 'version/': true };
 				const toEject = [ ...commands.commandsMap ]
 					.filter(([ , command ]) => {
-						return (!args.group || args.group === command.group) &&
+						const key = `${command.group}/${command.name}`;
+						const exists = map[key];
+						map[key] = true;
+						return !exists && (!args.group || args.group === command.group) &&
 							(!args.command || args.command === command.name);
 					});
 
 				if (!toEject.length) {
+					if (args.group && args.command) {
+						throw Error(`command ${args.group}/${args.command} does not exist`);
+					}
 					throw Error('nothing to do');
 				}
 				else {
