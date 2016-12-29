@@ -1,5 +1,5 @@
 import { CommandsMap } from '../command';
-import { Helper } from '../interfaces';
+import { Helper, OptionsHelper } from '../interfaces';
 import { join } from 'path';
 import { Argv, Options } from 'yargs';
 import { yellow } from 'chalk';
@@ -122,7 +122,7 @@ function createOutput(myPackageDetails: PackageDetails, commandVersions: ModuleV
 	return output;
 }
 
-function register(options: (key: string, options: Options) => void): void {
+function register(helper: Helper, options: OptionsHelper): void {
 	options('o', {
 		alias: 'outdated',
 		describe: 'Output a list of installed commands and check if any can be updated to a more recent stable version.',
