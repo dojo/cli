@@ -28,7 +28,7 @@ export function getCommandsMap(groupDef: GroupDef) {
 				name: command.commandName,
 				group: group.groupName,
 				description: compositeKey,
-				register: stub().callsArgWith(0, 'key', {}).returns(compositeKey),
+				register: stub().callsArgWith(1, 'key', {}).returns(compositeKey),
 				runStub,
 				run: runStub.returns(command.fails ?
 					Promise.reject(new Error(compositeKey)) :

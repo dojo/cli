@@ -1,10 +1,8 @@
 import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
-import { stub, SinonStub } from 'sinon';
 import { getCommandsMap, getYargsStub, GroupDef } from '../support/testHelper';
 
 const { 'default': registerCommands } = require('intern/dojo/node!../../src/registerCommands');
-const defaultCommandWrapper = require('intern/dojo/node!../support/test-prefix-foo-bar');
 
 const groupDef: GroupDef = [
 	{
@@ -18,10 +16,6 @@ const groupDef: GroupDef = [
 ];
 let commandsMap: any;
 let yargsStub: any;
-let defaultRegisterStub: SinonStub;
-let defaultRunStub: SinonStub;
-let consoleErrorStub: SinonStub;
-const errorMessage = 'test error message';
 
 function createYargsCommandNames(obj: any): Map<string, Set<any>> {
 	const map = new Map();
@@ -71,45 +65,5 @@ registerSuite({
 		const key = 'group1-command1';
 		registerCommands(yargsStub, commandsMap, createYargsCommandNames({'group1': new Set([ key ])}));
 		assert.isTrue(yargsStub.option.called);
-		assert.equal(yargsStub.option.firstCall.args[1].group, 'command1');
-	},
-	'default command': {
-		'beforeEach'() {
-			const key = 'group1-command1';
-			defaultRegisterStub = stub(defaultCommandWrapper, 'register').callsArgWith(0, 'key', {}).returns(key);
-			defaultRunStub = stub(defaultCommandWrapper, 'run').returns(Promise.resolve());
-			commandsMap.set('group1', defaultCommandWrapper);
-			registerCommands(yargsStub, commandsMap, createYargsCommandNames({'group1': new Set([ key ])}));
-		},
-		'afterEach'() {
-			defaultRegisterStub.restore();
-			defaultRunStub .restore();
-		},
-		'Should register the default command'() {
-			assert.isTrue(defaultRegisterStub.calledOnce);
-			assert.equal(yargsStub.option.secondCall.args[1].group, 'command1');
-		},
-		'Should run default command when yargs called with only group name'() {
-			yargsStub.command.firstCall.args[3]({'_': ['group']});
-			assert.isTrue(defaultRunStub.calledOnce);
-		},
-		'Should not run default command when yargs called with group name and command'() {
-			yargsStub.command.firstCall.args[3]({'_': ['group', 'command']});
-			assert.isFalse(defaultRunStub.called);
-		},
-		'error message': {
-			'beforeEach'() {
-				consoleErrorStub = stub(console, 'error');
-				defaultRunStub.returns(Promise.reject(new Error(errorMessage)));
-			},
-			'afterEach'() {
-				consoleErrorStub.restore();
-			},
-			async 'Should show error message if the run command rejects'() {
-				await yargsStub.command.firstCall.args[3]({'_': ['group']});
-				assert.isTrue(consoleErrorStub.calledOnce);
-				assert.isTrue(consoleErrorStub.firstCall.calledWithMatch(errorMessage));
-			}
-		}
 	}
 });
