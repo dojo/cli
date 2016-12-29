@@ -25,19 +25,8 @@ export default function(yargs: Yargs, commandsMap: CommandsMap, yargsCommandName
 
 	yargsCommandNames.forEach((commandOptions, commandName) => {
 		const groupDescription = getGroupDescription(commandOptions, commandsMap);
-		const defaultCommand = <CommandWrapper> commandsMap.get(commandName);
-		const defaultCommandAvailable = !!(defaultCommand && defaultCommand.register && defaultCommand.run);
 		const reportError = (error: Error) => console.error(chalk.red.bold(error.message));
 		yargs.command(commandName, groupDescription, (yargs: Yargs) => {
-			if (defaultCommandAvailable) {
-				defaultCommand.register((key: string, options: Options) => {
-					yargs.option(key, {
-						group: `Default Command Options ('${defaultCommand.name}')`,
-						...options
-					});
-				});
-			}
-
 			[...commandOptions].filter((command: string) => {
 				return `${commandName}-` !== command;
 			}).forEach((command: string) => {
@@ -46,6 +35,7 @@ export default function(yargs: Yargs, commandsMap: CommandsMap, yargsCommandName
 					name,
 					description,
 					(yargs: Yargs) => {
+
 						register((key: string, options: Options) => {
 							yargs.option(key, options);
 						});
@@ -58,15 +48,6 @@ export default function(yargs: Yargs, commandsMap: CommandsMap, yargsCommandName
 				.strict();
 			});
 			return yargs;
-		},
-		(argv: Argv) => {
-			// argv._ is an array of commands.
-			// if `dojo example` was called, it will only be size one,
-			// so we call default command, else, the subcommand will
-			// have been ran and we don't want to run the default.
-			if (defaultCommandAvailable && argv._.length === 1) {
-				return defaultCommand.run(helper, argv).catch(reportError);
-			}
 		});
 	});
 
