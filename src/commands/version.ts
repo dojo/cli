@@ -1,7 +1,7 @@
 import { CommandsMap } from '../command';
 import { Helper, OptionsHelper } from '../interfaces';
 import { join } from 'path';
-import { Argv, Options } from 'yargs';
+import { Argv } from 'yargs';
 import { yellow } from 'chalk';
 import allCommands from '../allCommands';
 const david = require('david');
