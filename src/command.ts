@@ -24,13 +24,14 @@ export function initCommandLoader(searchPrefixes: string[]): (path: string) => C
 
 		try {
 			const command = convertModuleToCommand(module);
-			const {description, register, run} = command;
-			//  derive the group and name from the module directory name, e.g. @dojo/cli-group-name
-			const [ , , group, name] = <string[]> commandRegExp.exec(path);
+			const {description, register, run, alias} = command;
+			//  derive the group and name from the module directory name, e.g. dojo-cli-group-name
+			const [ , group, name] = <string[]> commandRegExp.exec(path);
 
 			return {
 				name,
 				group,
+				alias,
 				description,
 				register,
 				run,
@@ -53,11 +54,12 @@ export function createBuiltInCommandLoader(): (path: string) => CommandWrapper {
 		try {
 			const command = convertModuleToCommand(module);
 			//  derive the name and group of the built in commands from the command itself (these are optional props)
-			const { name = '', group = '', description, register, run } = command;
+			const { name = '', group = '', alias, description, register, run } = command;
 
 			return {
 				name,
 				group,
+				alias,
 				description,
 				register,
 				run,

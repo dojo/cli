@@ -56,25 +56,35 @@ export async function loadCommands(paths: string[], load: (path: string) => Comm
 		const commandsMap: CommandsMap = new Map();
 		const yargsCommandNames: YargsCommandNames = new Map();
 
+		function associateCommand(group: string, compositeKey: string, commandWrapper: CommandWrapper): void {
+			if (!commandsMap.has(group)) {
+				// First of each type will be 'default' for now
+				setDefaultGroup(commandsMap, group, commandWrapper);
+				yargsCommandNames.set(group, new Set());
+			}
+
+			if (!commandsMap.has(compositeKey)) {
+				commandsMap.set(compositeKey, commandWrapper);
+			}
+
+			const groupCommandNames = yargsCommandNames.get(group);
+			if (groupCommandNames) {
+				groupCommandNames.add(compositeKey);
+			}
+		}
+
 		paths.forEach((path) => {
 			try {
 				const commandWrapper = load(path);
-				const {group, name} = commandWrapper;
+				const {group, alias, name} = commandWrapper;
 				const compositeKey = `${group}-${name}`;
 
-				if (!commandsMap.has(group)) {
-					// First of each type will be 'default' for now
-					setDefaultGroup(commandsMap, group, commandWrapper);
-					yargsCommandNames.set(group, new Set());
-				}
+				associateCommand(group, compositeKey, commandWrapper);
 
-				if (!commandsMap.has(compositeKey)) {
-					commandsMap.set(compositeKey, commandWrapper);
-				}
-
-				const groupCommandNames = yargsCommandNames.get(group);
-				if (groupCommandNames) {
-					groupCommandNames.add(compositeKey);
+				if (alias) {
+					(Array.isArray(alias) ? alias : [alias]).forEach((alias) => {
+						associateCommand(alias.name, `${alias.name}-${name}`, commandWrapper);
+					});
 				}
 			}
 			catch (error) {
