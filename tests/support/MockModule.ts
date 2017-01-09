@@ -63,7 +63,13 @@ export default class MockModule {
 			.map((dep) => unload(dep));
 
 		dependencies.forEach((dependencyName) => {
-			let dependency = load(resolvePath(this.basePath, dependencyName));
+			let dependency;
+			try {
+				dependency = load(resolvePath(this.basePath, dependencyName));
+			}
+			catch (e) {
+				dependency = {};
+			}
 			const mock: any = {};
 
 			for (let prop in dependency) {

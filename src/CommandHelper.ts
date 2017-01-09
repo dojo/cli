@@ -1,6 +1,7 @@
 import { CommandsMap } from './command';
 import { CommandHelper, Command } from './interfaces';
 import Helper from './Helper';
+import ConfigurationHelper from './ConfigurationHelper';
 import * as yargs from 'yargs';
 
 function getCommand(commandsMap: CommandsMap, group: string, commandName?: string): Command | undefined {
@@ -16,13 +17,15 @@ export default class implements CommandHelper {
 	constructor(commandsMap: CommandsMap, context: any) {
 		this.commandsMap = commandsMap;
 		this.context = context;
+		this.configuration = new ConfigurationHelper();
 	};
 	private commandsMap: CommandsMap;
 	private context: any;
+	private configuration: ConfigurationHelper;
 	run(group: string, commandName?: string, args?: yargs.Argv): Promise<any> {
 		const command = getCommand(this.commandsMap, group, commandName);
 		if (command) {
-			const helper = new Helper(this, yargs, this.context);
+			const helper = new Helper(this, yargs, this.context, this.configuration);
 			return command.run(helper, args);
 		}
 		else {

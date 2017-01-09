@@ -1,6 +1,7 @@
 import { Yargs, Argv } from 'yargs';
 import { getGroupDescription, CommandsMap, CommandWrapper } from './command';
 import CommandHelper from './CommandHelper';
+import ComfigurationHelper from './ConfigurationHelper';
 import Helper from './Helper';
 import { helpUsage, helpEpilog } from './text';
 import * as chalk from 'chalk';
@@ -18,8 +19,9 @@ import { YargsCommandNames } from './loadCommands';
 export default function(yargs: Yargs, commandsMap: CommandsMap, yargsCommandNames: YargsCommandNames): void {
 	const helperContext = {};
 
+	const configurationHelper = new ComfigurationHelper();
 	const commandHelper = new CommandHelper(commandsMap, helperContext);
-	const helper = new Helper(commandHelper, yargs, helperContext);
+	const helper = new Helper(commandHelper, yargs, helperContext, configurationHelper);
 
 	yargsCommandNames.forEach((commandOptions, commandName) => {
 		const groupDescription = getGroupDescription(commandOptions, commandsMap);

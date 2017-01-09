@@ -1,5 +1,10 @@
 import { Argv, Yargs } from 'yargs';
 
+export interface ConfigurationHelper {
+	save(config: any): Promise<any>;
+	get(): any;
+}
+
 export interface CommandHelper {
 	run(group: string, commandName?: string, args?: Argv): Promise<any>;
 	exists(group: string, commandName?: string): boolean;
@@ -9,6 +14,7 @@ export interface Helper {
 	yargs: Yargs;
 	command: CommandHelper;
 	context: any;
+	configuration: ConfigurationHelper;
 }
 
 /**
