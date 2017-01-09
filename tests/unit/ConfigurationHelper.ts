@@ -51,6 +51,12 @@ registerSuite({
 			assert.equal(success, true);
 		});
 	},
+	'Should still write config when one does not exist'() {
+		mockFs.existsSync = sinon.stub().returns();
+		return configurationHelper.save({ blah: { blah1: '' } }).then((success: boolean) => {
+			assert.equal(success, true);
+		});
+	},
 	'Should throw error when collision'() {
 		return configurationHelper.save({ food: { blah1: '' } }).catch((error: Error) => {
 			assert.equal(error.message, `${red('ERROR')} .dojorc already contains a 'food' property`);
