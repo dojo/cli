@@ -212,7 +212,7 @@ describe('version command', () => {
 		return `\n`;
 	}
 	function outputSuffix() {
-		return `\nYou are currently running dojo-cli 1.0.0\n`;
+		return `\nYou are currently running @dojo/cli 1.0.0\n`;
 	}
 
 });
