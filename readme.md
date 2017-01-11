@@ -1,6 +1,6 @@
-# dojo-cli
+# @dojo/cli
 
-[![Build Status](https://travis-ci.org/dojo/cli.svg?branch=master)](https://travis-ci.org/dojo/cli) [![codecov](https://codecov.io/gh/dojo/cli/branch/master/graph/badge.svg)](https://codecov.io/gh/dojo/cli) [![npm version](https://badge.fury.io/js/dojo-cli.svg)](http://badge.fury.io/js/dojo-cli)
+[![Build Status](https://travis-ci.org/dojo/cli.svg?branch=master)](https://travis-ci.org/dojo/cli) [![codecov](https://codecov.io/gh/dojo/cli/branch/master/graph/badge.svg)](https://codecov.io/gh/dojo/cli) [![npm version](https://badge.fury.io/js/@dojo/cli.svg)](http://badge.fury.io/js/@dojo/cli)
 
 The CLI is the officially supported way to create and maintain Dojo 2 apps.
 
@@ -16,7 +16,7 @@ Getting the cli
 
 You can install from npm:
 
-`npm i dojo-cli -g`
+`npm i @dojo/cli -g`
 
 In a terminal, run:
 
@@ -29,7 +29,7 @@ dojo help
 
 Usage: dojo <command> [subCommand] [options]
 
-Hey there, here are all the things you can do with dojo-cli:
+Hey there, here are all the things you can do with @dojo/cli:
 ...
 ```
 
@@ -39,7 +39,7 @@ You can list all your global npm dependencies by running:
 
 `npm list -g –depth=0`
 
-If you don't see `dojo-cli` in the list of global dependencies, then please re-install and make sure the installation runs without errors.
+If you don't see `@dojo/cli` in the list of global dependencies, then please re-install and make sure the installation runs without errors.
 
 ## How to use
 
@@ -68,7 +68,7 @@ The CLI has the following in-built groups:
 
 `dojo version` - provides information on the versions of installed commands and the cli itself.
 
-`dojo create app` and `dojo build` are not installed by default with dojo-cli. To use them, you must install them separately, e.g. with `npm i dojo-cli-create-app -g`.
+`dojo create app` and `dojo build` are not installed by default with @dojo/cli. To use them, you must install them separately, e.g. with `npm i @dojo/cli-create-app -g`.
 
 ## How do I contribute?
 
