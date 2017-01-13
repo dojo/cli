@@ -19,12 +19,12 @@ function config(invalid: boolean): Config {
 	// tests are run in package-dir (from cli, using grunt test) - FIX to use pkg-dir
 	const config: Config = {
 		searchPaths: [ '_build/tests/support' ],
-		searchPrefix: 'test-prefix',
+		searchPrefixes: [ 'test-prefix' ],
 		builtInCommandLocation: join(pathResolve('.'), '/_build/tests/support/commands')
 	};
 	const badConfig: Config = {
 		searchPaths: [ 'just/garbage', 'yep/really/bad/paths/here' ],
-		searchPrefix: 'bad-prefix',
+		searchPrefixes: [ 'bad-prefix' ],
 		builtInCommandLocation : 'dirThatDoesNotExist'
 	};
 
@@ -60,7 +60,7 @@ registerSuite({
 	},
 	'unsuccessful enumeration': {
 		async 'Should fail to find installed commands that dont exist'() {
-			goodConfig.searchPrefix = 'bad-prefix';
+			goodConfig.searchPrefixes = [ 'bad-prefix' ];
 			const badPrefixPaths = await enumInstalledCommands(goodConfig);
 			assert.equal(badPrefixPaths.length, 0);
 
@@ -108,7 +108,7 @@ registerSuite({
 		async 'Should fail to load modules that dont satisfy the Command interface'() {
 			const failConfig = {
 				searchPaths: [ '_build/tests/support' ],
-				searchPrefix: 'esmodule-fail'
+				searchPrefixes: [ 'esmodule-fail' ]
 			};
 			const installedPaths = await enumInstalledCommands(failConfig);
 

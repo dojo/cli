@@ -16,8 +16,8 @@ export type CommandsMap = Map<string, CommandWrapper>;
  * 		- 'dojo-cli-build-webpack'
  * 		- 'dojo-cli-serve-dist'
  */
-export function initCommandLoader(searchPrefix: string): (path: string) => CommandWrapper {
-	const commandRegExp = new RegExp(`${searchPrefix}-(.*)-(.*)`);
+export function initCommandLoader(searchPrefixes: string[]): (path: string) => CommandWrapper {
+	const commandRegExp = new RegExp(`(${searchPrefixes.join('|')})-(.*)-(.*)`);
 
 	return function load(path: string): CommandWrapper {
 		let module = require(path);
@@ -25,8 +25,8 @@ export function initCommandLoader(searchPrefix: string): (path: string) => Comma
 		try {
 			const command = convertModuleToCommand(module);
 			const {description, register, run} = command;
-			//  derive the group and name from the module directory name, e.g. dojo-cli-group-name
-			const [ , group, name] = <string[]> commandRegExp.exec(path);
+			//  derive the group and name from the module directory name, e.g. @dojo/cli-group-name
+			const [ , , group, name] = <string[]> commandRegExp.exec(path);
 
 			return {
 				name,
