@@ -9,8 +9,8 @@ const expectedEsModuleCommand = require('intern/dojo/node!../support/esmodule-pr
 const testGroup = 'foo';
 const testName = 'bar';
 const testSearchPrefixes = [ 'test-prefix' ];
-const testEsModuleSearchPrefix = [ 'esmodule-prefix' ];
-const testEsModuleFailSearchPrefix = [ 'esmodule-fail' ];
+const testEsModuleSearchPrefixes = [ 'esmodule-prefix' ];
+const testEsModuleFailSearchPrefixes = [ 'esmodule-fail' ];
 let commandWrapper: any;
 const groupDef: GroupDef = [
 	{
@@ -75,8 +75,8 @@ registerSuite({
 	},
 	'load esmodule default': {
 		'beforeEach'() {
-			loader = command.initCommandLoader(testEsModuleSearchPrefix);
-			commandWrapper = loader(getCommandPath(testEsModuleSearchPrefix)[0]);
+			loader = command.initCommandLoader(testEsModuleSearchPrefixes);
+			commandWrapper = loader(getCommandPath(testEsModuleSearchPrefixes)[0]);
 		},
 		'Should get group and name from filename'() {
 			assert.equal(testGroup, commandWrapper.group);
@@ -94,11 +94,11 @@ registerSuite({
 	},
 	'load esmodule that does not meet Command interface': {
 		'setup'() {
-			loader = command.initCommandLoader(testEsModuleFailSearchPrefix);
+			loader = command.initCommandLoader(testEsModuleFailSearchPrefixes);
 		},
 		'Should throw an error when attempting to load'() {
 			try {
-				commandWrapper = loader(getCommandPath(testEsModuleFailSearchPrefix)[0]);
+				commandWrapper = loader(getCommandPath(testEsModuleFailSearchPrefixes)[0]);
 				assert.fail(null, null, 'Should not get here');
 			}
 			catch (error) {
