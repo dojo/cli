@@ -4,16 +4,16 @@ const packagePath = pkgDir.sync(__dirname);
 
 export type Config = {
 	searchPaths: string[],
-	searchPrefix: string,
+	searchPrefixes: string[],
 	builtInCommandLocation: string
 };
 
-export default <Config> {
+export default {
 	searchPaths: [
 		'node_modules',
 		join(packagePath, '..'),
 		join(packagePath, 'node_modules')
 	],
-	searchPrefix: 'dojo-cli',
+	searchPrefixes: [ '@dojo/cli', 'dojo-cli' ],
 	builtInCommandLocation: join(__dirname, '/commands')  // better to be relative to this file (like an import) than link to publish structure
-};
+} as Config;

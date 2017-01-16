@@ -8,9 +8,9 @@ const expectedEsModuleCommand = require('intern/dojo/node!../support/esmodule-pr
 
 const testGroup = 'foo';
 const testName = 'bar';
-const testSearchPrefix = 'test-prefix';
-const testEsModuleSearchPrefix = 'esmodule-prefix';
-const testEsModuleFailSearchPrefix = 'esmodule-fail';
+const testSearchPrefixes = [ 'test-prefix' ];
+const testEsModuleSearchPrefixes = [ 'esmodule-prefix' ];
+const testEsModuleFailSearchPrefixes = [ 'esmodule-fail' ];
 let commandWrapper: any;
 const groupDef: GroupDef = [
 	{
@@ -25,8 +25,10 @@ const groupDef: GroupDef = [
 const commandsMap = getCommandsMap(groupDef);
 let loader: any;
 
-function getCommandPath(prefix: string): string {
-	return `../tests/support/${prefix}-${testGroup}-${testName}`;
+function getCommandPath(prefixes: string[]): string[] {
+	return prefixes.map((prefix) => {
+		return `../tests/support/${prefix}-${testGroup}-${testName}`;
+	});
 }
 
 function getBuiltInCommandPath(invalid: boolean): string {
@@ -37,8 +39,8 @@ registerSuite({
 	name: 'command',
 	'load': {
 		'beforeEach'() {
-			loader = command.initCommandLoader(testSearchPrefix);
-			commandWrapper = loader(getCommandPath(testSearchPrefix));
+			loader = command.initCommandLoader(testSearchPrefixes);
+			commandWrapper = loader(getCommandPath(testSearchPrefixes)[0]);
 		},
 		'Should get group and name from filename'() {
 			assert.equal(testGroup, commandWrapper.group);
@@ -73,8 +75,8 @@ registerSuite({
 	},
 	'load esmodule default': {
 		'beforeEach'() {
-			loader = command.initCommandLoader(testEsModuleSearchPrefix);
-			commandWrapper = loader(getCommandPath(testEsModuleSearchPrefix));
+			loader = command.initCommandLoader(testEsModuleSearchPrefixes);
+			commandWrapper = loader(getCommandPath(testEsModuleSearchPrefixes)[0]);
 		},
 		'Should get group and name from filename'() {
 			assert.equal(testGroup, commandWrapper.group);
@@ -92,11 +94,11 @@ registerSuite({
 	},
 	'load esmodule that does not meet Command interface': {
 		'setup'() {
-			loader = command.initCommandLoader(testEsModuleFailSearchPrefix);
+			loader = command.initCommandLoader(testEsModuleFailSearchPrefixes);
 		},
 		'Should throw an error when attempting to load'() {
 			try {
-				commandWrapper = loader(getCommandPath(testEsModuleFailSearchPrefix));
+				commandWrapper = loader(getCommandPath(testEsModuleFailSearchPrefixes)[0]);
 				assert.fail(null, null, 'Should not get here');
 			}
 			catch (error) {
@@ -122,7 +124,7 @@ registerSuite({
 	},
 	'getGroupDescription': {
 		'setup'() {
-			loader = command.initCommandLoader(testSearchPrefix);
+			loader = command.initCommandLoader(testSearchPrefixes);
 		},
 		'Should return simple command description when only one command name passed'() {
 			const key = 'group1-command1';

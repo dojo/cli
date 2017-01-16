@@ -28,7 +28,7 @@ export default async function loadAllCommands(): Promise<LoadedCommands> {
 		return Promise.resolve(commands);
 	}
 	const builtInCommandLoader = createBuiltInCommandLoader();
-	const installedCommandLoader = initCommandLoader(config.searchPrefix);
+	const installedCommandLoader = initCommandLoader(config.searchPrefixes);
 
 	const builtInCommandsPaths = await enumerateBuiltInCommands(config);
 	const installedCommandsPaths = await enumerateInstalledCommands(config);

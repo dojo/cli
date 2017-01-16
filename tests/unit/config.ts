@@ -3,14 +3,14 @@ import * as assert from 'intern/chai!assert';
 import { resolve } from 'path';
 
 const config = require('intern/dojo/node!./../../src/config').default;
-const expectedSearchPrefix = 'dojo-cli';
+const expectedSearchPrefixes = [ '@dojo/cli', 'dojo-cli' ];
 
 registerSuite({
 	name: 'config',
 	'Should provide a search prefix'() {
-		const prefix = config.searchPrefix;
-		assert.isTrue(typeof prefix === 'string');
-		assert.equal(expectedSearchPrefix, prefix);
+		const prefix = config.searchPrefixes;
+		assert.isTrue(Array.isArray(prefix));
+		assert.deepEqual(expectedSearchPrefixes, prefix);
 	},
 	'Should provide three search paths'() {
 		const paths = config.searchPaths;

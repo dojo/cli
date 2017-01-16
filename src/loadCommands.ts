@@ -21,7 +21,10 @@ function setDefaultGroup(commandsMap: CommandsMap, commandName: string, commandW
  * @returns {Promise<string []>} the paths of all installed commands
  */
 export async function enumerateInstalledCommands (config: Config): Promise <string []> {
-	const globPaths = config.searchPaths.map((depPath) => pathResolve(depPath, `${config.searchPrefix}-*`));
+	const { searchPrefixes } = config;
+	const globPaths = searchPrefixes.reduce((globPaths: string[], key) => {
+		return globPaths.concat(config.searchPaths.map((depPath) => pathResolve(depPath, `${key}-*`)));
+	}, []);
 	return globby(globPaths, (<globby.Options> { ignore: '**/*.map' }));
 }
 
