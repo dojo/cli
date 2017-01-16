@@ -1,4 +1,4 @@
-import { RootRequire } from 'dojo-interfaces/loader';
+import { RootRequire } from '@dojo/interfaces/loader';
 declare const require: RootRequire;
 
 import * as mockery from 'mockery';

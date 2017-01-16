@@ -9,7 +9,7 @@ const pkgDir = require('pkg-dir');
 
 // exported for tests
 export const versionCurrentVersion = `
-You are currently running dojo-cli {version}
+You are currently running @dojo/cli {version}
 `;
 export const versionNoRegisteredCommands = `
 There are no registered commands available.`;

@@ -12,9 +12,9 @@ export type CommandsMap = Map<string, CommandWrapper>;
 /**
  * Function to create a loader instance, this allows the config to be injected
  * @param: searchPrefix A string that tells the command loader how cli commands will be named, ie.
- * 	'dojo-cli-' is the default meaning commands could be
- * 		- 'dojo-cli-build-webpack'
- * 		- 'dojo-cli-serve-dist'
+ * 	'@dojo/cli-' is the default meaning commands could be
+ * 		- '@dojo/cli-build-webpack'
+ * 		- '@dojo/cli-serve-dist'
  */
 export function initCommandLoader(searchPrefixes: string[]): (path: string) => CommandWrapper {
 	const commandRegExp = new RegExp(`(${searchPrefixes.join('|')})-(.*)-(.*)`);

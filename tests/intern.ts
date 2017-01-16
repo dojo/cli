@@ -12,7 +12,7 @@ export const proxyUrl = 'http://localhost:9000/';
 export const capabilities = {
 	'browserstack.debug': false,
 	project: 'Dojo 2',
-	name: 'dojo-cli'
+	name: '@dojo/cli'
 };
 
 // Support running unit tests from a web server that isn't the intern proxy
@@ -26,7 +26,7 @@ export const initialBaseUrl: string | null = (function () {
 // The desired AMD loader to use when running unit tests (client.html/client.js). Omit to use the default Dojo
 // loader
 export const loaders = {
-	'host-node': 'dojo-loader'
+	'host-node': '@dojo/loader'
 };
 
 // Configuration options for the module loader; any AMD configuration options supported by the specified AMD loader
