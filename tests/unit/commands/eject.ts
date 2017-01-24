@@ -34,6 +34,7 @@ describe('eject command', () => {
 		mockPkgDir = mockModule.getMock('pkg-dir');
 		mockPkgDir.ctor.sync = sandbox.stub().returns(ejectPackagePath);
 		mockFs = mockModule.getMock('fs');
+		mockFs.writeFileSync = sandbox.stub().returns(true);
 		mockFsExtra = mockModule.getMock('fs-extra');
 		mockInquirer = mockModule.getMock('inquirer');
 		mockInquirer.prompt = sandbox.stub().resolves({ eject: true });
@@ -230,8 +231,8 @@ describe('eject command', () => {
 		function warnNpmOutput(npmProperty: string, type: string) {
 			return `${red('WARN')}    ${type} ${npmProperty} already exists at version '1.0.1' and will be overwritten by version '1.0.1'`;
 		}
-		function errorNpmScript(script: string) {
-			return `package script ${yellow(script)} already exists`;
+		function warnNpmScript(script: string) {
+			return `${red('WARN')}    package script ${yellow(script)} already exists and will be overwritten by 'pwd'`;
 		}
 
 		it('should run npm install helper', () => {
@@ -291,14 +292,15 @@ describe('eject command', () => {
 			});
 		});
 
-		it('should throw error if npm script collision is detected', () => {
+		it('should throw warning if npm script collision is detected', () => {
 			const commandMap: CommandsMap = new Map<string, CommandWrapper>([
 				['apple', loadCommand('/command-with-eject-duplicate-script')]
 			]);
 			const helper = {command: 'eject'};
 			mockAllCommands.default = sandbox.stub().resolves({commandsMap: commandMap});
-			return moduleUnderTest.run(helper, {}).catch((error: { message: string }) => {
-				assert.equal(error.message, errorNpmScript('blah'));
+			return moduleUnderTest.run(helper, {}).then(() => {
+				assert.equal((<sinon.SinonStub> console.warn).args[0][0], warnNpmScript('blah'));
+				assert.equal((<sinon.SinonStub> console.log).args[1][0], underline('running npm install...'));
 			});
 		});
 

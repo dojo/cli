@@ -23,7 +23,7 @@ module.exports = function (grunt) {
 				src: staticFiles,
 				dest: '<%= distDirectory %>'
 			}
-		},
+		}
 	});
 
 	grunt.registerTask('dev', grunt.config.get('devTasks').concat(['copy:staticDevFiles']));

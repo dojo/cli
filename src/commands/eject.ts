@@ -1,5 +1,5 @@
-import { existsSync } from 'fs';
-import { copySync, mkdirsSync } from 'fs-extra';
+import { existsSync, writeFileSync } from 'fs';
+import { copySync, ensureDirSync } from 'fs-extra';
 import { join, resolve as pathResolve } from 'path';
 import { Yargs, Argv } from 'yargs';
 import { red, yellow, underline } from 'chalk';
@@ -22,37 +22,40 @@ const appPath = pkgDir.sync(process.cwd());
  * @returns {void}
  */
 async function handleNpmConfiguration(pkg: NpmPackage): Promise<void> {
-	const appPackage = require(join(appPath, 'package.json'));
+	const appPackagePath = join(appPath, 'package.json');
+	const appPackage = require(appPackagePath);
 
-	Object.keys(pkg.devDependencies || {}).forEach(function (dependency) {
+	appPackage.devDependencies = appPackage.devDependencies || {};
+	appPackage.dependencies = appPackage.dependencies || {};
+	appPackage.scripts = appPackage.scripts || {};
+
+	Object.keys(pkg.devDependencies || {}).forEach((dependency) => {
 		console.log(`	adding ${yellow(dependency)} to devDependencies`);
-		appPackage.devDependencies = appPackage.devDependencies || {};
 		if (appPackage.devDependencies[dependency]) {
 			console.warn(`${red('WARN')}    devDependency ${dependency} already exists at version '${appPackage.devDependencies[dependency]}' and will be overwritten by version '${pkg.devDependencies[dependency]}'`);
 		}
 		appPackage.devDependencies[dependency] = pkg.devDependencies[dependency];
 	});
 
-	Object.keys(pkg.dependencies || {}).forEach(function (dependency) {
+	Object.keys(pkg.dependencies || {}).forEach((dependency) => {
 		console.log(`	adding ${yellow(dependency)} to dependencies`);
-		appPackage.dependencies = appPackage.dependencies || {};
 		if (appPackage.dependencies[dependency]) {
 			console.warn(`${red('WARN')}    dependency ${dependency} already exists at version '${appPackage.dependencies[dependency]}' and will be overwritten by version '${pkg.dependencies[dependency]}'`);
 		}
 		appPackage.dependencies[dependency] = pkg.dependencies[dependency];
 	});
 
-	Object.keys(pkg.scripts || {}).forEach(function (script) {
+	Object.keys(pkg.scripts || {}).forEach((script) => {
 		console.log(`	adding ${yellow(script)} to scripts`);
-		appPackage.scripts = appPackage.scripts || {};
 		if (appPackage.scripts[script]) {
-			throw Error(`package script ${yellow(script)} already exists`);
+			console.warn(`${red('WARN')}    package script ${yellow(script)} already exists and will be overwritten by '${pkg.scripts[script]}'`);
 		}
 		appPackage.scripts[script] = pkg.scripts[script];
 	});
 
 	if (pkg.dependencies || pkg.devDependencies || pkg.scripts) {
 		console.log(underline('running npm install...'));
+		writeFileSync(appPackagePath, JSON.stringify(appPackage));
 		await npmInstall();
 	}
 }
@@ -99,25 +102,27 @@ function copyFiles(files: string[]): void {
 	});
 
 	// veify files don't already exist
-	files.forEach(function(filePath) {
-		const newPath = pathResolve(filePath).replace(longestCommonPath, '');
-		if (existsSync(join(appPath, newPath))) {
-			throw Error(`File already exists: ${join(appPath, newPath)}`);
+	files.forEach((filePath) => {
+		const newPath = join(appPath, pathResolve(filePath).replace(longestCommonPath, ''));
+		if (existsSync(newPath)) {
+			throw Error(`File already exists: ${newPath}`);
 		}
 	});
 
 	// create those folders within the current project
 	folders.forEach((folder) => {
-		console.log(`creating folder: ${yellow(join(appPath, folder))}`);
-		mkdirsSync(join(appPath, folder));
+		const folderPath = join(appPath, folder);
+		console.log(`creating folder: ${yellow(folderPath)}`);
+		ensureDirSync(folderPath);
 	});
 
 	// copy over files to the current project
 	console.log(underline(`\n\ncopying files into current project at: ${yellow(appPath)}`));
-	files.forEach(function(filePath) {
-		const newPath = pathResolve(filePath).replace(longestCommonPath, '');
-		console.log(`	copying ${yellow(pathResolve(filePath))} to the project which will now be located at: ${yellow(join(appPath, newPath))}`);
-		copySync(filePath, join(appPath, newPath));
+	files.forEach((filePath) => {
+		const filePathResolved = pathResolve(filePath);
+		const newPath = join(appPath, filePathResolved.replace(longestCommonPath, ''));
+		console.log(`	copying ${yellow(filePathResolved)} to the project which will now be located at: ${yellow(newPath)}`);
+		copySync(filePath, newPath);
 	});
 }
 
@@ -145,6 +150,8 @@ function run(helper: Helper, args: EjectArgs): Promise<any> {
 		}
 		return allCommands()
 			.then((commands) => {
+				// Filter out `version` and `eject` commands, ignore duplicates and grab 
+				// only the commands specified via arguments to be ejected.
 				const map: { [name: string]: boolean } = { 'eject/': true, 'version/': true };
 				const toEject = [ ...commands.commandsMap ]
 					.filter(([ , command ]) => {
