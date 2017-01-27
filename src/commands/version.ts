@@ -122,7 +122,7 @@ function createOutput(myPackageDetails: PackageDetails, commandVersions: ModuleV
 	return output;
 }
 
-function register(helper: Helper, options: OptionsHelper): void {
+function register(options: OptionsHelper): void {
 	options('o', {
 		alias: 'outdated',
 		describe: 'Output a list of installed commands and check if any can be updated to a more recent stable version.',

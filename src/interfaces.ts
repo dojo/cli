@@ -18,7 +18,7 @@ export type OptionsHelper = (key: string, options: Options) => void;
  */
 export interface Command {
 	description: string;
-	register(helper: Helper, options: OptionsHelper): void;
+	register(options: OptionsHelper): void;
 	run(helper: Helper, args?: Argv): Promise<any>;
 	name?: string;
 	group?: string;
