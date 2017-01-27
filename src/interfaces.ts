@@ -2,7 +2,7 @@ import { Argv, Yargs } from 'yargs';
 
 export interface ConfigurationHelper {
 	save(config: any): Promise<any>;
-	get(): any;
+	get(): Promise<any>;
 }
 
 export interface CommandHelper {

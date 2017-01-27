@@ -1,6 +1,5 @@
 import { existsSync, writeFile } from 'fs';
 import { join } from 'path';
-import { red } from 'chalk';
 import { ConfigurationHelper } from './interfaces';
 const pkgDir = require('pkg-dir');
 const packageName = pkgDir.sync(__dirname).split('/').pop();
@@ -20,21 +19,19 @@ export default class implements ConfigurationHelper {
 	 * @returns Promise - this an indicator of success/failure
 	 */
 	async save(config: any = {}): Promise<any> {
-		const dojoRc = this.get() || {};
-		const section = dojoRc[packageName] = dojoRc[packageName] || {};
-		Object.keys(config).forEach((key) => {
-			if (key in section) {
-				throw Error(`${red('ERROR')} .dojorc#${packageName} already contains a '${key}' property`);
-			}
-			section[key] = config[key];
-		});
-		return new Promise((resolve, reject) => {
-			writeFile(join(appPath, '.dojorc'), JSON.stringify(dojoRc), { flag: 'wr' }, (error: Error) => {
-				if (error) {
-					reject(error);
-					return;
-				}
-				resolve();
+		return this.get().then((dojoRc = {}) => {
+			dojoRc[packageName] = {
+				...(dojoRc[packageName] || {}),
+				...config
+			};
+			return new Promise((resolve, reject) => {
+				writeFile(join(appPath, '.dojorc'), JSON.stringify(dojoRc), { flag: 'wr' }, (error: Error) => {
+					if (error) {
+						reject(error);
+						return;
+					}
+					resolve();
+				});
 			});
 		});
 	};
@@ -43,12 +40,15 @@ export default class implements ConfigurationHelper {
 	 * Retrieves the configuration object from the file system 
 	 * or undefined if configuration does not exist
 	 * 
-	 * @returns an object representation of .dojorc
+	 * @returns Promise - an object representation of .dojorc
 	 */
-	get() {
+	async get(): Promise<any> {
 		const path = join(appPath, '.dojorc');
-		if (existsSync(path)) {
-			return require(path);
-		}
-	}
+		return new Promise((resolve, reject) => {
+			if (existsSync(path)) {
+				resolve(require(path));
+			}
+			resolve();
+		});
+	};
 };

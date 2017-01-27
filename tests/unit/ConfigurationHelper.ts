@@ -1,6 +1,5 @@
 import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
-import { red } from 'chalk';
 import MockModule from '../support/MockModule';
 import { join, resolve as pathResolve } from 'path';
 const sap = require('sinon-as-promised');
@@ -57,11 +56,6 @@ registerSuite({
 			assert.equal(true, true);
 		});
 	},
-	'Should throw error when collision'() {
-		return configurationHelper.save({ food: { blah1: '' } }).catch((error: Error) => {
-			assert.equal(error.message, `${red('ERROR')} .dojorc#support already contains a 'food' property`);
-		});
-	},
 	'Should reject when error in writing file'() {
 		mockFs.writeFile = sinon.stub().callsArgWith(3, 'bad file write');
 		return configurationHelper.save({ blah: { blah1: '' } }).catch((error: Error) => {
@@ -69,12 +63,14 @@ registerSuite({
 		});
 	},
 	'Should retrieve the dojorc'() {
-		const dojoRc = configurationHelper.get();
-		assert.equal(dojoRc, mockDojoRc);
+		configurationHelper.get().then((dojoRc: any) => {
+			assert.equal(dojoRc, mockDojoRc);
+		});
 	},
 	'Should return undefined'() {
 		mockFs.existsSync = sinon.stub().returns();
-		const dojoRc = configurationHelper.get();
-		assert.equal(dojoRc, undefined);
+		configurationHelper.get().then((dojoRc: any) => {
+			assert.equal(dojoRc, undefined);
+		});
 	}
 });
