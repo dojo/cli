@@ -39,7 +39,7 @@ describe('version command', () => {
 
 	it('should register supported arguments', () => {
 		const options = sandbox.stub();
-		moduleUnderTest.register(null, options);
+		moduleUnderTest.register(options);
 		assert.deepEqual(
 			options.firstCall.args,
 			[ 'o', {
