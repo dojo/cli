@@ -47,19 +47,19 @@ registerSuite({
 		mockModule.destroy();
 	},
 	'Should write config to .dojorc'() {
-		return configurationHelper.save({ blah: { blah1: '' } }).then((success: boolean) => {
-			assert.equal(success, true);
+		return configurationHelper.save({ blah: { blah1: '' } }).then(() => {
+			assert.equal(true, true);
 		});
 	},
 	'Should still write config when one does not exist'() {
 		mockFs.existsSync = sinon.stub().returns();
-		return configurationHelper.save({ blah: { blah1: '' } }).then((success: boolean) => {
-			assert.equal(success, true);
+		return configurationHelper.save({ blah: { blah1: '' } }).then(() => {
+			assert.equal(true, true);
 		});
 	},
 	'Should throw error when collision'() {
 		return configurationHelper.save({ food: { blah1: '' } }).catch((error: Error) => {
-			assert.equal(error.message, `${red('ERROR')} .dojorc already contains a 'food' property`);
+			assert.equal(error.message, `${red('ERROR')} .dojorc#support already contains a 'food' property`);
 		});
 	},
 	'Should reject when error in writing file'() {

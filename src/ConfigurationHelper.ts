@@ -3,6 +3,7 @@ import { join } from 'path';
 import { red } from 'chalk';
 import { ConfigurationHelper } from './interfaces';
 const pkgDir = require('pkg-dir');
+const packageName = pkgDir.sync(__dirname).split('/').pop();
 
 const appPath = pkgDir.sync(process.cwd());
 
@@ -20,25 +21,26 @@ export default class implements ConfigurationHelper {
 	 */
 	async save(config: any = {}): Promise<any> {
 		const dojoRc = this.get() || {};
+		const section = dojoRc[packageName] = dojoRc[packageName] || {};
 		Object.keys(config).forEach((key) => {
-			if (key in dojoRc) {
-				throw Error(`${red('ERROR')} .dojorc already contains a '${key}' property`);
+			if (key in section) {
+				throw Error(`${red('ERROR')} .dojorc#${packageName} already contains a '${key}' property`);
 			}
-			dojoRc[key] = config[key];
+			section[key] = config[key];
 		});
 		return new Promise((resolve, reject) => {
-			writeFile('.dojorc', JSON.stringify(dojoRc), { flag: 'wr' }, (error: Error) => {
+			writeFile(join(appPath, '.dojorc'), JSON.stringify(dojoRc), { flag: 'wr' }, (error: Error) => {
 				if (error) {
 					reject(error);
 					return;
 				}
-				resolve(true);
+				resolve();
 			});
 		});
 	};
 
 	/**
-	 * retrieves the configuration object from the file system 
+	 * Retrieves the configuration object from the file system 
 	 * or undefined if configuration does not exist
 	 * 
 	 * @returns an object representation of .dojorc
