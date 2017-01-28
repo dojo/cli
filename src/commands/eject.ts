@@ -16,6 +16,16 @@ export interface EjectArgs extends Argv {
 
 const appPath = pkgDir.sync(process.cwd());
 
+function npmSectionReducer(pkgSection: any, plural: string, singular: string) {
+	return (accumulator: any, dependency: string) => {
+		console.log(`	adding ${yellow(dependency)} to ${plural}`);
+		if (accumulator[dependency]) {
+			console.warn(`${red('WARN')}    ${singular} ${dependency} already exists '${accumulator[dependency]}' and will be overwritten by '${pkgSection[dependency]}'`);
+		}
+		accumulator[dependency] = pkgSection[dependency];
+	};
+}
+
 /**
  * Helper - add npm configuration to package.jsonn
  * @param {NpmPackage} package
@@ -24,36 +34,22 @@ const appPath = pkgDir.sync(process.cwd());
 async function handleNpmConfiguration(pkg: NpmPackage): Promise<void> {
 	const appPackagePath = join(appPath, 'package.json');
 	const appPackage = require(appPackagePath);
+	const shouldRunNpmInstall = pkg.dependencies || pkg.devDependencies || pkg.scripts;
 
-	appPackage.devDependencies = appPackage.devDependencies || {};
-	appPackage.dependencies = appPackage.dependencies || {};
-	appPackage.scripts = appPackage.scripts || {};
+	pkg.devDependencies = pkg.devDependencies || {};
+	pkg.dependencies = pkg.dependencies || {};
+	pkg.scripts = pkg.scripts || {};
 
-	Object.keys(pkg.devDependencies || {}).forEach((dependency) => {
-		console.log(`	adding ${yellow(dependency)} to devDependencies`);
-		if (appPackage.devDependencies[dependency]) {
-			console.warn(`${red('WARN')}    devDependency ${dependency} already exists at version '${appPackage.devDependencies[dependency]}' and will be overwritten by version '${pkg.devDependencies[dependency]}'`);
-		}
-		appPackage.devDependencies[dependency] = pkg.devDependencies[dependency];
-	});
+	appPackage.devDependencies = Object.keys(pkg.devDependencies)
+		.reduce(npmSectionReducer(pkg.devDependencies, 'devDependencies', 'devDependency'), appPackage.devDependencies || {});
 
-	Object.keys(pkg.dependencies || {}).forEach((dependency) => {
-		console.log(`	adding ${yellow(dependency)} to dependencies`);
-		if (appPackage.dependencies[dependency]) {
-			console.warn(`${red('WARN')}    dependency ${dependency} already exists at version '${appPackage.dependencies[dependency]}' and will be overwritten by version '${pkg.dependencies[dependency]}'`);
-		}
-		appPackage.dependencies[dependency] = pkg.dependencies[dependency];
-	});
+	appPackage.dependencies = Object.keys(pkg.dependencies)
+		.reduce(npmSectionReducer(pkg.dependencies, 'dependencies', 'dependency'), appPackage.dependencies || {});
 
-	Object.keys(pkg.scripts || {}).forEach((script) => {
-		console.log(`	adding ${yellow(script)} to scripts`);
-		if (appPackage.scripts[script]) {
-			console.warn(`${red('WARN')}    package script ${yellow(script)} already exists and will be overwritten by '${pkg.scripts[script]}'`);
-		}
-		appPackage.scripts[script] = pkg.scripts[script];
-	});
+	appPackage.scripts = Object.keys(pkg.scripts)
+		.reduce(npmSectionReducer(pkg.scripts, 'scripts', 'script'), appPackage.scripts || {});
 
-	if (pkg.dependencies || pkg.devDependencies || pkg.scripts) {
+	if (shouldRunNpmInstall) {
 		console.log(underline('running npm install...'));
 		writeFileSync(appPackagePath, JSON.stringify(appPackage));
 		await npmInstall();

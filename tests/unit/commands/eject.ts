@@ -228,11 +228,8 @@ describe('eject command', () => {
 		function addedNpmOutput(npmProperty: string, type: string) {
 			return `	adding ${yellow(npmProperty)} to ${type}`;
 		}
-		function warnNpmOutput(npmProperty: string, type: string) {
-			return `${red('WARN')}    ${type} ${npmProperty} already exists at version '1.0.1' and will be overwritten by version '1.0.1'`;
-		}
-		function warnNpmScript(script: string) {
-			return `${red('WARN')}    package script ${yellow(script)} already exists and will be overwritten by 'pwd'`;
+		function warnNpmOutput(npmProperty: string, type: string, value: string) {
+			return `${red('WARN')}    ${type} ${npmProperty} already exists '${value}' and will be overwritten by '${value}'`;
 		}
 
 		it('should run npm install helper', () => {
@@ -275,7 +272,7 @@ describe('eject command', () => {
 			const helper = {command: 'eject'};
 			mockAllCommands.default = sandbox.stub().resolves({commandsMap: commandMap});
 			return moduleUnderTest.run(helper, {}).then(() => {
-				assert.equal((<sinon.SinonStub> console.warn).args[0][0], warnNpmOutput('blah', 'dependency'));
+				assert.equal((<sinon.SinonStub> console.warn).args[0][0], warnNpmOutput('blah', 'dependency', '1.0.1'));
 				assert.equal((<sinon.SinonStub> console.log).args[1][0], underline('running npm install...'));
 			});
 		});
@@ -287,7 +284,7 @@ describe('eject command', () => {
 			const helper = {command: 'eject'};
 			mockAllCommands.default = sandbox.stub().resolves({commandsMap: commandMap});
 			return moduleUnderTest.run(helper, {}).then(() => {
-				assert.equal((<sinon.SinonStub> console.warn).args[0][0], warnNpmOutput('blah', 'devDependency'));
+				assert.equal((<sinon.SinonStub> console.warn).args[0][0], warnNpmOutput('blah', 'devDependency', '1.0.1'));
 				assert.equal((<sinon.SinonStub> console.log).args[1][0], underline('running npm install...'));
 			});
 		});
@@ -299,7 +296,7 @@ describe('eject command', () => {
 			const helper = {command: 'eject'};
 			mockAllCommands.default = sandbox.stub().resolves({commandsMap: commandMap});
 			return moduleUnderTest.run(helper, {}).then(() => {
-				assert.equal((<sinon.SinonStub> console.warn).args[0][0], warnNpmScript('blah'));
+				assert.equal((<sinon.SinonStub> console.warn).args[0][0], warnNpmOutput('blah', 'script', 'pwd'));
 				assert.equal((<sinon.SinonStub> console.log).args[1][0], underline('running npm install...'));
 			});
 		});
