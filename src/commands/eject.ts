@@ -41,13 +41,22 @@ async function handleNpmConfiguration(pkg: NpmPackage): Promise<void> {
 	pkg.scripts = pkg.scripts || {};
 
 	appPackage.devDependencies = Object.keys(pkg.devDependencies)
-		.reduce(npmSectionReducer(pkg.devDependencies, 'devDependencies', 'devDependency'), appPackage.devDependencies || {});
+		.reduce(
+			npmSectionReducer(pkg.devDependencies, 'devDependencies', 'devDependency'),
+			appPackage.devDependencies || {}
+		);
 
 	appPackage.dependencies = Object.keys(pkg.dependencies)
-		.reduce(npmSectionReducer(pkg.dependencies, 'dependencies', 'dependency'), appPackage.dependencies || {});
+		.reduce(
+			npmSectionReducer(pkg.dependencies, 'dependencies', 'dependency'),
+			appPackage.dependencies || {}
+		);
 
 	appPackage.scripts = Object.keys(pkg.scripts)
-		.reduce(npmSectionReducer(pkg.scripts, 'scripts', 'script'), appPackage.scripts || {});
+		.reduce(
+			npmSectionReducer(pkg.scripts, 'scripts', 'script'),
+			appPackage.scripts || {}
+		);
 
 	if (shouldRunNpmInstall) {
 		console.log(underline('running npm install...'));
