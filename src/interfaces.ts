@@ -38,8 +38,8 @@ export interface Alias {
 }
 
 export interface AliasOption {
-   option: string;
-   value?: (string | boolean | number)[];
+	option: string;
+	value?: string | boolean | number;
 }
 
 /**

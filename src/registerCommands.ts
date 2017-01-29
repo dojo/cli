@@ -22,16 +22,15 @@ export default function(yargs: Yargs, commandsMap: CommandsMap, yargsCommandName
 	const configurationHelper = new ComfigurationHelper();
 	const commandHelper = new CommandHelper(commandsMap, helperContext);
 	const helper = new Helper(commandHelper, yargs, helperContext, configurationHelper);
-
 	yargsCommandNames.forEach((commandOptions, commandName) => {
 		const groupDescription = getGroupDescription(commandOptions, commandsMap);
 		const defaultCommand = <CommandWrapper> commandsMap.get(commandName);
 		const defaultCommandAvailable = !!(defaultCommand && defaultCommand.register && defaultCommand.run);
 		const reportError = (error: Error) => console.error(chalk.red.bold(error.message));
-		yargs.command(commandName, groupDescription, (yargs: Yargs) => {
+		yargs.command(commandName, groupDescription, (subYargs: Yargs) => {
 			if (defaultCommandAvailable) {
 				defaultCommand.register((key: string, options: Options) => {
-					yargs.option(key, {
+					subYargs.option(key, {
 						group: `Default Command Options ('${defaultCommand.name}')`,
 						...options
 					});
@@ -42,14 +41,14 @@ export default function(yargs: Yargs, commandsMap: CommandsMap, yargsCommandName
 				return `${commandName}-` !== command;
 			}).forEach((command: string) => {
 				const {name, description, register, run} = <CommandWrapper> commandsMap.get(command);
-				yargs.command(
+				subYargs.command(
 					name,
 					description,
-					(yargs: Yargs) => {
+					(optionsYargs: Yargs) => {
 						register((key: string, options: Options) => {
-							yargs.option(key, options);
+							optionsYargs.option(key, options);
 						});
-						return yargs;
+						return optionsYargs;
 					},
 					(argv: Argv) => {
 						return run(helper, argv).catch(reportError);
@@ -57,7 +56,7 @@ export default function(yargs: Yargs, commandsMap: CommandsMap, yargsCommandName
 				)
 				.strict();
 			});
-			return yargs;
+			return subYargs;
 		},
 		(argv: Argv) => {
 			// argv._ is an array of commands.
@@ -66,6 +65,32 @@ export default function(yargs: Yargs, commandsMap: CommandsMap, yargsCommandName
 			// have been ran and we don't want to run the default.
 			if (defaultCommandAvailable && argv._.length === 1) {
 				return defaultCommand.run(helper, argv).catch(reportError);
+			}
+		});
+
+		// Now handle aliases
+		[...commandOptions].forEach((command: string) => {
+			const {run, register, alias: aliases} = <CommandWrapper> commandsMap.get(command);
+			if (aliases) {
+				(Array.isArray(aliases) ? aliases : [aliases]).forEach((alias) => {
+					yargs.command(
+						alias.name,
+						alias.description || '',
+						(aliasYargs: Yargs) => {
+							register((key: string, options: Options) => {
+								if (!alias.options || !alias.options.find((option) => option.option === key)) {
+									aliasYargs.option(key, options);
+								}
+							});
+							return aliasYargs;
+						},
+						(argv: Argv) => {
+							alias.options && alias.options.forEach((option) => {
+								argv[option.option] = option.value;
+							});
+							return run(helper, argv).catch(reportError);
+						});
+				});
 			}
 		});
 	});
