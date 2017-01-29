@@ -34,7 +34,12 @@ export interface NpmPackage {
 export interface Alias {
 	name: string;
 	description?: string;
-	register?(helper: Helper): Yargs;
+	options: AliasOption[];
+}
+
+export interface AliasOption {
+   option: string;
+   value?: (string | boolean | number)[];
 }
 
 /**
@@ -47,5 +52,5 @@ export interface Command {
 	eject?(helper: Helper, npm: (pkg: NpmPackage) => Promise<void>, files: (files: string[]) => void): void;
 	name?: string;
 	group?: string;
-	alias?: Alias[]|Alias;
+	alias?: Alias[] | Alias;
 }
