@@ -1,7 +1,7 @@
 import { CommandsMap } from '../command';
-import { Helper } from '../interfaces';
+import { Helper, OptionsHelper } from '../interfaces';
 import { join } from 'path';
-import { Yargs, Argv } from 'yargs';
+import { Argv } from 'yargs';
 import { yellow } from 'chalk';
 import allCommands from '../allCommands';
 const david = require('david');
@@ -122,14 +122,13 @@ function createOutput(myPackageDetails: PackageDetails, commandVersions: ModuleV
 	return output;
 }
 
-function register(helper: Helper): Yargs {
-	helper.yargs.option('o', {
+function register(options: OptionsHelper): void {
+	options('o', {
 		alias: 'outdated',
 		describe: 'Output a list of installed commands and check if any can be updated to a more recent stable version.',
 		demand: false,
 		type: 'boolean'
 	});
-	return helper.yargs;
 }
 
 /**

@@ -1,4 +1,4 @@
-import { Yargs, Argv } from 'yargs';
+import { Yargs, Argv, Options } from 'yargs';
 import { getGroupDescription, CommandsMap, CommandWrapper } from './command';
 import CommandHelper from './CommandHelper';
 import Helper from './Helper';
@@ -27,18 +27,26 @@ export default function(yargs: Yargs, commandsMap: CommandsMap, yargsCommandName
 		const defaultCommandAvailable = !!(defaultCommand && defaultCommand.register && defaultCommand.run);
 		const reportError = (error: Error) => console.error(chalk.red.bold(error.message));
 		yargs.command(commandName, groupDescription, (yargs: Yargs) => {
-			// Register the default command so that options show
 			if (defaultCommandAvailable) {
-				defaultCommand.register(helper);
+				defaultCommand.register((key: string, options: Options) => {
+					yargs.option(key, {
+						group: `Default Command Options ('${defaultCommand.name}')`,
+						...options
+					});
+				});
 			}
 
-			commandOptions.forEach((command: string) => {
+			[...commandOptions].filter((command: string) => {
+				return `${commandName}-` !== command;
+			}).forEach((command: string) => {
 				const {name, description, register, run} = <CommandWrapper> commandsMap.get(command);
 				yargs.command(
 					name,
 					description,
 					(yargs: Yargs) => {
-						register(helper);
+						register((key: string, options: Options) => {
+							yargs.option(key, options);
+						});
 						return yargs;
 					},
 					(argv: Argv) => {

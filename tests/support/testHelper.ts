@@ -28,7 +28,7 @@ export function getCommandsMap(groupDef: GroupDef) {
 				name: command.commandName,
 				group: group.groupName,
 				description: compositeKey,
-				register: stub().returns(compositeKey),
+				register: stub().callsArgWith(0, 'key', {}).returns(compositeKey),
 				runStub,
 				run: runStub.returns(command.fails ?
 					Promise.reject(new Error(compositeKey)) :
@@ -41,7 +41,7 @@ export function getCommandsMap(groupDef: GroupDef) {
 	return commands;
 };
 
-const yargsFunctions = [ 'demand', 'usage', 'epilog', 'help', 'alias', 'strict' ];
+const yargsFunctions = [ 'demand', 'usage', 'epilog', 'help', 'alias', 'strict', 'option' ];
 export function getYargsStub() {
 	const yargsStub: any = {};
 	yargsFunctions.forEach((fnc) => {

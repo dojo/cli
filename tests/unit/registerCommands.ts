@@ -67,12 +67,17 @@ registerSuite({
 		yargsStub.command.secondCall.args[3]();
 		assert.isTrue(run.calledOnce);
 	},
+	'Should call into register method'() {
+		const key = 'group1-command1';
+		registerCommands(yargsStub, commandsMap, createYargsCommandNames({'group1': new Set([ key ])}));
+		assert.isTrue(yargsStub.option.called);
+	},
 	'default command': {
 		'beforeEach'() {
-			defaultRegisterStub = stub(defaultCommandWrapper, 'register');
+			const key = 'group1-command1';
+			defaultRegisterStub = stub(defaultCommandWrapper, 'register').callsArgWith(0, 'key', {}).returns(key);
 			defaultRunStub = stub(defaultCommandWrapper, 'run').returns(Promise.resolve());
 			commandsMap.set('group1', defaultCommandWrapper);
-			const key = 'group1-command1';
 			registerCommands(yargsStub, commandsMap, createYargsCommandNames({'group1': new Set([ key ])}));
 		},
 		'afterEach'() {
