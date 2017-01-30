@@ -7,6 +7,40 @@ import { helpUsage, helpEpilog } from './text';
 import * as chalk from 'chalk';
 import { YargsCommandNames } from './loadCommands';
 
+function registerAliases(yargs: Yargs, helper: Helper, commandOptions: Set<string>, commandsMap: CommandsMap): void {
+	const reportError = (error: Error) => console.error(chalk.red.bold(error.message));
+	[...commandOptions].forEach((command: string) => {
+		const {run, register, alias: aliases} = <CommandWrapper> commandsMap.get(command);
+		if (aliases) {
+			(Array.isArray(aliases) ? aliases : [aliases]).forEach((alias) => {
+				const { name, description, options: aliasOpts } = alias;
+				yargs.command(
+					name,
+					description || '',
+					(aliasYargs: Yargs) => {
+						register((key: string, options: Options) => {
+							if (!aliasOpts || !aliasOpts.some((option) => option.option === key)) {
+								aliasYargs.option(key, options);
+							}
+						});
+						return aliasYargs;
+					},
+					(argv: Argv) => {
+						if (alias.options) {
+							argv = alias.options.reduce((accumulator, option) => {
+								return {
+									...accumulator,
+									[option.option]: option.value
+								};
+							}, argv);
+						}
+						return run(helper, argv).catch(reportError);
+					});
+			});
+		}
+	});
+}
+
 /**
  * Registers commands and subcommands using yargs. Receives a CommandsMap of commands and
  * a map of YargsCommandNames which links composite keys to groups.
@@ -68,32 +102,7 @@ export default function(yargs: Yargs, commandsMap: CommandsMap, yargsCommandName
 			}
 		});
 
-		// Now handle aliases
-		[...commandOptions].forEach((command: string) => {
-			const {run, register, alias: aliases} = <CommandWrapper> commandsMap.get(command);
-			if (aliases) {
-				(Array.isArray(aliases) ? aliases : [aliases]).forEach((alias) => {
-					const { name, description, options: aliasOpts } = alias;
-					yargs.command(
-						name,
-						description || '',
-						(aliasYargs: Yargs) => {
-							register((key: string, options: Options) => {
-								if (!aliasOpts || !aliasOpts.some((option) => option.option === key)) {
-									aliasYargs.option(key, options);
-								}
-							});
-							return aliasYargs;
-						},
-						(argv: Argv) => {
-							alias.options && alias.options.forEach((option) => {
-								argv[option.option] = option.value;
-							});
-							return run(helper, argv).catch(reportError);
-						});
-				});
-			}
-		});
+		registerAliases(yargs, helper, commandOptions, commandsMap);
 	});
 
 	yargs.demand(1, '')
