@@ -1,0 +1,16 @@
+{
+  "name": "eject package",
+  "version": "1.0.0",
+  "dependencies": {
+      "blah": "1.0.1",
+      "blah2": "1.0.1"
+  },
+  "devDependencies": {
+      "blah": "1.0.1",
+      "blah2": "1.0.1"
+  },
+  "scripts": {
+      "blah": "pwd",
+      "blah2": "pwd"
+  }
+}

@@ -214,5 +214,4 @@ describe('version command', () => {
 	function outputSuffix() {
 		return `\nYou are currently running @dojo/cli 1.0.0\n`;
 	}
-
 });
