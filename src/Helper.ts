@@ -1,4 +1,4 @@
-import { CommandHelper, Helper } from './interfaces';
+import { CommandHelper, Helper, ConfigurationHelper } from './interfaces';
 import { Yargs } from 'yargs';
 
 /**
@@ -8,12 +8,14 @@ import { Yargs } from 'yargs';
  * other tasks.
  */
 export default class implements Helper {
-	constructor(commandHelper: CommandHelper, yargs: Yargs, context: any) {
+	constructor(commandHelper: CommandHelper, yargs: Yargs, context: any, configuration: ConfigurationHelper) {
 		this.command = commandHelper;
 		this.yargs = yargs;
 		this.context = context;
+		this.configuration = configuration;
 	};
 	command: CommandHelper;
 	yargs: Yargs;
 	context: any;
+	configuration: ConfigurationHelper;
 }
