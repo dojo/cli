@@ -73,12 +73,13 @@ export default function(yargs: Yargs, commandsMap: CommandsMap, yargsCommandName
 			const {run, register, alias: aliases} = <CommandWrapper> commandsMap.get(command);
 			if (aliases) {
 				(Array.isArray(aliases) ? aliases : [aliases]).forEach((alias) => {
+					const { name, description, options: aliasOpts } = alias;
 					yargs.command(
-						alias.name,
-						alias.description || '',
+						name,
+						description || '',
 						(aliasYargs: Yargs) => {
 							register((key: string, options: Options) => {
-								if (!alias.options || !alias.options.find((option) => option.option === key)) {
+								if (!aliasOpts || !aliasOpts.some((option) => option.option === key)) {
 									aliasYargs.option(key, options);
 								}
 							});

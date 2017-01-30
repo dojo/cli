@@ -72,6 +72,44 @@ registerSuite({
 		registerCommands(yargsStub, commandsMap, createYargsCommandNames({'group1': new Set([ key ])}));
 		assert.isTrue(yargsStub.option.called);
 	},
+	'alias': {
+		'beforeEach'() {
+			const command = commandsMap.get('group1-command1');
+			command.alias = {
+				name: 'alias',
+				description: 'some description',
+				options: [
+					{
+						option: 'w',
+						value: 10
+					}
+				]
+			};
+		},
+		'should register add itself as a command'() {
+			registerCommands(yargsStub, commandsMap, createYargsCommandNames({'group1': new Set([ 'group1-command1' ])}));
+			assert.equal(yargsStub.command.thirdCall.args[0], 'alias');
+			assert.equal(yargsStub.command.thirdCall.args[1], 'some description');
+		},
+		'should register options'() {
+			registerCommands(yargsStub, commandsMap, createYargsCommandNames({'group1': new Set([ 'group1-command1' ])}));
+			assert.isTrue(yargsStub.option.calledTwice);
+		},
+		'should not register provided options'() {
+			const key = 'group1-command1';
+			const command = commandsMap.get(key);
+			command.register = stub().callsArgWith(0, 'w', {}).returns(key),
+			registerCommands(yargsStub, commandsMap, createYargsCommandNames({'group1': new Set([ key ])}));
+			assert.isTrue(yargsStub.option.calledOnce);
+		},
+		'should augment argv when run'() {
+			const key = 'group1-command1';
+			const command = commandsMap.get(key);
+			registerCommands(yargsStub, commandsMap, createYargsCommandNames({'group1': new Set([ 'group1-command1' ])}));
+			yargsStub.command.thirdCall.args[3]({'_': ['group', 'command']});
+			assert.equal(command.run.firstCall.args[1].w, 10);
+		}
+	},
 	'default command': {
 		'beforeEach'() {
 			const key = 'group1-command1';
