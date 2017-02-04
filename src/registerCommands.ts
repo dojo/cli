@@ -103,8 +103,8 @@ function registerAliases(yargs: Yargs, helper: Helper, commandOptions: Set<strin
 						return aliasYargs;
 					},
 					(argv: Argv) => {
-						if (alias.options) {
-							argv = alias.options.reduce((accumulator, option) => {
+						if (aliasOpts) {
+							argv = aliasOpts.reduce((accumulator, option) => {
 								return {
 									...accumulator,
 									[option.option]: option.value

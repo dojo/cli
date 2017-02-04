@@ -102,12 +102,45 @@ registerSuite({
 			registerCommands(yargsStub, commandsMap, createYargsCommandNames({'group1': new Set([ key ])}));
 			assert.isTrue(yargsStub.option.calledOnce);
 		},
+		'should register when alias is an array'() {
+			const key = 'group1-command1';
+			const command = commandsMap.get(key);
+			command.alias = [
+				{
+					name: 'alias',
+					options: [
+						{
+							option: 'w',
+							value: 10
+						}
+					]
+				}
+			];
+			registerCommands(yargsStub, commandsMap, createYargsCommandNames({'group1': new Set([ key ])}));
+			assert.isTrue(yargsStub.option.calledTwice);
+		},
 		'should augment argv when run'() {
 			const key = 'group1-command1';
 			const command = commandsMap.get(key);
-			registerCommands(yargsStub, commandsMap, createYargsCommandNames({'group1': new Set([ 'group1-command1' ])}));
+			registerCommands(yargsStub, commandsMap, createYargsCommandNames({'group1': new Set([ key ])}));
 			yargsStub.command.thirdCall.args[3]({'_': ['group', 'command']});
 			assert.equal(command.run.firstCall.args[1].w, 10);
+		},
+		'should run without options'() {
+			const key = 'group1-command1';
+			const command = commandsMap.get(key);
+			command.alias = [
+				{
+					name: 'alias'
+				}
+			];
+			registerCommands(yargsStub, commandsMap, createYargsCommandNames({'group1': new Set([ key ])}));
+			yargsStub.command.thirdCall.args[3]({'_': ['group', 'command']});
+			const properties = Object.keys(command.run.firstCall.args[1]);
+			assert.equal(properties.length, 1);
+			['group', 'command'].forEach((key) => {
+				assert.notEqual(command.run.firstCall.args[1]._.indexOf(key), -1);
+			});
 		}
 	},
 	'default command': {
