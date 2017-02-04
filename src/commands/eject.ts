@@ -1,10 +1,10 @@
 import { existsSync, writeFileSync } from 'fs';
 import { copySync, ensureDirSync } from 'fs-extra';
 import { join, resolve as pathResolve } from 'path';
-import { Yargs, Argv } from 'yargs';
+import { Argv } from 'yargs';
 import { red, yellow, underline } from 'chalk';
 import * as inquirer from 'inquirer';
-import { Helper, NpmPackage } from '../interfaces';
+import { Helper, NpmPackage, OptionsHelper } from '../interfaces';
 import allCommands from '../allCommands';
 import npmInstall from '../npmInstall';
 const pkgDir = require('pkg-dir');
@@ -131,16 +131,15 @@ function copyFiles(files: string[]): void {
 	});
 }
 
-function register(helper: Helper): Yargs {
-	helper.yargs.option('g', {
+function register(options: OptionsHelper): void {
+	options('g', {
 		alias: 'group',
 		describe: 'the group to eject commands from'
 	});
-	helper.yargs.option('c', {
+	options('c', {
 		alias: 'command',
 		describe: 'the command to eject - a `group` is required'
 	});
-	return helper.yargs;
 }
 
 function run(helper: Helper, args: EjectArgs): Promise<any> {
@@ -171,12 +170,14 @@ function run(helper: Helper, args: EjectArgs): Promise<any> {
 					if (args.group && args.command) {
 						throw Error(`command ${args.group}/${args.command} does not exist`);
 					}
-					throw Error('nothing to do');
+					console.log('nothing to do');
 				}
 				else {
+					let performedEject = false;
 					toEject.forEach(([ , command ]) => {
 						if (command.eject) {
 							command.eject(helper, handleNpmConfiguration, copyFiles);
+							performedEject = true;
 						}
 						else if (args.group && args.command) {
 							throw Error(`'eject' is not defined for command ${command.group}/${command.name}`);
@@ -185,6 +186,9 @@ function run(helper: Helper, args: EjectArgs): Promise<any> {
 							console.warn(`${red('WARN')} 'eject' is not defined for ${command.group}/${command.name}, skipping...`);
 						}
 					});
+					if (!performedEject) {
+						console.log('nothing to do');
+					}
 				}
 			});
 		});
