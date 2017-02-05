@@ -55,7 +55,7 @@ describe('cli .bin', () => {
 		mockModule.destroy();
 	});
 
-	it('should call yargs', () => {
+	it('should call registerCommands', () => {
 		mockAllCommandsPromise.then(() => {
 			setTimeout(() => {
 				assert.isTrue(mockRegisterCommands.default.called);
