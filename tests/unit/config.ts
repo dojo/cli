@@ -1,6 +1,6 @@
 import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
-import { resolve } from 'path';
+import { resolve, join, dirname } from 'path';
 
 const config = require('intern/dojo/node!./../../src/config').default;
 const expectedSearchPrefixes = [ '@dojo/cli', 'dojo-cli' ];
@@ -26,7 +26,7 @@ registerSuite({
 	},
 	'Should look in the global package node_modules last'() {
 		const paths = config.searchPaths;
-		const expectedPath = resolve('node_modules');
+		const expectedPath = join(dirname(process.execPath), '..', '/lib/node_modules');
 		assert.equal(paths[2], expectedPath);
 	}
 });
