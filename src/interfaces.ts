@@ -31,6 +31,17 @@ export interface NpmPackage {
 	};
 };
 
+export interface Alias {
+	name: string;
+	description?: string;
+	options: AliasOption[];
+}
+
+export interface AliasOption {
+	option: string;
+	value?: string | boolean | number;
+}
+
 /**
  * Inbuilt commands specify their name and group - installed commands have these props parsed out of their package dir name
  */
@@ -41,4 +52,5 @@ export interface Command {
 	eject?(helper: Helper, npm: (pkg: NpmPackage) => Promise<void>, files: (files: string[]) => void): void;
 	name?: string;
 	group?: string;
+	alias?: Alias[] | Alias;
 }
