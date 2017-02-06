@@ -1,4 +1,4 @@
-import { join, dirname } from 'path';
+import { join } from 'path';
 const pkgDir = require('pkg-dir');
 const packagePath = pkgDir.sync(__dirname);
 
@@ -11,7 +11,7 @@ export type Config = {
 export default {
 	searchPaths: [
 		'node_modules',
-		join(dirname(process.execPath), '..', '/lib/node_modules'),
+		join(__dirname, '..', '..'),
 		join(packagePath, 'node_modules')
 	],
 	searchPrefixes: [ '@dojo/cli', 'dojo-cli' ],
