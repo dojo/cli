@@ -170,7 +170,7 @@ function run(helper: Helper, args: EjectArgs): Promise<any> {
 					if (args.group && args.command) {
 						throw Error(`command ${args.group}/${args.command} does not exist`);
 					}
-					console.log('nothing to do');
+					console.log('no commands have implemented eject');
 				}
 				else {
 					let performedEject = false;
@@ -187,7 +187,7 @@ function run(helper: Helper, args: EjectArgs): Promise<any> {
 						}
 					});
 					if (!performedEject) {
-						console.log('nothing to do');
+						console.log('no commands have implemented eject');
 					}
 				}
 			});

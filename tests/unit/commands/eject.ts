@@ -94,8 +94,8 @@ describe('eject command', () => {
 		});
 	});
 
-	it(`should output 'nothing to do' when only eject and version are registered`, () => {
-		const runOutput = 'nothing to do';
+	it(`should output 'no commands have implemented eject' when only eject and version are registered`, () => {
+		const runOutput = 'no commands have implemented eject';
 		const installedCommandWrapper1 = getCommandWrapperWithConfiguration({
 			group: 'eject',
 			name: ''
@@ -116,8 +116,8 @@ describe('eject command', () => {
 		});
 	});
 
-	it(`should output 'nothing to do' all commands are skipped`, () => {
-		const runOutput = 'nothing to do';
+	it(`should output 'no commands have implemented eject' all commands are skipped`, () => {
+		const runOutput = 'no commands have implemented eject';
 		const installedCommandWrapper1 = getCommandWrapperWithConfiguration({
 			group: 'command',
 			name: ''
