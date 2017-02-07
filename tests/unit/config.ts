@@ -20,11 +20,12 @@ registerSuite({
 		const paths = config.searchPaths;
 		assert.equal(paths[0], 'node_modules');
 	},
-	'Should look in global peer packages second'() {
+	'Should look in peer packages second'() {
 		const paths = config.searchPaths;
-		assert.equal(paths[1], resolve('..'));
+		const expectedPath = resolve('.');
+		assert.equal(paths[1], expectedPath);
 	},
-	'Should look in the global package node_modules last'() {
+	'Should look in packages node_modules last'() {
 		const paths = config.searchPaths;
 		const expectedPath = resolve('node_modules');
 		assert.equal(paths[2], expectedPath);

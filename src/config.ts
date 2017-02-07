@@ -11,7 +11,7 @@ export type Config = {
 export default {
 	searchPaths: [
 		'node_modules',
-		join(packagePath, '..'),
+		join(__dirname, '..', '..'),
 		join(packagePath, 'node_modules')
 	],
 	searchPrefixes: [ '@dojo/cli', 'dojo-cli' ],
