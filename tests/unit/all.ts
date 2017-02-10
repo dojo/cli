@@ -1,3 +1,4 @@
+import 'intern';
 import './allCommands';
 import './command';
 import './CommandHelper';
