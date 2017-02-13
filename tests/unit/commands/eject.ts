@@ -64,17 +64,17 @@ describe('eject command', () => {
 	});
 
 	it('should register supported arguments', () => {
-		const helper = { yargs: { option: sandbox.stub() } };
-		moduleUnderTest.register(helper);
+		const options = sandbox.stub();
+		moduleUnderTest.register(options);
 		assert.deepEqual(
-			helper.yargs.option.firstCall.args,
+			options.firstCall.args,
 			[ 'g', {
 				alias: 'group',
 				describe: 'the group to eject commands from'
 			} ]
 		);
 		assert.deepEqual(
-			helper.yargs.option.secondCall.args,
+			options.secondCall.args,
 			[ 'c', {
 				alias: 'command',
 				describe: 'the command to eject - a `group` is required'
@@ -94,8 +94,8 @@ describe('eject command', () => {
 		});
 	});
 
-	it(`should output 'nothing to do' when only eject and version are registered`, () => {
-		const runOutput = 'nothing to do';
+	it(`should output 'no commands have implemented eject' when only eject and version are registered`, () => {
+		const runOutput = 'no commands have implemented eject';
 		const installedCommandWrapper1 = getCommandWrapperWithConfiguration({
 			group: 'eject',
 			name: ''
@@ -111,8 +111,30 @@ describe('eject command', () => {
 		]);
 		const helper = {command: 'eject'};
 		mockAllCommands.default = sandbox.stub().resolves({commandsMap: commandMap});
-		return moduleUnderTest.run(helper, {}).catch((error: { message: string }) => {
-			assert.equal(error.message, runOutput);
+		return moduleUnderTest.run(helper, {}).then(() => {
+			assert.equal((<sinon.SinonStub> console.log).args[0][0], runOutput);
+		});
+	});
+
+	it(`should output 'no commands have implemented eject' all commands are skipped`, () => {
+		const runOutput = 'no commands have implemented eject';
+		const installedCommandWrapper1 = getCommandWrapperWithConfiguration({
+			group: 'command',
+			name: ''
+		});
+		const installedCommandWrapper2 = getCommandWrapperWithConfiguration({
+			group: 'version',
+			name: ''
+		});
+
+		const commandMap: CommandsMap = new Map<string, CommandWrapper>([
+			['command', installedCommandWrapper1],
+			['version', installedCommandWrapper2]
+		]);
+		const helper = {command: 'eject'};
+		mockAllCommands.default = sandbox.stub().resolves({commandsMap: commandMap});
+		return moduleUnderTest.run(helper, {}).then(() => {
+			assert.equal((<sinon.SinonStub> console.log).args[0][0], runOutput);
 		});
 	});
 
