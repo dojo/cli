@@ -2,7 +2,7 @@ import { existsSync, writeFileSync } from 'fs';
 import { copySync, ensureDirSync } from 'fs-extra';
 import { join, resolve as pathResolve } from 'path';
 import { Argv } from 'yargs';
-import { red, yellow, underline } from 'chalk';
+import { red, yellow, underline, green } from 'chalk';
 import * as inquirer from 'inquirer';
 import { Helper, NpmPackage, OptionsHelper } from '../interfaces';
 import allCommands from '../allCommands';
@@ -73,7 +73,7 @@ async function handleNpmConfiguration(pkg: NpmPackage): Promise<void> {
 function copyFiles(files: string[]): void {
 	const map: { [name: string]: number } = {};
 
-	// collect a map of partial paths and their usage counts 
+	// collect a map of partial paths and their usage counts
 	files.forEach((filePath: string) => {
 		const parts: string[] = pathResolve(filePath).split('/');
 		parts.forEach((part, index) => {
@@ -154,7 +154,7 @@ function run(helper: Helper, args: EjectArgs): Promise<any> {
 		}
 		return allCommands()
 			.then((commands) => {
-				// Filter out `version` and `eject` commands, ignore duplicates and grab 
+				// Filter out `version` and `eject` commands, ignore duplicates and grab
 				// only the commands specified via arguments to be ejected.
 				const map: { [name: string]: boolean } = { 'eject/': true, 'version/': true };
 				const toEject = [ ...commands.commandsMap ]
@@ -166,29 +166,28 @@ function run(helper: Helper, args: EjectArgs): Promise<any> {
 							(!args.command || args.command === command.name);
 					});
 
+				let performedEject = false;
+
 				if (!toEject.length) {
 					if (args.group && args.command) {
-						throw Error(`command ${args.group}/${args.command} does not exist`);
+						throw Error(`command ${args.group}-${args.command} does not exist`);
 					}
-					console.log('no commands have implemented eject');
 				}
 				else {
-					let performedEject = false;
 					toEject.forEach(([ , command ]) => {
 						if (command.eject) {
+							console.log(green('ejecting ') + `${command.group}-${command.name}`);
 							command.eject(helper, handleNpmConfiguration, copyFiles);
 							performedEject = true;
 						}
 						else if (args.group && args.command) {
-							throw Error(`'eject' is not defined for command ${command.group}/${command.name}`);
-						}
-						else {
-							console.warn(`${red('WARN')} 'eject' is not defined for ${command.group}/${command.name}, skipping...`);
+							throw Error(`'eject' is not defined for command ${command.group}-${command.name}`);
 						}
 					});
-					if (!performedEject) {
-						console.log('no commands have implemented eject');
-					}
+				}
+
+				if (!performedEject) {
+					console.log('no commands have implemented eject');
 				}
 			});
 		});

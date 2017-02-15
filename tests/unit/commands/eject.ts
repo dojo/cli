@@ -21,6 +21,8 @@ describe('eject command', () => {
 	let mockNpmInstall: any;
 	let mockPackageJson: any;
 	let mockAllCommands: any;
+	let consoleLogStub: sinon.SinonStub;
+	let consoleWarnStub: sinon.SinonStub;
 	let sandbox: sinon.SinonSandbox;
 
 	function loadCommand(command: string): any {
@@ -53,8 +55,8 @@ describe('eject command', () => {
 			blah: 'pwd',
 			blah2: 'pwd'
 		};
-		sandbox.stub(console, 'log');
-		sandbox.stub(console, 'warn');
+		consoleLogStub = sandbox.stub(console, 'log');
+		consoleWarnStub = sandbox.stub(console, 'warn');
 		moduleUnderTest = mockModule.getModuleUnderTest().default;
 	});
 
@@ -112,7 +114,7 @@ describe('eject command', () => {
 		const helper = {command: 'eject'};
 		mockAllCommands.default = sandbox.stub().resolves({commandsMap: commandMap});
 		return moduleUnderTest.run(helper, {}).then(() => {
-			assert.equal((<sinon.SinonStub> console.log).args[0][0], runOutput);
+			assert.equal(consoleLogStub.args[0][0], runOutput);
 		});
 	});
 
@@ -134,31 +136,7 @@ describe('eject command', () => {
 		const helper = {command: 'eject'};
 		mockAllCommands.default = sandbox.stub().resolves({commandsMap: commandMap});
 		return moduleUnderTest.run(helper, {}).then(() => {
-			assert.equal((<sinon.SinonStub> console.log).args[0][0], runOutput);
-		});
-	});
-
-	it(`should show warning messages when command has no 'eject' method defined`, () => {
-		function output(group: string): string {
-			return `${red('WARN')} 'eject' is not defined for ${group}/test, skipping...`;
-		}
-		const installedCommandWrapper1 = getCommandWrapperWithConfiguration({
-			group: 'apple',
-			name: 'test'
-		});
-		const installedCommandWrapper2 = getCommandWrapperWithConfiguration({
-			group: 'orange',
-			name: 'test'
-		});
-		const commandMap: CommandsMap = new Map<string, CommandWrapper>([
-			['apple', installedCommandWrapper1],
-			['orange', installedCommandWrapper2]
-		]);
-		const helper = {command: 'eject'};
-		mockAllCommands.default = sandbox.stub().resolves({commandsMap: commandMap});
-		return moduleUnderTest.run(helper, {}).then(() => {
-			assert.equal((<sinon.SinonStub> console.warn).args[0][0], output('apple'));
-			assert.equal((<sinon.SinonStub> console.warn).args[1][0], output('orange'));
+			assert.equal(consoleLogStub.args[0][0], runOutput);
 		});
 	});
 
@@ -227,7 +205,7 @@ describe('eject command', () => {
 		const helper = {command: 'eject'};
 		mockAllCommands.default = sandbox.stub().resolves({commandsMap: commandMap});
 		return moduleUnderTest.run(helper, { group: 'test-group', command: 'blueberry' }).catch((error: { message: string }) => {
-			assert.equal(error.message, `'eject' is not defined for command test-group/blueberry`);
+			assert.equal(error.message, `'eject' is not defined for command test-group-blueberry`);
 		});
 	});
 
@@ -242,7 +220,7 @@ describe('eject command', () => {
 		const helper = {command: 'eject'};
 		mockAllCommands.default = sandbox.stub().resolves({commandsMap: commandMap});
 		return moduleUnderTest.run(helper, { group: 'test-group', command: 'apple' }).catch((error: { message: string }) => {
-			assert.equal(error.message, `command test-group/apple does not exist`);
+			assert.equal(error.message, `command test-group-apple does not exist`);
 		});
 	});
 
@@ -262,10 +240,10 @@ describe('eject command', () => {
 			mockAllCommands.default = sandbox.stub().resolves({commandsMap: commandMap});
 			return moduleUnderTest.run(helper, {}).then(() => {
 				assert.isTrue(mockNpmInstall.default.called);
-				assert.equal((<sinon.SinonStub> console.log).args[0][0], addedNpmOutput('bar', 'devDependencies'));
-				assert.equal((<sinon.SinonStub> console.log).args[1][0], addedNpmOutput('foo', 'dependencies'));
-				assert.equal((<sinon.SinonStub> console.log).args[2][0], addedNpmOutput('baz', 'scripts'));
-				assert.equal((<sinon.SinonStub> console.log).args[3][0], underline('running npm install...'));
+				assert.equal(consoleLogStub.args[1][0], addedNpmOutput('bar', 'devDependencies'));
+				assert.equal(consoleLogStub.args[2][0], addedNpmOutput('foo', 'dependencies'));
+				assert.equal(consoleLogStub.args[3][0], addedNpmOutput('baz', 'scripts'));
+				assert.equal(consoleLogStub.args[4][0], underline('running npm install...'));
 			});
 		});
 
@@ -280,10 +258,10 @@ describe('eject command', () => {
 			mockAllCommands.default = sandbox.stub().resolves({commandsMap: commandMap});
 			return moduleUnderTest.run(helper, {}).then(() => {
 				assert.isTrue(mockNpmInstall.default.called);
-				assert.equal((<sinon.SinonStub> console.log).args[0][0], addedNpmOutput('bar', 'devDependencies'));
-				assert.equal((<sinon.SinonStub> console.log).args[1][0], addedNpmOutput('foo', 'dependencies'));
-				assert.equal((<sinon.SinonStub> console.log).args[2][0], addedNpmOutput('baz', 'scripts'));
-				assert.equal((<sinon.SinonStub> console.log).args[3][0], underline('running npm install...'));
+				assert.equal(consoleLogStub.args[1][0], addedNpmOutput('bar', 'devDependencies'));
+				assert.equal(consoleLogStub.args[2][0], addedNpmOutput('foo', 'dependencies'));
+				assert.equal(consoleLogStub.args[3][0], addedNpmOutput('baz', 'scripts'));
+				assert.equal(consoleLogStub.args[4][0], underline('running npm install...'));
 			});
 		});
 
@@ -294,8 +272,8 @@ describe('eject command', () => {
 			const helper = {command: 'eject'};
 			mockAllCommands.default = sandbox.stub().resolves({commandsMap: commandMap});
 			return moduleUnderTest.run(helper, {}).then(() => {
-				assert.equal((<sinon.SinonStub> console.warn).args[0][0], warnNpmOutput('blah', 'dependency', '1.0.1'));
-				assert.equal((<sinon.SinonStub> console.log).args[1][0], underline('running npm install...'));
+				assert.equal(consoleWarnStub.args[0][0], warnNpmOutput('blah', 'dependency', '1.0.1'));
+				assert.equal(consoleLogStub.args[2][0], underline('running npm install...'));
 			});
 		});
 
@@ -306,8 +284,8 @@ describe('eject command', () => {
 			const helper = {command: 'eject'};
 			mockAllCommands.default = sandbox.stub().resolves({commandsMap: commandMap});
 			return moduleUnderTest.run(helper, {}).then(() => {
-				assert.equal((<sinon.SinonStub> console.warn).args[0][0], warnNpmOutput('blah', 'devDependency', '1.0.1'));
-				assert.equal((<sinon.SinonStub> console.log).args[1][0], underline('running npm install...'));
+				assert.equal(consoleWarnStub.args[0][0], warnNpmOutput('blah', 'devDependency', '1.0.1'));
+				assert.equal(consoleLogStub.args[2][0], underline('running npm install...'));
 			});
 		});
 
@@ -318,8 +296,8 @@ describe('eject command', () => {
 			const helper = {command: 'eject'};
 			mockAllCommands.default = sandbox.stub().resolves({commandsMap: commandMap});
 			return moduleUnderTest.run(helper, {}).then(() => {
-				assert.equal((<sinon.SinonStub> console.warn).args[0][0], warnNpmOutput('blah', 'script', 'pwd'));
-				assert.equal((<sinon.SinonStub> console.log).args[1][0], underline('running npm install...'));
+				assert.equal(consoleWarnStub.args[0][0], warnNpmOutput('blah', 'script', 'pwd'));
+				assert.equal(consoleLogStub.args[2][0], underline('running npm install...'));
 			});
 		});
 
@@ -330,12 +308,12 @@ describe('eject command', () => {
 			const helper = {command: 'eject'};
 			mockAllCommands.default = sandbox.stub().resolves({commandsMap: commandMap});
 			return moduleUnderTest.run(helper, {}).then(() => {
-				assert.equal((<sinon.SinonStub> console.log).args[4][0], `creating folder: ${yellow(join(ejectPackagePath, 'another-valid-package'))}`);
-				assert.equal((<sinon.SinonStub> console.log).args[5][0], `creating folder: ${yellow(join(ejectPackagePath, 'commands'))}`);
-				assert.equal((<sinon.SinonStub> console.log).args[6][0], underline(`\n\ncopying files into current project at: ${yellow(ejectPackagePath)}`));
-				assert.equal((<sinon.SinonStub> console.log).args[7][0], `	copying ${yellow(join(ejectPackagePath, '../another-valid-package/package.json'))} to the project which will now be located at: ${yellow(join(ejectPackagePath, 'another-valid-package/package.json'))}`);
-				assert.equal((<sinon.SinonStub> console.log).args[8][0], `	copying ${yellow(join(ejectPackagePath, '../blah.js'))} to the project which will now be located at: ${yellow(join(ejectPackagePath, 'blah.js'))}`);
-				assert.equal((<sinon.SinonStub> console.log).args[9][0], `	copying ${yellow(join(ejectPackagePath, '../commands/invalid-built-in-command.js'))} to the project which will now be located at: ${yellow(join(ejectPackagePath, 'commands/invalid-built-in-command.js'))}`);
+				assert.equal(consoleLogStub.args[5][0], `creating folder: ${yellow(join(ejectPackagePath, 'another-valid-package'))}`);
+				assert.equal(consoleLogStub.args[6][0], `creating folder: ${yellow(join(ejectPackagePath, 'commands'))}`);
+				assert.equal(consoleLogStub.args[7][0], underline(`\n\ncopying files into current project at: ${yellow(ejectPackagePath)}`));
+				assert.equal(consoleLogStub.args[8][0], `	copying ${yellow(join(ejectPackagePath, '../another-valid-package/package.json'))} to the project which will now be located at: ${yellow(join(ejectPackagePath, 'another-valid-package/package.json'))}`);
+				assert.equal(consoleLogStub.args[9][0], `	copying ${yellow(join(ejectPackagePath, '../blah.js'))} to the project which will now be located at: ${yellow(join(ejectPackagePath, 'blah.js'))}`);
+				assert.equal(consoleLogStub.args[10][0], `	copying ${yellow(join(ejectPackagePath, '../commands/invalid-built-in-command.js'))} to the project which will now be located at: ${yellow(join(ejectPackagePath, 'commands/invalid-built-in-command.js'))}`);
 			});
 		});
 
