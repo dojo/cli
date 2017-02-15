@@ -22,7 +22,7 @@
 		"no-console": false,
 		"no-construct": false,
 		"no-constructor-vars": true,
-		"no-debugger": true,
+		"no-debugger": false,
 		"no-duplicate-variable": true,
 		"no-empty": false,
 		"no-eval": true,
