@@ -20,13 +20,13 @@ export interface Helper {
 export type OptionsHelper = (key: string, options: Options) => void;
 
 export interface NpmPackage {
-	devDependencies: {
+	devDependencies?: {
 		[name: string]: string
 	};
-	dependencies: {
+	dependencies?: {
 		[name: string]: string
 	};
-	scripts: {
+	scripts?: {
 		[name: string]: string
 	};
 };
