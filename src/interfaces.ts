@@ -39,12 +39,14 @@ export interface AliasOption {
 	value?: string | boolean | number;
 }
 
+export interface FileCopyConfig {
+	path: string;
+	files: string[];
+}
+
 export interface EjectOutput {
 	npm?: NpmPackage;
-	copy?: {
-		path: string;
-		files: string[];
-	};
+	copy?: FileCopyConfig;
 }
 
 /**
