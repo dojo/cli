@@ -41,7 +41,10 @@ export interface AliasOption {
 
 export interface EjectOutput {
 	npm?: NpmPackage;
-	files?: string[];
+	copy?: {
+		path: string;
+		files: string[];
+	};
 }
 
 /**
