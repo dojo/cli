@@ -15,6 +15,7 @@ export interface CommandWrapperConfig {
 	description?: string;
 	path?: string;
 	runs?: boolean;
+	eject?: boolean;
 }
 
 export function getCommandsMap(groupDef: GroupDef) {
@@ -61,9 +62,9 @@ export function getCommandWrapper(name: string, runs: boolean = true) {
 }
 
 export function getCommandWrapperWithConfiguration(config: CommandWrapperConfig): CommandWrapper {
-	const {group = '', name = '', description = '', path = '', runs = false} = config;
+	const {group = '', name = '', description = '', path = '', runs = false, eject = false } = config;
 
-	const commandWrapper = {
+	const commandWrapper: CommandWrapper = {
 		group,
 		name,
 		description,
@@ -71,6 +72,10 @@ export function getCommandWrapperWithConfiguration(config: CommandWrapperConfig)
 		register: stub().returns('registered'),
 		run: stub().returns(runs ? Promise.resolve('success') : Promise.reject(new Error()))
 	};
+
+	if (eject) {
+		commandWrapper.eject = stub().returns({});
+	}
 
 	return commandWrapper;
 }

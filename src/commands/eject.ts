@@ -101,7 +101,7 @@ async function run(helper: Helper, args: EjectArgs): Promise<any> {
 					}
 				}
 				else {
-					console.log('There are no commands to eject');
+					console.log('No commands have implemented eject');
 				}
 			});
 		});
