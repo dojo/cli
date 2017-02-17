@@ -23,17 +23,25 @@ export function reset(): void {
 	loaded = false;
 }
 
+export async function loadExternalCommands(): Promise<LoadedCommands> {
+	const installedCommandLoader = initCommandLoader(config.searchPrefixes);
+	const installedCommandsPaths = await enumerateInstalledCommands(config);
+	return await loadCommands(installedCommandsPaths, installedCommandLoader);
+}
+
+export async function loadBuiltInCommands(): Promise<LoadedCommands> {
+	const builtInCommandLoader = createBuiltInCommandLoader();
+	const builtInCommandsPaths = await enumerateBuiltInCommands(config);
+	return await loadCommands(builtInCommandsPaths, builtInCommandLoader);
+}
+
 export default async function loadAllCommands(): Promise<LoadedCommands> {
 	if (loaded) {
 		return Promise.resolve(commands);
 	}
-	const builtInCommandLoader = createBuiltInCommandLoader();
-	const installedCommandLoader = initCommandLoader(config.searchPrefixes);
 
-	const builtInCommandsPaths = await enumerateBuiltInCommands(config);
-	const installedCommandsPaths = await enumerateInstalledCommands(config);
-	const builtInCommands = await loadCommands(builtInCommandsPaths, builtInCommandLoader);
-	const installedCommands = await loadCommands(installedCommandsPaths, installedCommandLoader);
+	const builtInCommands = await loadBuiltInCommands();
+	const installedCommands = await loadExternalCommands();
 
 	commands.commandsMap = new Map([...installedCommands.commandsMap, ...builtInCommands.commandsMap]);
 	commands.yargsCommandNames = new Map([...installedCommands.yargsCommandNames, ...builtInCommands.yargsCommandNames]);

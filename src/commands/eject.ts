@@ -4,17 +4,21 @@ import { Argv } from 'yargs';
 import { green, underline, yellow } from 'chalk';
 import * as inquirer from 'inquirer';
 import { Helper, NpmPackage, OptionsHelper, EjectOutput, FileCopyConfig } from '../interfaces';
-import allCommands from '../allCommands';
+import { CommandWrapper } from '../command';
+import { loadExternalCommands } from '../allCommands';
 import { deepAssign } from '@dojo/core/lang';
 import { installDependencies, installDevDependencies } from '../npmInstall';
 
-const builtInCommands = [ 'eject/', 'version/' ];
 const copiedFilesDir = 'config';
 
 export interface EjectArgs extends Argv {
 	group?: string;
 	command?: string;
 };
+
+export interface EjectableCommandWrapper extends CommandWrapper {
+	eject(helper: Helper): EjectOutput;
+}
 
 function register(options: OptionsHelper): void {
 	options('g', {
@@ -50,47 +54,36 @@ async function run(helper: Helper, args: EjectArgs): Promise<any> {
 		if (!answer.eject) {
 			throw Error('Aborting eject');
 		}
-		return allCommands()
+		return loadExternalCommands()
 			.then(async (commands) => {
 				const npmPackages: NpmPackage = {
 					dependencies: {},
 					devDependencies: {}
 				};
 
-				const commandSet = new Set<string>(builtInCommands);
+				const toEject = [ ...commands.commandsMap.values() ].reduce((toEject: CommandWrapper[], command) => {
+					const isSpecifiedGroup = !args.group || args.group === command.group;
+					const isSpecifiedCommand = !args.command || args.command === command.name;
+					const isNewCommand = toEject.indexOf(command) < 0;
 
-				const toEject = [ ...commands.commandsMap ].filter(([ , command ]) => {
-					const key = `${command.group}/${command.name}`;
-					const exists = commandSet.has(key);
-					commandSet.add(key);
-					return !exists && (!args.group || args.group === command.group) &&
-						(!args.command || args.command === command.name);
-				});
+					if (command.eject && isNewCommand && isSpecifiedGroup && isSpecifiedCommand) {
+						toEject.push(command);
+					}
 
-				let commandsToEject = false;
+					return toEject;
+				}, []);
 
 				if (toEject.length) {
-					toEject.forEach(([ , command ]) => {
-						if (command.eject) {
-							const commandKey = `${command.group}-${command.name}`;
-							console.log(green('\nejecting ') + commandKey);
-							const { npm = {}, copy }: EjectOutput = command.eject(helper);
+					toEject.forEach((command: EjectableCommandWrapper) => {
+						const commandKey = `${command.group}-${command.name}`;
+						console.log(green('\nejecting ') + commandKey);
 
-							deepAssign(npmPackages, npm);
-							copy && copyFiles(commandKey, copy);
+						const { npm = {}, copy }: EjectOutput = command.eject(helper);
 
-							commandsToEject = true;
-						}
-						else if (args.group && args.command) {
-							throw Error(`'eject' is not defined for command ${command.group}-${command.name}`);
-						}
+						deepAssign(npmPackages, npm);
+						copy && copyFiles(commandKey, copy);
 					});
-				}
-				else if (args.group && args.command) {
-					throw Error(`command ${args.group}-${args.command} does not exist`);
-				}
 
-				if (commandsToEject) {
 					if (Object.keys(npmPackages.dependencies).length) {
 						console.log(underline('\nrunning npm install dependencies...'));
 						await installDependencies(npmPackages);
@@ -100,6 +93,9 @@ async function run(helper: Helper, args: EjectArgs): Promise<any> {
 						console.log(underline('\nrunning npm install devDependencies...'));
 						await installDevDependencies(npmPackages);
 					}
+				}
+				else if (args.group && args.command) {
+					throw Error(`command ${args.group}-${args.command} does not implement eject`);
 				}
 				else {
 					console.log('No commands have implemented eject');

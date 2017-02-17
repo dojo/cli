@@ -19,7 +19,7 @@ describe('eject command', () => {
 	let mockInquirer: any;
 	let mockNpmInstall: any;
 	let mockPackageJson: any;
-	let mockAllCommands: any;
+	let mockAllExternalCommands: any;
 	let consoleLogStub: sinon.SinonStub;
 	let consoleWarnStub: sinon.SinonStub;
 	let sandbox: sinon.SinonSandbox;
@@ -38,7 +38,7 @@ describe('eject command', () => {
 		mockFsExtra.copySync = sandbox.stub();
 		mockInquirer = mockModule.getMock('inquirer');
 		mockInquirer.prompt = sandbox.stub().resolves({ eject: true });
-		mockAllCommands = mockModule.getMock('../allCommands');
+		mockAllExternalCommands = mockModule.getMock('../allCommands');
 		mockNpmInstall = mockModule.getMock('../npmInstall');
 		mockPackageJson = mockModule.getMock(`${ejectPackagePath}/package.json`);
 		consoleLogStub = sandbox.stub(console, 'log');
@@ -76,31 +76,9 @@ describe('eject command', () => {
 
 		const helper = {command: 'eject'};
 		mockInquirer.prompt = sandbox.stub().resolves({ eject: false });
-		mockAllCommands.default = sandbox.stub().resolves({commandsMap: commandMap});
+		mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves({commandsMap: commandMap});
 		return moduleUnderTest.run(helper, {}).catch((error: { message: string }) => {
 			assert.equal(error.message, abortOutput);
-		});
-	});
-
-	it(`should warn when only eject and version are registered`, () => {
-		const runOutput = 'No commands have implemented eject';
-		const installedCommandWrapper1 = getCommandWrapperWithConfiguration({
-			group: 'eject',
-			name: ''
-		});
-		const installedCommandWrapper2 = getCommandWrapperWithConfiguration({
-			group: 'version',
-			name: ''
-		});
-
-		const commandMap: CommandsMap = new Map<string, CommandWrapper>([
-			['eject', installedCommandWrapper1],
-			['version', installedCommandWrapper2]
-		]);
-		const helper = {command: 'eject'};
-		mockAllCommands.default = sandbox.stub().resolves({commandsMap: commandMap});
-		return moduleUnderTest.run(helper, {}).then(() => {
-			assert.equal(consoleLogStub.args[0][0], runOutput);
 		});
 	});
 
@@ -120,7 +98,7 @@ describe('eject command', () => {
 			['version', installedCommandWrapper2]
 		]);
 		const helper = {command: 'eject'};
-		mockAllCommands.default = sandbox.stub().resolves({commandsMap: commandMap});
+		mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves({commandsMap: commandMap});
 		return moduleUnderTest.run(helper, {}).then(() => {
 			assert.equal(consoleLogStub.args[0][0], runOutput);
 		});
@@ -145,7 +123,7 @@ describe('eject command', () => {
 			['blueberry', blueberryCommand]
 		]);
 		const helper = {command: 'eject'};
-		mockAllCommands.default = sandbox.stub().resolves({commandsMap: commandMap});
+		mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves({commandsMap: commandMap});
 		return moduleUnderTest.run(helper, { group: 'test-group' }).then(() => {
 			assert.isTrue(appleEjectStub.called, '1');
 			assert.isTrue(orangeEjectStub.called, '2');
@@ -172,7 +150,7 @@ describe('eject command', () => {
 			['blueberry', blueberryCommand]
 		]);
 		const helper = {command: 'eject'};
-		mockAllCommands.default = sandbox.stub().resolves({commandsMap: commandMap});
+		mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves({commandsMap: commandMap});
 		return moduleUnderTest.run(helper, { group: 'test-group', command: 'apple' }).then(() => {
 			assert.isTrue(appleEjectStub.called);
 			assert.isFalse(orangeEjectStub.called);
@@ -189,9 +167,9 @@ describe('eject command', () => {
 			['blueberry', blueberryCommand]
 		]);
 		const helper = {command: 'eject'};
-		mockAllCommands.default = sandbox.stub().resolves({commandsMap: commandMap});
+		mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves({commandsMap: commandMap});
 		return moduleUnderTest.run(helper, { group: 'test-group', command: 'blueberry' }).catch((error: { message: string }) => {
-			assert.equal(error.message, `'eject' is not defined for command test-group-blueberry`);
+			assert.equal(error.message, `command test-group-blueberry does not implement eject`);
 		});
 	});
 
@@ -204,9 +182,9 @@ describe('eject command', () => {
 			['blueberry', blueberryCommand]
 		]);
 		const helper = {command: 'eject'};
-		mockAllCommands.default = sandbox.stub().resolves({commandsMap: commandMap});
+		mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves({commandsMap: commandMap});
 		return moduleUnderTest.run(helper, { group: 'test-group', command: 'apple' }).catch((error: { message: string }) => {
-			assert.equal(error.message, `command test-group-apple does not exist`);
+			assert.equal(error.message, `command test-group-apple does not implement eject`);
 		});
 	});
 
@@ -216,7 +194,7 @@ describe('eject command', () => {
 				['apple', loadCommand('command-with-full-eject')]
 			]);
 			const helper = {command: 'eject'};
-			mockAllCommands.default = sandbox.stub().resolves({commandsMap: commandMap});
+			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves({commandsMap: commandMap});
 			return moduleUnderTest.run(helper, {}).then(() => {
 				assert.isTrue(mockNpmInstall.installDependencies.calledOnce);
 				assert.isTrue(mockNpmInstall.installDevDependencies.calledOnce);
@@ -230,7 +208,7 @@ describe('eject command', () => {
 				['apple', loadCommand('/command-with-full-eject')]
 			]);
 			const helper = {command: 'eject'};
-			mockAllCommands.default = sandbox.stub().resolves({commandsMap: commandMap});
+			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves({commandsMap: commandMap});
 			return moduleUnderTest.run(helper, {}).then(() => {
 				assert.isTrue(consoleLogStub.secondCall.calledWith(` ${yellow('creating')} ./config/test-group-test-eject/file1`));
 				assert.isTrue(consoleLogStub.thirdCall.calledWith(` ${yellow('creating')} ./config/test-group-test-eject/file2`));
