@@ -32,9 +32,9 @@ function register(options: OptionsHelper): void {
 }
 
 function copyFiles(commandName: string, { path, files }: FileCopyConfig): void {
+	const cwd = process.cwd();
 	if (path && files && files.length > 0) {
 		files.forEach((fileName) => {
-			const cwd = process.cwd();
 			const sourcePath = resolve(path, fileName);
 			const destPath = resolve(cwd, copiedFilesDir, commandName, fileName);
 

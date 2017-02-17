@@ -215,5 +215,16 @@ describe('eject command', () => {
 				assert.isTrue(mockFsExtra.copySync.calledTwice);
 			});
 		});
+
+		it('should not copy files if no files are specified', () => {
+			const commandMap: CommandsMap = new Map<string, CommandWrapper>([
+				['apple', loadCommand('/command-with-nofile-eject')]
+			]);
+			const helper = {command: 'eject'};
+			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves({commandsMap: commandMap});
+			return moduleUnderTest.run(helper, {}).then(() => {
+				assert.isTrue(mockFsExtra.copySync.notCalled);
+			});
+		});
 	});
 });
