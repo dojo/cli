@@ -138,7 +138,6 @@ describe('eject command', () => {
 		});
 		appleCommand.name = 'apple';
 		orangeCommand.name = 'orange';
-		// blueberryCommand.eject = function () { return {}; };
 		const appleEjectStub = sandbox.stub(appleCommand, 'eject').returns({});
 		const orangeEjectStub = sandbox.stub(orangeCommand, 'eject').returns({});
 		const blueberryEjectStub = <sinon.SinonStub> blueberryCommand.eject;
@@ -166,7 +165,6 @@ describe('eject command', () => {
 		});
 		appleCommand.name = 'apple';
 		orangeCommand.name = 'orange';
-		// blueberryCommand.eject = function () { return {}; };
 		const appleEjectStub = sandbox.stub(appleCommand, 'eject').returns({});
 		const orangeEjectStub = sandbox.stub(orangeCommand, 'eject').returns({});
 		const blueberryEjectStub = <sinon.SinonStub> blueberryCommand.eject;
