@@ -15,7 +15,6 @@ describe('eject command', () => {
 	let moduleUnderTest: any;
 	let mockModule: MockModule;
 	let mockPkgDir: any;
-	let mockFs: any;
 	let mockFsExtra: any;
 	let mockInquirer: any;
 	let mockNpmInstall: any;
@@ -35,9 +34,8 @@ describe('eject command', () => {
 		mockModule.dependencies(['inquirer', 'fs', 'fs-extra', 'pkg-dir', '../allCommands', '../npmInstall', `${ejectPackagePath}/package.json`]);
 		mockPkgDir = mockModule.getMock('pkg-dir');
 		mockPkgDir.ctor.sync = sandbox.stub().returns(ejectPackagePath);
-		mockFs = mockModule.getMock('fs');
-		mockFs.writeFileSync = sandbox.stub().returns(true);
 		mockFsExtra = mockModule.getMock('fs-extra');
+		mockFsExtra.copySync = sandbox.stub();
 		mockInquirer = mockModule.getMock('inquirer');
 		mockInquirer.prompt = sandbox.stub().resolves({ eject: true });
 		mockAllCommands = mockModule.getMock('../allCommands');
@@ -234,8 +232,9 @@ describe('eject command', () => {
 			const helper = {command: 'eject'};
 			mockAllCommands.default = sandbox.stub().resolves({commandsMap: commandMap});
 			return moduleUnderTest.run(helper, {}).then(() => {
-				assert.isTrue(consoleLogStub.secondCall.calledWith(` ${yellow('creating')} ./test-group-test-eject/file1`));
-				assert.isTrue(consoleLogStub.thirdCall.calledWith(` ${yellow('creating')} ./test-group-test-eject/file2`));
+				assert.isTrue(consoleLogStub.secondCall.calledWith(` ${yellow('creating')} ./config/test-group-test-eject/file1`));
+				assert.isTrue(consoleLogStub.thirdCall.calledWith(` ${yellow('creating')} ./config/test-group-test-eject/file2`));
+				assert.isTrue(mockFsExtra.copySync.calledTwice);
 			});
 		});
 	});

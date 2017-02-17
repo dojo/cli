@@ -9,6 +9,7 @@ import { deepAssign } from '@dojo/core/lang';
 import { installDependencies, installDevDependencies } from '../npmInstall';
 
 const builtInCommands = [ 'eject/', 'version/' ];
+const copiedFilesDir = 'config';
 
 export interface EjectArgs extends Argv {
 	group?: string;
@@ -31,7 +32,7 @@ function copyFiles(commandName: string, { path, files }: FileCopyConfig): void {
 		files.forEach((fileName) => {
 			const cwd = process.cwd();
 			const sourcePath = resolve(path, fileName);
-			const destPath = resolve(cwd, commandName, fileName);
+			const destPath = resolve(cwd, copiedFilesDir, commandName, fileName);
 
 			console.log(` ${yellow('creating')} ${destPath.replace(cwd, '.')}`);
 			copySync(sourcePath, destPath);
