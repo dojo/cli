@@ -20,13 +20,10 @@ export interface Helper {
 export type OptionsHelper = (key: string, options: Options) => void;
 
 export interface NpmPackage {
-	devDependencies: {
+	devDependencies?: {
 		[name: string]: string
 	};
-	dependencies: {
-		[name: string]: string
-	};
-	scripts: {
+	dependencies?: {
 		[name: string]: string
 	};
 };
@@ -42,6 +39,16 @@ export interface AliasOption {
 	value?: string | boolean | number;
 }
 
+export interface FileCopyConfig {
+	path: string;
+	files: string[];
+}
+
+export interface EjectOutput {
+	npm?: NpmPackage;
+	copy?: FileCopyConfig;
+}
+
 /**
  * Inbuilt commands specify their name and group - installed commands have these props parsed out of their package dir name
  */
@@ -49,7 +56,7 @@ export interface Command {
 	description: string;
 	register(options: OptionsHelper): void;
 	run(helper: Helper, args?: Argv): Promise<any>;
-	eject?(helper: Helper, npm: (pkg: NpmPackage) => Promise<void>, files: (files: string[]) => void): void;
+	eject?(helper: Helper): EjectOutput;
 	name?: string;
 	group?: string;
 	alias?: Alias[] | Alias;
