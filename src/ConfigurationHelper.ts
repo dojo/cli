@@ -1,4 +1,5 @@
-import { existsSync, writeFileSync, readJsonSync } from 'fs-extra';
+import { existsSync } from 'fs';
+const { readFileSync, writeFileSync } = require('jsonfile');
 import { join } from 'path';
 import { ConfigurationHelper, Config } from './interfaces';
 const pkgDir = require('pkg-dir');
@@ -7,20 +8,12 @@ const appPath = pkgDir.sync(process.cwd());
 const dojoRcPath = join(appPath, '.dojorc');
 
 function writeConfigFile(config: Config) {
-	writeFileSync(dojoRcPath, JSON.stringify(config), { flag: 'wr' });
+	writeFileSync(dojoRcPath, config, { spaces: 2 });
 }
 
 function getConfigFile(commandName?: string): Config {
 	const configExists = existsSync(dojoRcPath);
-	const config: Config = configExists ? readJsonSync(dojoRcPath) : {};
-	let writeFile = !configExists;
-
-	if (commandName && !config.hasOwnProperty(commandName)) {
-		config[commandName] = {};
-		writeFile = true;
-	}
-
-	writeFile && writeConfigFile(config);
+	const config: Config = configExists ? readFileSync(dojoRcPath) : {};
 
 	return commandName ? config[commandName] : config;
 }

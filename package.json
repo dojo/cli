@@ -41,6 +41,7 @@
     "fs-extra": "^0.30.0",
     "globby": "^6.0.0",
     "inquirer": "^2.0.0",
+    "jsonfile": "^2.4.0",
     "pkg-dir": "^1.0.0",
     "typings-core": "^1.4.1",
     "update-notifier": "^1.0.2",
