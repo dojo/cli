@@ -31,7 +31,7 @@ export default class implements ConfigurationHelper {
 	 */
 	save(config: Config, commandName: string): void {
 		const dojoRc = getConfigFile();
-		const commmandConfig: Config = dojoRc.hasOwnProperty(commandName) ? dojoRc[commandName] : {};
+		const commmandConfig: Config = dojoRc[commandName] || {};
 
 		Object.assign(commmandConfig, config);
 		Object.assign(dojoRc, { [commandName]: commmandConfig});
