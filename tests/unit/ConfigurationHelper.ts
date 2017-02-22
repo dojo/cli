@@ -10,7 +10,6 @@ let mockModule: MockModule;
 let mockPkgDir: any;
 let mockFs: any;
 let mockPath: any;
-let mockJsonFile: any;
 let moduleUnderTest: any;
 let configurationHelper: any;
 
@@ -24,18 +23,16 @@ registerSuite({
 		mockModule = new MockModule('../../src/ConfigurationHelper');
 		mockModule.dependencies([
 			'pkg-dir',
-			'fs',
-			'jsonfile',
+			'fs-extra',
 			'path',
 			dojoRcPath
 		]);
 		mockPkgDir = mockModule.getMock('pkg-dir');
 		mockPkgDir.ctor.sync = sandbox.stub().returns(packagePath);
-		mockFs = mockModule.getMock('fs');
+		mockFs = mockModule.getMock('fs-extra');
 		mockFs.existsSync = sinon.stub().returns(true);
-		mockJsonFile = mockModule.getMock('jsonfile');
-		mockJsonFile.readFileSync = sinon.stub().returns({});
-		mockJsonFile.writeFileSync = sinon.stub();
+		mockFs.readJsonSync = sinon.stub().returns({});
+		mockFs.writeFileSync = sinon.stub();
 		mockPath = mockModule.getMock('path');
 		mockPath.join = sinon.stub().returns(dojoRcPath);
 		moduleUnderTest = mockModule.getModuleUnderTest().default;
@@ -47,42 +44,42 @@ registerSuite({
 	},
 	'Should write new config to file when save called'() {
 		const newConfig = { foo: 'bar' };
-		mockJsonFile.readFileSync = sinon.stub().returns({ testCommandName: {} });
+		mockFs.readJsonSync = sinon.stub().returns({ testCommandName: {} });
 		configurationHelper.save(newConfig, 'testCommandName');
-		assert.isTrue(mockJsonFile.writeFileSync.calledOnce);
-		assert.equal(mockJsonFile.writeFileSync.firstCall.args[0], dojoRcPath);
-		assert.deepEqual(mockJsonFile.writeFileSync.firstCall.args[1], { testCommandName: newConfig });
+		assert.isTrue(mockFs.writeFileSync.calledOnce);
+		assert.equal(mockFs.writeFileSync.firstCall.args[0], dojoRcPath);
+		assert.equal(mockFs.writeFileSync.firstCall.args[1], JSON.stringify({ testCommandName: newConfig }, null, 2));
 	},
 	'Should merge new config with old when save called'() {
 		const newConfig = { foo: 'bar' };
 		const existingConfig = { existing: 'config' };
-		mockJsonFile.readFileSync.returns({ testCommandName: existingConfig });
+		mockFs.readJsonSync.returns({ testCommandName: existingConfig });
 		configurationHelper.save(newConfig, 'testCommandName');
-		assert.isTrue(mockJsonFile.writeFileSync.calledOnce);
-		assert.deepEqual(mockJsonFile.writeFileSync.firstCall.args[1], { testCommandName: Object.assign(existingConfig, newConfig) });
+		assert.isTrue(mockFs.writeFileSync.calledOnce);
+		assert.equal(mockFs.writeFileSync.firstCall.args[1], JSON.stringify({ testCommandName: Object.assign(existingConfig, newConfig) }, null, 2));
 	},
 	'Should merge new commandNames with existing command config when save called'() {
 		const newConfig = { foo: 'bar' };
 		const existingConfig = { existing: 'config' };
-		mockJsonFile.readFileSync.returns({ existingCommandName: existingConfig });
+		mockFs.readJsonSync.returns({ existingCommandName: existingConfig });
 		configurationHelper.save(newConfig, 'testCommandName');
-		assert.isTrue(mockJsonFile.writeFileSync.calledOnce);
-		assert.deepEqual(mockJsonFile.writeFileSync.firstCall.args[1], {
+		assert.isTrue(mockFs.writeFileSync.calledOnce);
+		assert.deepEqual(mockFs.writeFileSync.firstCall.args[1], JSON.stringify({
 			existingCommandName: existingConfig,
 			testCommandName: newConfig
-		});
+		}, null, 2));
 	},
 	'Should return undefined config when no dojorc for commandName exists'() {
 		mockFs.existsSync.returns(false);
 		const config = configurationHelper.get('testCommandName');
-		assert.isTrue(mockJsonFile.readFileSync.notCalled);
+		assert.isTrue(mockFs.readJsonSync.notCalled);
 		assert.deepEqual(config, {});
 	},
 	'Should return existing config when a dojorc entry exists'() {
 		const existingConfig = { existing: 'config' };
-		mockJsonFile.readFileSync.returns({ testCommandName: existingConfig });
+		mockFs.readJsonSync.returns({ testCommandName: existingConfig });
 		const config = configurationHelper.get('testCommandName');
-		assert.isTrue(mockJsonFile.readFileSync.calledOnce);
+		assert.isTrue(mockFs.readJsonSync.calledOnce);
 		assert.deepEqual(config, existingConfig);
 	}
 });
