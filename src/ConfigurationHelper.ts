@@ -7,7 +7,7 @@ const appPath = pkgDir.sync(process.cwd());
 const dojoRcPath = join(appPath, '.dojorc');
 
 function writeConfigFile(config: Config) {
-	writeFileSync(dojoRcPath, JSON.stringify(config, null, 2), { flag: 'wr' });
+	writeFileSync(dojoRcPath, JSON.stringify(config, null, 2));
 }
 
 function getConfigFile(commandName?: string): Config {
