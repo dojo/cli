@@ -1,8 +1,12 @@
 import { Argv, Yargs, Options } from 'yargs';
 
+export interface Config {
+	[key: string]: any;
+}
+
 export interface ConfigurationHelper {
-	save(config: any): Promise<any>;
-	get(): Promise<any>;
+	save(config: Config, commandName: string): void;
+	get(commandName: string): {};
 }
 
 export interface CommandHelper {

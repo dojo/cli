@@ -1,10 +1,29 @@
-import { existsSync, writeFile } from 'fs';
+import { existsSync, writeFileSync, readJsonSync } from 'fs-extra';
 import { join } from 'path';
-import { ConfigurationHelper } from './interfaces';
+import { ConfigurationHelper, Config } from './interfaces';
 const pkgDir = require('pkg-dir');
-const packageName = pkgDir.sync(__dirname).split('/').pop();
 
 const appPath = pkgDir.sync(process.cwd());
+const dojoRcPath = join(appPath, '.dojorc');
+
+function writeConfigFile(config: Config) {
+	writeFileSync(dojoRcPath, JSON.stringify(config), { flag: 'wr' });
+}
+
+function getConfigFile(commandName?: string): Config {
+	const configExists = existsSync(dojoRcPath);
+	const config: Config = configExists ? readJsonSync(dojoRcPath) : {};
+	let writeFile = !configExists;
+
+	if (commandName && !config.hasOwnProperty(commandName)) {
+		config[commandName] = {};
+		writeFile = true;
+	}
+
+	writeFile && writeConfigFile(config);
+
+	return commandName ? config[commandName] : config;
+}
 
 /**
  * ConfigurationHelper class which is passed into each command's run function
@@ -13,42 +32,26 @@ const appPath = pkgDir.sync(process.cwd());
 export default class implements ConfigurationHelper {
 	/**
 	 * persists configuration data to .dojorc
-	 * checks for collisions
-	 * 
+	 *
 	 * @param config - the configuration to save
-	 * @returns Promise - this an indicator of success/failure
+	 * @param commandName - the command name that's accessing config
 	 */
-	async save(config: any = {}): Promise<any> {
-		return this.get().then((dojoRc = {}) => {
-			dojoRc[packageName] = {
-				...(dojoRc[packageName] || {}),
-				...config
-			};
-			return new Promise((resolve, reject) => {
-				writeFile(join(appPath, '.dojorc'), JSON.stringify(dojoRc), { flag: 'wr' }, (error: Error) => {
-					if (error) {
-						reject(error);
-						return;
-					}
-					resolve();
-				});
-			});
-		});
+	save(config: Config, commandName: string): void {
+		const dojoRc = getConfigFile();
+		const commmandConfig: Config = dojoRc.hasOwnProperty(commandName) ? dojoRc[commandName] : {};
+
+		Object.assign(commmandConfig, config);
+		Object.assign(dojoRc, { [commandName]: commmandConfig});
+
+		writeConfigFile(dojoRc);
 	};
 
 	/**
-	 * Retrieves the configuration object from the file system 
-	 * or undefined if configuration does not exist
-	 * 
+	 * Retrieves the configuration object from the file system
+	 *
 	 * @returns Promise - an object representation of .dojorc
 	 */
-	async get(): Promise<any> {
-		const path = join(appPath, '.dojorc');
-		return new Promise((resolve, reject) => {
-			if (existsSync(path)) {
-				resolve(require(path));
-			}
-			resolve();
-		});
+	get(commandName: string): Config {
+		return getConfigFile(commandName);
 	};
 };

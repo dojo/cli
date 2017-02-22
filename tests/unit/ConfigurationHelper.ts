@@ -23,21 +23,18 @@ registerSuite({
 		mockModule = new MockModule('../../src/ConfigurationHelper');
 		mockModule.dependencies([
 			'pkg-dir',
-			'fs',
+			'fs-extra',
 			'path',
 			`${packagePath}/.dojorc`]);
 		mockPkgDir = mockModule.getMock('pkg-dir');
 		mockPkgDir.ctor.sync = sandbox.stub().returns(packagePath);
-		mockFs = mockModule.getMock('fs');
+		mockFs = mockModule.getMock('fs-extra');
 		mockFs.existsSync = sinon.stub().returns(true);
-		mockFs.writeFile = sinon.stub().callsArg(3);
+		mockFs.readJsonSync = sinon.stub().returns({});
+		mockFs.writeFileSync = sinon.stub();
 		mockPath = mockModule.getMock('path');
 		mockPath.join = sinon.stub().returns(`${packagePath}/.dojorc`);
 		mockDojoRc = mockModule.getMock(`${packagePath}/.dojorc`);
-		mockDojoRc.food = {
-			apple: '',
-			pear: ''
-		};
 		moduleUnderTest = mockModule.getModuleUnderTest().default;
 		configurationHelper = new moduleUnderTest();
 	},
@@ -45,32 +42,47 @@ registerSuite({
 		sandbox.restore();
 		mockModule.destroy();
 	},
-	'Should write config to .dojorc'() {
-		return configurationHelper.save({ blah: { blah1: '' } }).then(() => {
-			assert.equal(true, true);
-		});
+	'Should create .dojorc if it does not exist'() {
+		mockFs.existsSync.returns(false);
+		configurationHelper.get('testCommandName');
+		assert.isTrue(mockFs.writeFileSync.calledOnce, '1');
+		assert.equal(mockFs.writeFileSync.firstCall.args[1], JSON.stringify({ testCommandName: {}}));
 	},
-	'Should still write config when one does not exist'() {
-		mockFs.existsSync = sinon.stub().returns();
-		return configurationHelper.save({ blah: { blah1: '' } }).then(() => {
-			assert.equal(true, true);
-		});
+	'Should write .dojorc with commandName if no config for that name already exists'() {
+		mockFs.existsSync.returns(true);
+		configurationHelper.get('testCommandName');
+		assert.isTrue(mockFs.writeFileSync.calledOnce);
+		assert.equal(mockFs.writeFileSync.firstCall.args[1], JSON.stringify({ testCommandName: {}}));
 	},
-	'Should reject when error in writing file'() {
-		mockFs.writeFile = sinon.stub().callsArgWith(3, 'bad file write');
-		return configurationHelper.save({ blah: { blah1: '' } }).catch((error: Error) => {
-			assert.equal(error, 'bad file write');
-		});
+	'Should not write config to .dojorc when commandName exists'() {
+		mockFs.readJsonSync = sinon.stub().returns({ testCommandName: {} });
+		configurationHelper.get('testCommandName');
+		assert.isTrue(mockFs.writeFileSync.notCalled);
 	},
-	'Should retrieve the dojorc'() {
-		configurationHelper.get().then((dojoRc: any) => {
-			assert.equal(dojoRc, mockDojoRc);
-		});
+	'Should write new config to file when save called'() {
+		const newConfig = { foo: 'bar' };
+		mockFs.readJsonSync = sinon.stub().returns({ testCommandName: {} });
+		configurationHelper.save(newConfig, 'testCommandName');
+		assert.isTrue(mockFs.writeFileSync.calledOnce);
+		assert.equal(mockFs.writeFileSync.firstCall.args[1], JSON.stringify({ testCommandName: newConfig }));
 	},
-	'Should return undefined'() {
-		mockFs.existsSync = sinon.stub().returns();
-		configurationHelper.get().then((dojoRc: any) => {
-			assert.equal(dojoRc, undefined);
-		});
+	'Should merge new config with old when save called'() {
+		const newConfig = { foo: 'bar' };
+		const existingConfig = { existing: 'config' };
+		mockFs.readJsonSync = sinon.stub().returns({ testCommandName: existingConfig });
+		configurationHelper.save(newConfig, 'testCommandName');
+		assert.isTrue(mockFs.writeFileSync.calledOnce);
+		assert.equal(mockFs.writeFileSync.firstCall.args[1], JSON.stringify({ testCommandName: Object.assign(existingConfig, newConfig) }));
+	},
+	'Should merge new commandNames with existing command config when save called'() {
+		const newConfig = { foo: 'bar' };
+		const existingConfig = { existing: 'config' };
+		mockFs.readJsonSync = sinon.stub().returns({ existingCommandName: existingConfig });
+		configurationHelper.save(newConfig, 'testCommandName');
+		assert.isTrue(mockFs.writeFileSync.calledOnce);
+		assert.equal(mockFs.writeFileSync.firstCall.args[1], JSON.stringify({
+			existingCommandName: existingConfig,
+			testCommandName: newConfig
+		}));
 	}
 });
