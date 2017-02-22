@@ -58,7 +58,7 @@ export interface EjectOutput {
  */
 export interface Command {
 	description: string;
-	register(options: OptionsHelper): void;
+	register(options: OptionsHelper, helper: Helper): void;
 	run(helper: Helper, args?: Argv): Promise<any>;
 	eject?(helper: Helper): EjectOutput;
 	name?: string;

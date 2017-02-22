@@ -9,7 +9,7 @@ import { YargsCommandNames } from './loadCommands';
 
 /**
  * Registers groups and initiates registration of commands
- * 
+ *
  * @param yargs Yargs instance
  * @param helper Helper instance
  * @param groupName the name of the group
@@ -28,7 +28,7 @@ function registerGroups(yargs: Yargs, helper: Helper, groupName: string, command
 					group: `Default Command Options ('${defaultCommand.name}')`,
 					...options
 				});
-			});
+			}, helper);
 		}
 		registerCommands(subYargs, helper, groupName, commandOptions, commandsMap);
 		return subYargs;
@@ -46,7 +46,7 @@ function registerGroups(yargs: Yargs, helper: Helper, groupName: string, command
 
 /**
  * Register commands
- * 
+ *
  * @param yargs Yargs instance
  * @param helper Helper instance
  * @param groupName the name of the group
@@ -65,7 +65,7 @@ function registerCommands(yargs: Yargs, helper: Helper, groupName: string, comma
 			(optionsYargs: Yargs) => {
 				register((key: string, options: Options) => {
 					optionsYargs.option(key, options);
-				});
+				}, helper);
 				return optionsYargs;
 			},
 			(argv: Argv) => {
@@ -78,7 +78,7 @@ function registerCommands(yargs: Yargs, helper: Helper, groupName: string, comma
 
 /**
  * Registers command aliases as new groups
- * 
+ *
  * @param yargs Yargs instance
  * @param helper Helper instance
  * @param commandOptions The set of commandOption keys
@@ -99,7 +99,7 @@ function registerAliases(yargs: Yargs, helper: Helper, commandOptions: Set<strin
 							if (!aliasOpts || !aliasOpts.some((option) => option.option === key)) {
 								aliasYargs.option(key, options);
 							}
-						});
+						}, helper);
 						return aliasYargs;
 					},
 					(argv: Argv) => {
