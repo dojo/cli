@@ -3,13 +3,14 @@ import { resolve } from 'path';
 import { Argv } from 'yargs';
 import { green, underline, yellow } from 'chalk';
 import * as inquirer from 'inquirer';
-import { Helper, NpmPackage, OptionsHelper, EjectOutput, FileCopyConfig } from '../interfaces';
+import { Helper, NpmPackage, OptionsHelper, EjectOutput, FileCopyConfig, Config } from '../interfaces';
 import { CommandWrapper } from '../command';
 import { loadExternalCommands } from '../allCommands';
 import { deepAssign } from '@dojo/core/lang';
 import { installDependencies, installDevDependencies } from '../npmInstall';
 
 const copiedFilesDir = 'config';
+const ejectedKey = 'ejected';
 
 export interface EjectArgs extends Argv {
 	group?: string;
@@ -65,8 +66,10 @@ async function run(helper: Helper, args: EjectArgs): Promise<any> {
 					const isSpecifiedGroup = !args.group || args.group === command.group;
 					const isSpecifiedCommand = !args.command || args.command === command.name;
 					const isNewCommand = toEject.indexOf(command) < 0;
+					const config: Config = helper.configuration.get(`${command.group}-${command.name}`);
+					const isEjected = config[ejectedKey];
 
-					if (command.eject && isNewCommand && isSpecifiedGroup && isSpecifiedCommand) {
+					if (!isEjected && command.eject && isNewCommand && isSpecifiedGroup && isSpecifiedCommand) {
 						toEject.push(command);
 					}
 
@@ -82,6 +85,7 @@ async function run(helper: Helper, args: EjectArgs): Promise<any> {
 
 						deepAssign(npmPackages, npm);
 						copy && copyFiles(commandKey, copy);
+						helper.configuration.save({ [ejectedKey]: true }, commandKey);
 					});
 
 					if (Object.keys(npmPackages.dependencies).length) {
@@ -98,7 +102,7 @@ async function run(helper: Helper, args: EjectArgs): Promise<any> {
 					throw Error(`command ${args.group}-${args.command} does not implement eject`);
 				}
 				else {
-					console.log('No commands have implemented eject');
+					console.log('There are no commands that can be ejected');
 				}
 			});
 		});

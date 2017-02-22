@@ -45,6 +45,6 @@ export default class implements ConfigurationHelper {
 	 * @returns Promise - an object representation of .dojorc
 	 */
 	get(commandName: string): Config {
-		return getConfigFile(commandName);
+		return getConfigFile(commandName) || {};
 	};
 };

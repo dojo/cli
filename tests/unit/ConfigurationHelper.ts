@@ -76,7 +76,7 @@ registerSuite({
 		mockFs.existsSync.returns(false);
 		const config = configurationHelper.get('testCommandName');
 		assert.isTrue(mockJsonFile.readFileSync.notCalled);
-		assert.isUndefined(config);
+		assert.deepEqual(config, {});
 	},
 	'Should return existing config when a dojorc entry exists'() {
 		const existingConfig = { existing: 'config' };
