@@ -20,7 +20,7 @@ registerSuite({
 	name: 'Configuration Helper',
 	'beforeEach'() {
 		sandbox = sinon.sandbox.create();
-		mockModule = new MockModule('../../src/ConfigurationHelper');
+		mockModule = new MockModule('../../src/configurationHelper');
 		mockModule.dependencies([
 			'pkg-dir',
 			'fs-extra',
@@ -36,7 +36,7 @@ registerSuite({
 		mockPath = mockModule.getMock('path');
 		mockPath.join = sinon.stub().returns(dojoRcPath);
 		moduleUnderTest = mockModule.getModuleUnderTest().default;
-		configurationHelper = new moduleUnderTest();
+		configurationHelper = moduleUnderTest;
 	},
 	'afterEach'() {
 		sandbox.restore();

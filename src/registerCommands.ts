@@ -1,7 +1,7 @@
 import { Yargs, Argv, Options } from 'yargs';
 import { getGroupDescription, CommandsMap, CommandWrapper } from './command';
 import CommandHelper from './CommandHelper';
-import ComfigurationHelper from './ConfigurationHelper';
+import configurationHelper from './configurationHelper';
 import Helper from './Helper';
 import { helpUsage, helpEpilog } from './text';
 import * as chalk from 'chalk';
@@ -130,7 +130,6 @@ function registerAliases(yargs: Yargs, helper: Helper, commandOptions: Set<strin
 export default function(yargs: Yargs, commandsMap: CommandsMap, yargsCommandNames: YargsCommandNames): void {
 	const helperContext = {};
 
-	const configurationHelper = new ComfigurationHelper();
 	const commandHelper = new CommandHelper(commandsMap, helperContext);
 	const helper = new Helper(commandHelper, yargs, helperContext, configurationHelper);
 	yargsCommandNames.forEach((commandOptions, commandName) => {

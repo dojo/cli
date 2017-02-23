@@ -2,6 +2,7 @@ import { Config } from './config';
 import { CommandsMap, CommandWrapper } from './command';
 import * as globby from 'globby';
 import { resolve as pathResolve, join } from 'path';
+import { get as getConfig } from './configurationHelper';
 
 export type YargsCommandNames = Map<string, Set<string>>
 
@@ -12,6 +13,11 @@ export type LoadedCommands = {
 
 function setDefaultGroup(commandsMap: CommandsMap, commandName: string, commandWrapper: CommandWrapper) {
 	commandsMap.set(commandName, commandWrapper);
+}
+
+function isEjected(command: string): boolean {
+	const config = getConfig(command);
+	return config && config['ejected'];
 }
 
 /**
@@ -62,19 +68,21 @@ export async function loadCommands(paths: string[], load: (path: string) => Comm
 				const {group, name} = commandWrapper;
 				const compositeKey = `${group}-${name}`;
 
-				if (!commandsMap.has(group)) {
-					// First of each type will be 'default' for now
-					setDefaultGroup(commandsMap, group, commandWrapper);
-					yargsCommandNames.set(group, new Set());
-				}
+				if (!isEjected(compositeKey)) {
+					if (!commandsMap.has(group)) {
+						// First of each type will be 'default' for now
+						setDefaultGroup(commandsMap, group, commandWrapper);
+						yargsCommandNames.set(group, new Set());
+					}
 
-				if (!commandsMap.has(compositeKey)) {
-					commandsMap.set(compositeKey, commandWrapper);
-				}
+					if (!commandsMap.has(compositeKey)) {
+						commandsMap.set(compositeKey, commandWrapper);
+					}
 
-				const groupCommandNames = yargsCommandNames.get(group);
-				if (groupCommandNames) {
-					groupCommandNames.add(compositeKey);
+					const groupCommandNames = yargsCommandNames.get(group);
+					if (groupCommandNames) {
+						groupCommandNames.add(compositeKey);
+					}
 				}
 			}
 			catch (error) {

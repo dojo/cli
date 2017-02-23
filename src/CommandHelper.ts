@@ -1,7 +1,7 @@
 import { CommandsMap } from './command';
-import { CommandHelper, Command } from './interfaces';
+import { CommandHelper, Command, ConfigurationHelper } from './interfaces';
 import Helper from './Helper';
-import ConfigurationHelper from './ConfigurationHelper';
+import configurationHelper from './configurationHelper';
 import * as yargs from 'yargs';
 
 function getCommand(commandsMap: CommandsMap, group: string, commandName?: string): Command | undefined {
@@ -17,7 +17,7 @@ export default class implements CommandHelper {
 	constructor(commandsMap: CommandsMap, context: any) {
 		this.commandsMap = commandsMap;
 		this.context = context;
-		this.configuration = new ConfigurationHelper();
+		this.configuration = configurationHelper;
 	};
 	private commandsMap: CommandsMap;
 	private context: any;

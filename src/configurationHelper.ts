@@ -1,0 +1,50 @@
+import { existsSync, readJsonSync, writeFileSync } from 'fs-extra';
+import { join } from 'path';
+import { ConfigurationHelper, Config } from './interfaces';
+const pkgDir = require('pkg-dir');
+
+const appPath = pkgDir.sync(process.cwd());
+const dojoRcPath = join(appPath, '.dojorc');
+
+function writeConfigFile(config: Config) {
+	writeFileSync(dojoRcPath, JSON.stringify(config, null, 2));
+}
+
+function getConfigFile(commandName?: string): Config {
+	const configExists = existsSync(dojoRcPath);
+	const config: Config = configExists ? readJsonSync(dojoRcPath) : {};
+
+	return commandName ? config[commandName] : config;
+}
+
+/**
+ * persists configuration data to .dojorc
+ *
+ * @param config - the configuration to save
+ * @param commandName - the command name that's accessing config
+ */
+export function save(config: Config, commandName: string): void {
+	const dojoRc = getConfigFile();
+	const commmandConfig: Config = dojoRc[commandName] || {};
+
+	Object.assign(commmandConfig, config);
+	Object.assign(dojoRc, { [commandName]: commmandConfig});
+
+	writeConfigFile(dojoRc);
+};
+
+/**
+ * Retrieves the configuration object from the file system
+ *
+ * @returns Promise - an object representation of .dojorc
+ */
+export function get(commandName: string): Config {
+	return getConfigFile(commandName) || {};
+};
+
+const configHelper: ConfigurationHelper = {
+	get,
+	save
+};
+
+export default configHelper;

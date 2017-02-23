@@ -170,25 +170,6 @@ describe('eject command', () => {
 		});
 	});
 
-	it(`should not eject if command is already ejected`, () => {
-		const runOutput = 'There are no commands that can be ejected';
-		const commandMap: CommandsMap = new Map<string, CommandWrapper>([
-			['apple', loadCommand('command-with-full-eject')]
-		]);
-
-		const helper = getHelper({ configuration: {
-				get: sandbox.stub().returns({
-					ejected: true
-				}),
-				save: sandbox.stub()
-			}
-		});
-		mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves({commandsMap: commandMap});
-		return moduleUnderTest.run(helper, {}).then(() => {
-			assert.equal(consoleLogStub.args[0][0], runOutput);
-		});
-	});
-
 	it(`should error when 'eject' doesn't exist on command passed in via 'command' argument`, () => {
 		const blueberryCommand = getCommandWrapperWithConfiguration({
 			group: 'test-group',

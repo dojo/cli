@@ -1,7 +1,7 @@
 import './allCommands';
 import './command';
 import './CommandHelper';
-import './ConfigurationHelper';
+import './configurationHelper';
 import './config';
 import './index';
 import './loadCommands';
