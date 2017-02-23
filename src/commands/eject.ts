@@ -10,6 +10,7 @@ import { deepAssign } from '@dojo/core/lang';
 import { installDependencies, installDevDependencies } from '../npmInstall';
 
 const copiedFilesDir = 'config';
+const ejectedKey = 'ejected';
 
 export interface EjectArgs extends Argv {
 	group?: string;
@@ -82,6 +83,7 @@ async function run(helper: Helper, args: EjectArgs): Promise<any> {
 
 						deepAssign(npmPackages, npm);
 						copy && copyFiles(commandKey, copy);
+						helper.configuration.save({ [ejectedKey]: true }, commandKey);
 					});
 
 					if (Object.keys(npmPackages.dependencies).length) {
@@ -98,7 +100,7 @@ async function run(helper: Helper, args: EjectArgs): Promise<any> {
 					throw Error(`command ${args.group}-${args.command} does not implement eject`);
 				}
 				else {
-					console.log('No commands have implemented eject');
+					console.log('There are no commands that can be ejected');
 				}
 			});
 		});

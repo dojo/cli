@@ -1,9 +1,10 @@
 import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
-import { stub, SinonStub } from 'sinon';
+import { stub, SinonStub, sandbox } from 'sinon';
 import { getCommandWrapper, getYargsStub } from '../support/testHelper';
 import { join, resolve as pathResolve } from 'path';
 import { Config } from '../../src/config';
+import MockModule from '../support/MockModule';
 const enumBuiltInCommands = require('intern/dojo/node!../../src/loadCommands').enumerateBuiltInCommands;
 const enumInstalledCommands = require('intern/dojo/node!../../src/loadCommands').enumerateInstalledCommands;
 const loadCommands = require('intern/dojo/node!../../src/loadCommands').loadCommands;
@@ -14,8 +15,11 @@ let commandWrapper1: any;
 let commandWrapper2: any;
 let consoleStub: SinonStub;
 let goodConfig: Config;
+let mockModule: MockModule;
+let mockedLoadCommands: any;
+let testSandbox: any;
 
-function config(invalid: boolean): Config {
+function config(invalid = false): Config {
 	// tests are run in package-dir (from cli, using grunt test) - FIX to use pkg-dir
 	const config: Config = {
 		searchPaths: [ '_build/tests/support' ],
@@ -39,7 +43,7 @@ registerSuite({
 		commandWrapper2 = getCommandWrapper('command2');
 		yargsStub = getYargsStub();
 		loadStub = stub();
-		goodConfig = config(false);
+		goodConfig = config();
 	},
 	'afterEach'() {
 		consoleStub.restore();
@@ -76,7 +80,7 @@ registerSuite({
 		'beforeEach'() {
 			loadStub.onFirstCall().returns(commandWrapper1);
 			loadStub.onSecondCall().returns(commandWrapper2);
-			goodConfig = config(false);
+			goodConfig = config();
 		},
 		async 'Should set first loaded command of each group to be the default'() {
 			const installedPaths = await enumInstalledCommands(goodConfig);
@@ -121,6 +125,31 @@ registerSuite({
 				assert.isTrue(error.message.indexOf('Failed to load module') > -1);
 			}
 		}
-	}
+	},
+	'ejected commands': {
+		beforeEach() {
+			testSandbox = sandbox.create();
+			mockModule = new MockModule('../../src/loadCommands');
+			mockModule.dependencies([
+				'./configurationHelper'
+			]);
+			const configHelper = mockModule.getMock('./configurationHelper');
+			configHelper.get = testSandbox.stub().returns({ ejected: true });
+			mockedLoadCommands = mockModule.getModuleUnderTest().loadCommands;
+		},
+		afterEach() {
+			mockModule.destroy();
+			testSandbox.restore();
+		},
+		async 'Should not load rejected commands'() {
+			loadStub.onFirstCall().returns(commandWrapper1);
+			loadStub.onSecondCall().returns(commandWrapper2);
+			goodConfig = config();
 
+			const installedPaths = await enumInstalledCommands(goodConfig);
+			const { commandsMap } = await mockedLoadCommands(installedPaths, loadStub);
+
+			assert.equal(commandsMap.size, 0);
+		}
+	}
 });
