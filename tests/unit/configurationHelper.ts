@@ -23,15 +23,15 @@ registerSuite({
 		mockModule = new MockModule('../../src/configurationHelper');
 		mockModule.dependencies([
 			'pkg-dir',
-			'fs-extra',
+			'fs',
 			'path',
 			dojoRcPath
 		]);
 		mockPkgDir = mockModule.getMock('pkg-dir');
 		mockPkgDir.ctor.sync = sandbox.stub().returns(packagePath);
-		mockFs = mockModule.getMock('fs-extra');
+		mockFs = mockModule.getMock('fs');
 		mockFs.existsSync = sinon.stub().returns(true);
-		mockFs.readJsonSync = sinon.stub().returns({});
+		mockFs.readFileSync = sinon.stub().returns('{}');
 		mockFs.writeFileSync = sinon.stub();
 		mockPath = mockModule.getMock('path');
 		mockPath.join = sinon.stub().returns(dojoRcPath);
@@ -44,7 +44,7 @@ registerSuite({
 	},
 	'Should write new config to file when save called'() {
 		const newConfig = { foo: 'bar' };
-		mockFs.readJsonSync = sinon.stub().returns({ testCommandName: {} });
+		mockFs.readFileSync = sinon.stub().returns(JSON.stringify({ testCommandName: {} }));
 		configurationHelper.save(newConfig, 'testCommandName');
 		assert.isTrue(mockFs.writeFileSync.calledOnce);
 		assert.equal(mockFs.writeFileSync.firstCall.args[0], dojoRcPath);
@@ -53,7 +53,7 @@ registerSuite({
 	'Should merge new config with old when save called'() {
 		const newConfig = { foo: 'bar' };
 		const existingConfig = { existing: 'config' };
-		mockFs.readJsonSync.returns({ testCommandName: existingConfig });
+		mockFs.readFileSync.returns(JSON.stringify({ testCommandName: existingConfig }));
 		configurationHelper.save(newConfig, 'testCommandName');
 		assert.isTrue(mockFs.writeFileSync.calledOnce);
 		assert.equal(mockFs.writeFileSync.firstCall.args[1], JSON.stringify({ testCommandName: Object.assign(existingConfig, newConfig) }, null, 2));
@@ -61,7 +61,7 @@ registerSuite({
 	'Should merge new commandNames with existing command config when save called'() {
 		const newConfig = { foo: 'bar' };
 		const existingConfig = { existing: 'config' };
-		mockFs.readJsonSync.returns({ existingCommandName: existingConfig });
+		mockFs.readFileSync.returns(JSON.stringify({ existingCommandName: existingConfig }));
 		configurationHelper.save(newConfig, 'testCommandName');
 		assert.isTrue(mockFs.writeFileSync.calledOnce);
 		assert.deepEqual(mockFs.writeFileSync.firstCall.args[1], JSON.stringify({
@@ -72,14 +72,14 @@ registerSuite({
 	'Should return undefined config when no dojorc for commandName exists'() {
 		mockFs.existsSync.returns(false);
 		const config = configurationHelper.get('testCommandName');
-		assert.isTrue(mockFs.readJsonSync.notCalled);
+		assert.isTrue(mockFs.readFileSync.notCalled);
 		assert.deepEqual(config, {});
 	},
 	'Should return existing config when a dojorc entry exists'() {
 		const existingConfig = { existing: 'config' };
-		mockFs.readJsonSync.returns({ testCommandName: existingConfig });
+		mockFs.readFileSync.returns(JSON.stringify({ testCommandName: existingConfig }));
 		const config = configurationHelper.get('testCommandName');
-		assert.isTrue(mockFs.readJsonSync.calledOnce);
+		assert.isTrue(mockFs.readFileSync.calledOnce);
 		assert.deepEqual(config, existingConfig);
 	}
 });

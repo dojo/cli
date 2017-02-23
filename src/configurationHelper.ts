@@ -1,4 +1,4 @@
-import { existsSync, readJsonSync, writeFileSync } from 'fs-extra';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { ConfigurationHelper, Config } from './interfaces';
 const pkgDir = require('pkg-dir');
@@ -12,7 +12,7 @@ function writeConfigFile(config: Config) {
 
 function getConfigFile(): Config {
 	const configExists = existsSync(dojoRcPath);
-	return configExists ? readJsonSync(dojoRcPath) : {};
+	return configExists ? JSON.parse(readFileSync(dojoRcPath, 'utf8')) : {};
 }
 
 /**
