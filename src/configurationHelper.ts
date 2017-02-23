@@ -10,11 +10,9 @@ function writeConfigFile(config: Config) {
 	writeFileSync(dojoRcPath, JSON.stringify(config, null, 2));
 }
 
-function getConfigFile(commandName?: string): Config {
+function getConfigFile(): Config {
 	const configExists = existsSync(dojoRcPath);
-	const config: Config = configExists ? readJsonSync(dojoRcPath) : {};
-
-	return commandName ? config[commandName] : config;
+	return configExists ? readJsonSync(dojoRcPath) : {};
 }
 
 /**
@@ -39,7 +37,8 @@ export function save(config: Config, commandName: string): void {
  * @returns Promise - an object representation of .dojorc
  */
 export function get(commandName: string): Config {
-	return getConfigFile(commandName) || {};
+	const config = getConfigFile();
+	return config[commandName] || {};
 };
 
 const configHelper: ConfigurationHelper = {
