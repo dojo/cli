@@ -1,11 +1,33 @@
+import * as chalk from 'chalk';
 import { Yargs, Argv, Options } from 'yargs';
 import { getGroupDescription, CommandsMap, CommandWrapper } from './command';
 import CommandHelper from './CommandHelper';
 import configurationHelper from './configurationHelper';
 import Helper from './Helper';
-import { helpUsage, helpEpilog } from './text';
-import * as chalk from 'chalk';
+import { CommandError } from './interfaces';
 import { YargsCommandNames } from './loadCommands';
+import { helpUsage, helpEpilog } from './text';
+
+/**
+ * General purpose error handler for commands. If the command has an exit code, it is considered
+ * critical and we exit immediately. Otherwise we just let things run their course.
+ *
+ * @param error
+ */
+function reportError(error: CommandError) {
+	let exitCode = 0;
+
+	if (error.exitCode !== undefined) {
+		exitCode = error.exitCode;
+	}
+
+	console.error(chalk.red.bold(error.message));
+
+	// only process.exit if we need to explicitly set the exit code
+	if (exitCode !== 0) {
+		process.exit(exitCode);
+	}
+}
 
 /**
  * Registers groups and initiates registration of commands
@@ -20,7 +42,6 @@ function registerGroups(yargs: Yargs, helper: Helper, groupName: string, command
 	const groupDescription = getGroupDescription(commandOptions, commandsMap);
 	const defaultCommand = <CommandWrapper> commandsMap.get(groupName);
 	const defaultCommandAvailable = !!(defaultCommand && defaultCommand.register && defaultCommand.run);
-	const reportError = (error: Error) => console.error(chalk.red.bold(error.message));
 	yargs.command(groupName, groupDescription, (subYargs: Yargs) => {
 		if (defaultCommandAvailable) {
 			defaultCommand.register((key: string, options: Options) => {
@@ -54,7 +75,6 @@ function registerGroups(yargs: Yargs, helper: Helper, groupName: string, command
  * @param commandsMap The map of composite keys to commands
  */
 function registerCommands(yargs: Yargs, helper: Helper, groupName: string, commandOptions: Set<string>, commandsMap: CommandsMap): void {
-	const reportError = (error: Error) => console.error(chalk.red.bold(error.message));
 	[...commandOptions].filter((command: string) => {
 		return `${groupName}-` !== command;
 	}).forEach((command: string) => {
@@ -85,7 +105,6 @@ function registerCommands(yargs: Yargs, helper: Helper, groupName: string, comma
  * @param commandsMap The map of composite keys to commands
  */
 function registerAliases(yargs: Yargs, helper: Helper, commandOptions: Set<string>, commandsMap: CommandsMap): void {
-	const reportError = (error: Error) => console.error(chalk.red.bold(error.message));
 	[...commandOptions].forEach((command: string) => {
 		const {run, register, alias: aliases} = <CommandWrapper> commandsMap.get(command);
 		if (aliases) {
