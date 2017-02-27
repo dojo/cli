@@ -179,6 +179,33 @@ registerSuite({
 				assert.isTrue(consoleErrorStub.calledOnce);
 				assert.isTrue(consoleErrorStub.firstCall.calledWithMatch(errorMessage));
 			}
-		}
+		},
+		'status codes call process exit': (function () {
+			let processExitStub: SinonStub;
+
+			return {
+				'beforeEach'() {
+					processExitStub = stub(process, 'exit');
+				},
+				'afterEach'() {
+					processExitStub.restore();
+				},
+				async 'Should not exit process if no status code is returned'() {
+					defaultRunStub.returns(Promise.reject(new Error(errorMessage)));
+
+					await yargsStub.command.firstCall.args[ 3 ]({ '_': [ 'group' ] });
+					assert.isFalse(processExitStub.called);
+				},
+				async 'Should exit process if status code is returned'() {
+					defaultRunStub.returns(Promise.reject({
+						message: errorMessage,
+						exitCode: 1
+					}));
+
+					await yargsStub.command.firstCall.args[ 3 ]({ '_': [ 'group' ] });
+					assert.isTrue(processExitStub.called);
+				}
+			};
+		})()
 	}
 });

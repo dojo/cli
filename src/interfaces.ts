@@ -65,3 +65,8 @@ export interface Command {
 	group?: string;
 	alias?: Alias[] | Alias;
 }
+
+export interface CommandError {
+	exitCode?: number;
+	message: string;
+}
