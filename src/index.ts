@@ -24,4 +24,6 @@ async function init() {
 		console.log(`Commands are not available: ${err}`);
 	}
 }
+
+process.env.DOJO_CLI = true;
 init();
