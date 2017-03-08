@@ -22,7 +22,7 @@ export default class implements CommandHelper {
 	private commandsMap: CommandsMap;
 	private context: any;
 	private configuration: ConfigurationHelper;
-	run(group: string, commandName?: string, args?: yargs.Argv): Promise<any> {
+	run(group: string, commandName?: string, args?: any): Promise<any> {
 		const command = getCommand(this.commandsMap, group, commandName);
 		if (command) {
 			const helper = new Helper(this, yargs, this.context, this.configuration);

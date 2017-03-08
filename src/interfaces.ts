@@ -1,4 +1,4 @@
-import { Argv, Yargs, Options } from 'yargs';
+import { Argv, Options } from 'yargs';
 
 export interface Config {
 	[key: string]: any;
@@ -15,7 +15,7 @@ export interface CommandHelper {
 }
 
 export interface Helper {
-	yargs: Yargs;
+	yargs: Argv;
 	command: CommandHelper;
 	context: any;
 	configuration: ConfigurationHelper;
