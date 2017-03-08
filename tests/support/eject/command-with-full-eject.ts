@@ -23,6 +23,10 @@ export function eject(helper: any, npm: any, files: any) {
 				'./file1',
 				'./file2'
 			]
-		}
+		},
+		hints: [
+			'hint 1',
+			'hint 2'
+		]
 	};
 }
