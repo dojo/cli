@@ -75,14 +75,16 @@ async function run(helper: Helper, args: EjectArgs): Promise<any> {
 				}, []);
 
 				if (toEject.length) {
+					const allHints: string[] = [];
 					toEject.forEach((command: EjectableCommandWrapper) => {
 						const commandKey = `${command.group}-${command.name}`;
 						console.log(green('\nejecting ') + commandKey);
 
-						const { npm = {}, copy }: EjectOutput = command.eject(helper);
+						const { npm = {}, copy, hints }: EjectOutput = command.eject(helper);
 
 						deepAssign(npmPackages, npm);
 						copy && copyFiles(commandKey, copy);
+						hints && allHints.push(...hints);
 						helper.configuration.save({ [ejectedKey]: true }, commandKey);
 					});
 
@@ -94,6 +96,13 @@ async function run(helper: Helper, args: EjectArgs): Promise<any> {
 					if (Object.keys(npmPackages.devDependencies).length) {
 						console.log(underline('\nrunning npm install devDependencies...'));
 						await installDevDependencies(npmPackages);
+					}
+
+					if (allHints.length > 0) {
+						console.log(underline('\nhints'));
+						allHints.forEach((hint) => {
+							console.log(' ' + hint);
+						});
 					}
 				}
 				else if (args.group && args.command) {

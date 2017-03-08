@@ -51,6 +51,7 @@ export interface FileCopyConfig {
 export interface EjectOutput {
 	npm?: NpmPackage;
 	copy?: FileCopyConfig;
+	hints?: string[];
 }
 
 /**

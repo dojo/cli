@@ -2,7 +2,7 @@ import { beforeEach, afterEach, describe, it } from 'intern!bdd';
 import * as assert from 'intern/chai!assert';
 import MockModule from '../../support/MockModule';
 import * as sinon from 'sinon';
-import { yellow } from 'chalk';
+import { yellow, underline } from 'chalk';
 require('sinon-as-promised')(Promise);
 
 import { join, resolve as pathResolve } from 'path';
@@ -250,6 +250,24 @@ describe('eject command', () => {
 			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves({commandsMap: commandMap});
 			return moduleUnderTest.run(helper, {}).then(() => {
 				assert.isTrue(mockFsExtra.copySync.notCalled);
+			});
+		});
+	});
+
+	describe('eject hints', () => {
+		it('should show hints when supplied', () => {
+			const commandMap: CommandsMap = new Map<string, CommandWrapper>([
+				['apple', loadCommand('/command-with-hints')]
+			]);
+			const helper = getHelper();
+			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves({commandsMap: commandMap});
+			return moduleUnderTest.run(helper, {}).then(() => {
+				const logCallCount = consoleLogStub.callCount;
+				assert.isTrue(consoleLogStub.callCount > 3, '1');
+				const hintsCall = logCallCount - 3;
+				assert.isTrue(consoleLogStub.getCall(hintsCall).calledWith(underline('\nhints')), 'should underline hints');
+				assert.isTrue(consoleLogStub.getCall(hintsCall + 1).calledWith(' hint 1'), 'should show hint1');
+				assert.isTrue(consoleLogStub.getCall(hintsCall + 2).calledWith(' hint 2'), 'should show hint2');
 			});
 		});
 	});
