@@ -80,11 +80,11 @@ async function run(helper: Helper, args: EjectArgs): Promise<any> {
 						const commandKey = `${command.group}-${command.name}`;
 						console.log(green('\nejecting ') + commandKey);
 
-						const { npm = {}, copy, hints = [] }: EjectOutput = command.eject(helper);
+						const { npm = {}, copy, hints }: EjectOutput = command.eject(helper);
 
 						deepAssign(npmPackages, npm);
 						copy && copyFiles(commandKey, copy);
-						allHints.push(...hints);
+						hints && allHints.push(...hints);
 						helper.configuration.save({ [ejectedKey]: true }, commandKey);
 					});
 
