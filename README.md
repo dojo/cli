@@ -8,10 +8,19 @@ The CLI is the officially supported way to create and maintain Dojo 2 apps.
 
 It is designed to save you time, by promoting a standardised workflow, and automating away more mundane boilerplate tasks.
 
-## Prerequisites
+- [Usage](#usage)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+- [Features](#features)
+
+## Usage
+
+### Prerequisites
+
 You will need node v6+.
 
-## Installation
+### Installation
+
 Getting the cli
 
 You can install from npm:
@@ -41,10 +50,8 @@ You can list all your global npm dependencies by running:
 
 If you don't see `@dojo/cli` in the list of global dependencies, then please re-install and make sure the installation runs without errors.
 
-## How to use
+## Features
 
-
-### The basic groups and commands
 The CLI has the following format:
 
 `dojo group [command]` - where [command] is optional
@@ -75,7 +82,13 @@ The CLI has the following in-built groups:
 We appreciate your interest!  Please see the [Dojo 2 Meta Repository](https://github.com/dojo/meta#readme) for the
 Contributing Guidelines and Style Guide.
 
-## Testing
+### Installation
+
+To start working with this package, clone the repository and run `npm install`.
+
+In order to build the project run `grunt dev` or `grunt dist`.
+
+### Testing
 
 Test cases MUST be written using [Intern](https://theintern.github.io) using the Object test interface and Assert assertion interface.
 
