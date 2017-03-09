@@ -4,14 +4,17 @@ import { ConfigurationHelper, Config } from './interfaces';
 const pkgDir = require('pkg-dir');
 
 const appPath = pkgDir.sync(process.cwd());
-const dojoRcPath = join(appPath, '.dojorc');
+let dojoRcPath: string;
+if (appPath) {
+	dojoRcPath = join(appPath, '.dojorc');
+}
 
 function writeConfigFile(config: Config) {
 	writeFileSync(dojoRcPath, JSON.stringify(config, null, 2));
 }
 
 function getConfigFile(): Config {
-	const configExists = existsSync(dojoRcPath);
+	const configExists = !!dojoRcPath && existsSync(dojoRcPath);
 	return configExists ? JSON.parse(readFileSync(dojoRcPath, 'utf8')) : {};
 }
 
