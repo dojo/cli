@@ -90,12 +90,15 @@ registerSuite({
 			mockModule = new MockModule('../../src/configurationHelper');
 			mockModule.dependencies([
 				'pkg-dir',
-				'fs'
+				'fs',
+				'path'
 			]);
 			mockPkgDir = mockModule.getMock('pkg-dir');
 			mockPkgDir.ctor.sync = sandbox.stub().returns(null);
 			mockFs = mockModule.getMock('fs');
-			mockFs.readFileSync = sinon.stub().returns(null);
+			mockFs.readFileSync = sinon.stub();
+			mockPath = mockModule.getMock('path');
+			mockPath.join = sinon.stub();
 			moduleUnderTest = mockModule.getModuleUnderTest().default;
 			configurationHelper = moduleUnderTest;
 		},
@@ -106,6 +109,7 @@ registerSuite({
 		'Should return empty object when pkgdir returns null'() {
 			const config = configurationHelper.get('testCommandName');
 			assert.isFalse(mockFs.readFileSync.called);
+			assert.isFalse(mockPath.join.called);
 			assert.deepEqual(config, {});
 		}
 	}
