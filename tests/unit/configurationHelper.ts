@@ -12,6 +12,7 @@ let mockFs: any;
 let mockPath: any;
 let moduleUnderTest: any;
 let configurationHelper: any;
+let consoleWarnStub: sinon.SinonStub;
 
 const packagePath = join(pathResolve('.'), '/_build/tests/support');
 const dojoRcPath = `${packagePath}/.dojorc`;
@@ -96,9 +97,11 @@ registerSuite({
 			mockPkgDir = mockModule.getMock('pkg-dir');
 			mockPkgDir.ctor.sync = sandbox.stub().returns(null);
 			mockFs = mockModule.getMock('fs');
-			mockFs.readFileSync = sinon.stub();
+			mockFs.readFileSync = sandbox.stub();
+			mockFs.writeFileSync = sandbox.stub();
 			mockPath = mockModule.getMock('path');
-			mockPath.join = sinon.stub();
+			mockPath.join = sandbox.stub();
+			consoleWarnStub = sandbox.stub(console, 'warn');
 			moduleUnderTest = mockModule.getModuleUnderTest().default;
 			configurationHelper = moduleUnderTest;
 		},
@@ -111,6 +114,11 @@ registerSuite({
 			assert.isFalse(mockFs.readFileSync.called);
 			assert.isFalse(mockPath.join.called);
 			assert.deepEqual(config, {});
+		},
+		'Should warn user when config save called outside of a pkgdir'() {
+			configurationHelper.save({}, 'testCommandName');
+			assert.isFalse(mockFs.writeFileSync.called);
+			assert.isTrue(consoleWarnStub.calledOnce);
 		}
 	}
 });

@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { ConfigurationHelper, Config } from './interfaces';
+import { red } from 'chalk';
 const pkgDir = require('pkg-dir');
 
 const appPath = pkgDir.sync(process.cwd());
@@ -25,6 +26,11 @@ function getConfigFile(): Config {
  * @param commandName - the command name that's accessing config
  */
 export function save(config: Config, commandName: string): void {
+	if (!dojoRcPath) {
+		console.warn(red('You cannot save a config outside of a project directory'));
+		return;
+	}
+
 	const dojoRc = getConfigFile();
 	const commmandConfig: Config = dojoRc[commandName] || {};
 
