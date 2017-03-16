@@ -5,6 +5,7 @@
 /_build
 /bower_components
 /dist
+deploy_key
 /html-report
 /node_modules
 /typings
@@ -14,3 +15,4 @@
 .history
 coverage-unmapped.json
 npm-debug.log
+/_apidoc

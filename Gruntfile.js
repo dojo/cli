@@ -23,6 +23,11 @@ module.exports = function (grunt) {
 				src: staticFiles,
 				dest: '<%= distDirectory %>'
 			}
+		},
+		typedoc: {
+			options: {
+				ignoreCompilerErrors: true // Remove this once compile errors are resolved
+			}
 		}
 	});
 
