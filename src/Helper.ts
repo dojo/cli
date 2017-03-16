@@ -1,5 +1,5 @@
 import { CommandHelper, Helper, ConfigurationHelper } from './interfaces';
-import { Yargs } from 'yargs';
+import { Argv } from 'yargs';
 
 /**
  * The Helper that is passed to each command's 'run' function. Provides
@@ -8,14 +8,14 @@ import { Yargs } from 'yargs';
  * other tasks.
  */
 export default class implements Helper {
-	constructor(commandHelper: CommandHelper, yargs: Yargs, context: any, configuration: ConfigurationHelper) {
+	constructor(commandHelper: CommandHelper, yargs: Argv, context: any, configuration: ConfigurationHelper) {
 		this.command = commandHelper;
 		this.yargs = yargs;
 		this.context = context;
 		this.configuration = configuration;
 	};
 	command: CommandHelper;
-	yargs: Yargs;
+	yargs: Argv;
 	context: any;
 	configuration: ConfigurationHelper;
 }

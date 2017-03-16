@@ -1,6 +1,5 @@
 import { copySync } from 'fs-extra';
 import { resolve } from 'path';
-import { Argv } from 'yargs';
 import { green, underline, yellow } from 'chalk';
 import * as inquirer from 'inquirer';
 import { Helper, NpmPackage, OptionsHelper, EjectOutput, FileCopyConfig } from '../interfaces';
@@ -12,7 +11,7 @@ import { installDependencies, installDevDependencies } from '../npmInstall';
 const copiedFilesDir = 'config';
 const ejectedKey = 'ejected';
 
-export interface EjectArgs extends Argv {
+export interface EjectArgs {
 	group?: string;
 	command?: string;
 };
