@@ -38,9 +38,13 @@ export interface Alias {
 	options: AliasOption[];
 }
 
+/**
+ * Represents one alias option. The option name is the full name of the option, and not the abbreviation. For
+ * example, if an option is (-w or --watch), you will specify "watch" as the option name.
+ */
 export interface AliasOption {
 	option: string;
-	value?: string | boolean | number;
+	value: string | boolean | number;
 }
 
 export interface FileCopyConfig {
