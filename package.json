@@ -62,7 +62,7 @@
     "codecov.io": "0.1.6",
     "glob": "^7.0.3",
     "grunt": "~1.0.1",
-    "grunt-dojo2": ">=2.0.0-beta.16",
+    "grunt-dojo2": ">=2.0.0-beta.36",
     "intern": "^3.4.1",
     "istanbul": "^0.4.3",
     "mockery": "^1.7.0",
