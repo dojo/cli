@@ -4,12 +4,12 @@ import * as globby from 'globby';
 import { resolve as pathResolve, join } from 'path';
 import { get as getConfig } from './configurationHelper';
 
-export type YargsCommandNames = Map<string, Set<string>>
+export type YargsCommandNames = Map<string, Set<string>>;
 
 export type LoadedCommands = {
 	commandsMap: CommandsMap,
 	yargsCommandNames: YargsCommandNames
-}
+};
 
 function setDefaultGroup(commandsMap: CommandsMap, commandName: string, commandWrapper: CommandWrapper) {
 	commandsMap.set(commandName, commandWrapper);
