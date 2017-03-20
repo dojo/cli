@@ -45,7 +45,7 @@ type DavidDependencies = {
 		stable: string;
 		latest: string;
 	}
-}
+};
 
 /**
  * Iterate through a ModuleVersions and output if the module can be updated to a later version.
