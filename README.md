@@ -56,16 +56,17 @@ The CLI has the following format:
 
 `dojo group [command]` - where [command] is optional
 
-e.g.
+e.g. (no command specified)
 
-`dojo build`
+`dojo help`
 
-where `build` is the group, and no command is specified, so the default build command is run.
-The above will output generic help information.
+where `help` is the group, and no command is specified, will run the default help command (in this case, generic help for the cli is outputted).
 
-`dojo build custombuild`
+e.g. (command specified)
 
-where `build` is the group and `custombuild` is an installed command.
+`dojo help create`
+
+where `help` is the group and `create` is the command, will run the `create` command in the `help` group (in this case, it will output help for the `create` command).
 
 The CLI has the following in-built options:
 
@@ -73,9 +74,11 @@ The CLI has the following in-built options:
 
 The CLI has the following in-built groups:
 
+`dojo create` - provides scaffolding for new Dojo 2 projects.
+`dojo eject` - allows users to configure and run command instead of the cli.
 `dojo version` - provides information on the versions of installed commands and the cli itself.
 
-`dojo create app` and `dojo build` are not installed by default with @dojo/cli. To use them, you must install them separately, e.g. with `npm i @dojo/cli-create-app -g`.
+`dojo build` and `dojo test` are not installed by default with `@dojo/cli`. To use them, you must install them separately, e.g. with `npm i @dojo/cli-build-webpack` and `npm i @dojo/cli-test-intern`. The reason for not bundling these 2 groups, is so you can run different versions of these group per-project.
 
 ## How do I contribute?
 
