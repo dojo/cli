@@ -6,12 +6,22 @@ The CLI is the officially supported way to create and maintain Dojo 2 apps.
 
 **WARNING** This is *alpha* software. It is not yet production ready, so you should use at your own risk.
 
-It is designed to save you time, by promoting a standardised workflow, and automating away more mundane boilerplate tasks.
-
+- [Why use?](#why)
 - [Usage](#usage)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
 - [Features](#features)
+
+
+
+## Why use this cli?
+It is designed to save you time, by promoting a standardised workflow, and automating away more mundane boilerplate tasks.
+
+*Single dependency* - instead of having to download and configure multiple tools such as `Webpack`, `Intern` and `tslint`, you can just install the `cli` and know that all of these tools will work together.
+
+*Make the common tasks simple* - because you don't need to install and configure the individual tools yourself, you can be sure that the versions being used all work together and they they are running with sensible defaults.
+
+*Make the advanced tasks possible* - you can `eject` to a custom setup at any time. When you `eject`, all the configuration and build dependencies of the included tools will be moved into your project. If you are adept at configuring these tools, then you can now do so without the `cli` imposing its defaults.
 
 ## Usage
 
@@ -79,6 +89,11 @@ The CLI has the following in-built groups:
 `dojo version` - provides information on the versions of installed commands and the cli itself.
 
 `dojo build` and `dojo test` are not installed by default with `@dojo/cli`. To use them, you must install them separately, e.g. with `npm i @dojo/cli-build-webpack` and `npm i @dojo/cli-test-intern`. The reason for not bundling these 2 groups, is so you can run different versions of these group per-project.
+
+## A warning on `eject`ing
+
+Once you run `dojo eject`, the configuration and dependencies for the bundled tools are now part of your project.
+This action is one-way and you cannot go back to having the tools managed by the `cli`.
 
 ## How do I contribute?
 
