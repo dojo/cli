@@ -11,7 +11,7 @@ The CLI is the officially supported way to create and maintain Dojo 2 apps.
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
 - [Features](#features)
-
+- [A warning on ejecting](#a-warning-on-ejecting)
 
 
 ## Why use this cli?
@@ -90,7 +90,7 @@ The CLI has the following in-built groups:
 
 `dojo build` and `dojo test` are not installed by default with `@dojo/cli`. To use them, you must install them separately, e.g. with `npm i @dojo/cli-build-webpack` and `npm i @dojo/cli-test-intern`. The reason for not bundling these 2 groups, is so you can run different versions of these groups per-project.
 
-## A warning on `eject`ing
+## A warning on ejecting
 
 Once you run `dojo eject`, the configuration and dependencies for the bundled tools are now part of your project.
 This action is one-way and you cannot go back to having the tools managed by the `cli`.
@@ -100,7 +100,7 @@ This action is one-way and you cannot go back to having the tools managed by the
 We appreciate your interest!  Please see the [Dojo 2 Meta Repository](https://github.com/dojo/meta#readme) for the
 Contributing Guidelines and Style Guide.
 
-### Installation
+### Installation of source
 
 To start working with this package, clone the repository and run `npm install`.
 
