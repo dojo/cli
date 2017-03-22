@@ -12,25 +12,13 @@ import { installDependencies, installDevDependencies } from '../npmInstall';
 const copiedFilesDir = 'config';
 const ejectedKey = 'ejected';
 
-export interface EjectArgs extends Argv {
-	group?: string;
-	command?: string;
-};
+export interface EjectArgs extends Argv {};
 
 export interface EjectableCommandWrapper extends CommandWrapper {
 	eject(helper: Helper): EjectOutput;
 }
 
-function register(options: OptionsHelper): void {
-	options('g', {
-		alias: 'group',
-		describe: 'the group to eject commands from'
-	});
-	options('c', {
-		alias: 'command',
-		describe: 'the command to eject - a `group` is required'
-	});
-}
+function register(options: OptionsHelper): void {}
 
 function copyFiles(commandName: string, { path, files }: FileCopyConfig): void {
 	const cwd = process.cwd();
@@ -62,21 +50,14 @@ async function run(helper: Helper, args: EjectArgs): Promise<any> {
 					devDependencies: {}
 				};
 
-				const toEject = [ ...commands.commandsMap.values() ].reduce((toEject: CommandWrapper[], command) => {
-					const isSpecifiedGroup = !args.group || args.group === command.group;
-					const isSpecifiedCommand = !args.command || args.command === command.name;
-					const isNewCommand = toEject.indexOf(command) < 0;
-
-					if (command.eject && isNewCommand && isSpecifiedGroup && isSpecifiedCommand) {
-						toEject.push(command);
-					}
-
+				const toEject = [ ...commands.commandsMap.values() ].reduce((toEject: Set<CommandWrapper>, command) => {
+					command.eject && toEject.add(command);
 					return toEject;
-				}, []);
+				}, new Set<CommandWrapper>());
 
-				if (toEject.length) {
+				if (toEject.size) {
 					const allHints: string[] = [];
-					toEject.forEach((command: EjectableCommandWrapper) => {
+					[...toEject].forEach((command: EjectableCommandWrapper) => {
 						const commandKey = `${command.group}-${command.name}`;
 						console.log(green('\nejecting ') + commandKey);
 
@@ -104,9 +85,6 @@ async function run(helper: Helper, args: EjectArgs): Promise<any> {
 							console.log(' ' + hint);
 						});
 					}
-				}
-				else if (args.group && args.command) {
-					throw Error(`command ${args.group}-${args.command} does not implement eject`);
 				}
 				else {
 					console.log('There are no commands that can be ejected');
