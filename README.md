@@ -6,7 +6,7 @@ The CLI is the officially supported way to create and maintain Dojo 2 apps.
 
 **WARNING** This is *alpha* software. It is not yet production ready, so you should use at your own risk.
 
-- [Why use?](#why)
+- [Why use this cli?](#why-use-this-cli)
 - [Usage](#usage)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
