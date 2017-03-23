@@ -48,8 +48,8 @@
     "yargs": "^5.0.0"
   },
   "devDependencies": {
-    "@dojo/interfaces": "2.0.0-alpha.11",
-    "@dojo/loader": "2.0.0-beta.9",
+    "@dojo/interfaces": "^2.0.0-alpha.11",
+    "@dojo/loader": "^2.0.0-beta.9",
     "@types/chai": "^3.4.34",
     "@types/chalk": "^0.4.31",
     "@types/fs-extra": "0.0.34",
