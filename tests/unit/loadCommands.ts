@@ -1,10 +1,10 @@
 import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
-import { stub, SinonStub, sandbox } from 'sinon';
-import { getCommandWrapper, getYargsStub } from '../support/testHelper';
 import { join, resolve as pathResolve } from 'path';
+import { stub, SinonStub, sandbox } from 'sinon';
 import { Config } from '../../src/config';
 import MockModule from '../support/MockModule';
+import { getCommandWrapper, getYargsStub } from '../support/testHelper';
 const enumBuiltInCommands = require('intern/dojo/node!../../src/loadCommands').enumerateBuiltInCommands;
 const enumInstalledCommands = require('intern/dojo/node!../../src/loadCommands').enumerateInstalledCommands;
 const loadCommands = require('intern/dojo/node!../../src/loadCommands').loadCommands;
@@ -18,6 +18,7 @@ let goodConfig: Config;
 let mockModule: MockModule;
 let mockedLoadCommands: any;
 let testSandbox: any;
+let oldSandbox: any;
 
 function config(invalid = false): Config {
 	// tests are run in package-dir (from cli, using grunt test) - FIX to use pkg-dir
@@ -133,11 +134,15 @@ registerSuite({
 			mockModule.dependencies([
 				'./configurationHelper'
 			]);
-			const configHelper = mockModule.getMock('./configurationHelper');
-			configHelper.get = testSandbox.stub().returns({ ejected: true });
+			const configHelper = mockModule.getMock('./configurationHelper').default;
+			oldSandbox = configHelper.sandbox;
+			configHelper.sandbox = testSandbox.stub().returns({
+				get: testSandbox.stub().returns({ ejected: true })
+			});
 			mockedLoadCommands = mockModule.getModuleUnderTest().loadCommands;
 		},
 		afterEach() {
+			mockModule.getMock('./configurationHelper').default.sandbox = oldSandbox;
 			mockModule.destroy();
 			testSandbox.restore();
 		},

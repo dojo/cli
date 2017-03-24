@@ -1,8 +1,8 @@
-import { Config } from './config';
-import { CommandsMap, CommandWrapper } from './command';
 import * as globby from 'globby';
 import { resolve as pathResolve, join } from 'path';
-import { get as getConfig } from './configurationHelper';
+import { CommandsMap, CommandWrapper } from './command';
+import { Config } from './config';
+import configurationHelper from './configurationHelper';
 
 export type YargsCommandNames = Map<string, Set<string>>;
 
@@ -15,8 +15,8 @@ function setDefaultGroup(commandsMap: CommandsMap, commandName: string, commandW
 	commandsMap.set(commandName, commandWrapper);
 }
 
-function isEjected(command: string): boolean {
-	const config = getConfig(command);
+function isEjected(groupName: string, command: string): boolean {
+	const config: any = configurationHelper.sandbox(groupName, command).get();
 	return config && config['ejected'];
 }
 
@@ -68,7 +68,7 @@ export async function loadCommands(paths: string[], load: (path: string) => Comm
 				const {group, name} = commandWrapper;
 				const compositeKey = `${group}-${name}`;
 
-				if (!isEjected(compositeKey)) {
+				if (!isEjected(group, compositeKey)) {
 					if (!commandsMap.has(group)) {
 						// First of each type will be 'default' for now
 						setDefaultGroup(commandsMap, group, commandWrapper);
