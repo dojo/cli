@@ -4,7 +4,7 @@
 
 The CLI is the officially supported way to create and maintain Dojo 2 apps.
 
-**WARNING** This is *alpha* software. It is not yet production ready, so you should use at your own risk.
+**WARNING** This is _beta_ software. While we do not anticipate significant changes to the API at this stage, we may feel the need to do so. This is not yet production ready, so you should use at your own risk.
 
 It is designed to save you time, by promoting a standardised workflow, and automating away more mundane boilerplate tasks.
 
