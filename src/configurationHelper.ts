@@ -1,7 +1,7 @@
+import { red } from 'chalk';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { ConfigurationHelper, Config } from './interfaces';
-import { red } from 'chalk';
 const pkgDir = require('pkg-dir');
 
 const appPath = pkgDir.sync(process.cwd());
@@ -38,7 +38,29 @@ export function save(config: Config, commandName: string): void {
 	Object.assign(dojoRc, { [commandName]: commmandConfig});
 
 	writeConfigFile(dojoRc);
-};
+}
+
+export function sandbox(groupName: string, commandName?: string): ConfigurationHelper {
+	let key = `${groupName}`;
+
+	if (commandName) {
+		key += `-${commandName}`;
+	}
+
+	return {
+		save(config: Config) {
+			return save(config, key);
+		},
+
+		get(commandName) {
+			return get(key);
+		},
+
+		sandbox(groupName: string, commandName: string): ConfigurationHelper {
+			throw new Error(`This helper is already sandboxed for ${commandName}`);
+		}
+	};
+}
 
 /**
  * Retrieves the configuration object from the file system
@@ -52,7 +74,8 @@ export function get(commandName: string): Config {
 
 const configHelper: ConfigurationHelper = {
 	get,
-	save
+	save,
+	sandbox
 };
 
 export default configHelper;

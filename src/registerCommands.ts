@@ -49,7 +49,7 @@ function registerGroups(yargs: Yargs, helper: Helper, groupName: string, command
 					group: `Default Command Options ('${defaultCommand.name}')`,
 					...options
 				});
-			}, helper);
+			}, helper.sandbox(groupName));
 		}
 		registerCommands(subYargs, helper, groupName, commandOptions, commandsMap);
 		return subYargs;
@@ -85,7 +85,7 @@ function registerCommands(yargs: Yargs, helper: Helper, groupName: string, comma
 			(optionsYargs: Yargs) => {
 				register((key: string, options: Options) => {
 					optionsYargs.option(key, options);
-				}, helper);
+				}, helper.sandbox(groupName, command));
 				return optionsYargs;
 			},
 			(argv: Argv) => {
