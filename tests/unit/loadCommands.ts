@@ -18,7 +18,6 @@ let goodConfig: Config;
 let mockModule: MockModule;
 let mockedLoadCommands: any;
 let testSandbox: any;
-let oldSandbox: any;
 
 function config(invalid = false): Config {
 	// tests are run in package-dir (from cli, using grunt test) - FIX to use pkg-dir
@@ -135,14 +134,12 @@ registerSuite({
 				'./configurationHelper'
 			]);
 			const configHelper = mockModule.getMock('./configurationHelper').default;
-			oldSandbox = configHelper.sandbox;
-			configHelper.sandbox = testSandbox.stub().returns({
-				get: testSandbox.stub().returns({ ejected: true })
+			testSandbox.stub(configHelper, 'sandbox', () => {
+				return { get: testSandbox.stub().returns({ ejected: true }) };
 			});
 			mockedLoadCommands = mockModule.getModuleUnderTest().loadCommands;
 		},
 		afterEach() {
-			mockModule.getMock('./configurationHelper').default.sandbox = oldSandbox;
 			mockModule.destroy();
 			testSandbox.restore();
 		},
