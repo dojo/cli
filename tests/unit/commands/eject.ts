@@ -63,25 +63,6 @@ describe('eject command', () => {
 		mockModule.destroy();
 	});
 
-	it('should register supported arguments', () => {
-		const options = sandbox.stub();
-		moduleUnderTest.register(options);
-		assert.deepEqual(
-			options.firstCall.args,
-			[ 'g', {
-				alias: 'group',
-				describe: 'the group to eject commands from'
-			} ]
-		);
-		assert.deepEqual(
-			options.secondCall.args,
-			[ 'c', {
-				alias: 'command',
-				describe: 'the command to eject - a `group` is required'
-			} ]
-		);
-	});
-
 	it(`should abort eject when 'N' selected`, () => {
 		const abortOutput = 'Aborting eject';
 		const commandMap: CommandsMap = new Map<string, CommandWrapper>();
@@ -113,90 +94,6 @@ describe('eject command', () => {
 		mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves({commandsMap: commandMap});
 		return moduleUnderTest.run(helper, {}).then(() => {
 			assert.equal(consoleLogStub.args[0][0], runOutput);
-		});
-	});
-
-	it(`should eject only the commands under 'group' passed in via 'group' argument`, () => {
-		const appleCommand = {...loadCommand('command-with-full-eject')};
-		const orangeCommand = {...loadCommand('command-with-full-eject')};
-		const blueberryCommand = getCommandWrapperWithConfiguration({
-			group: 'fruit',
-			name: 'blueberry',
-			eject: true
-		});
-		appleCommand.name = 'apple';
-		orangeCommand.name = 'orange';
-		const appleEjectStub = sandbox.stub(appleCommand, 'eject').returns({});
-		const orangeEjectStub = sandbox.stub(orangeCommand, 'eject').returns({});
-		const blueberryEjectStub = <sinon.SinonStub> blueberryCommand.eject;
-		const commandMap: CommandsMap = new Map<string, CommandWrapper>([
-			['apple', appleCommand],
-			['orange', orangeCommand],
-			['blueberry', blueberryCommand]
-		]);
-		const helper = getHelper();
-		mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves({commandsMap: commandMap});
-		return moduleUnderTest.run(helper, { group: 'test-group' }).then(() => {
-			assert.isTrue(appleEjectStub.called, '1');
-			assert.isTrue(orangeEjectStub.called, '2');
-			assert.isFalse(blueberryEjectStub.called, '3');
-		});
-	});
-
-	it(`should eject only the command passed in via the 'command' argument`, () => {
-		const appleCommand = {...loadCommand('command-with-full-eject')};
-		const orangeCommand = {...loadCommand('command-with-full-eject')};
-		const blueberryCommand = getCommandWrapperWithConfiguration({
-			group: 'fruit',
-			name: 'blueberry',
-			eject: true
-		});
-		appleCommand.name = 'apple';
-		orangeCommand.name = 'orange';
-		const appleEjectStub = sandbox.stub(appleCommand, 'eject').returns({});
-		const orangeEjectStub = sandbox.stub(orangeCommand, 'eject').returns({});
-		const blueberryEjectStub = <sinon.SinonStub> blueberryCommand.eject;
-		const commandMap: CommandsMap = new Map<string, CommandWrapper>([
-			['apple', appleCommand],
-			['orange', orangeCommand],
-			['blueberry', blueberryCommand]
-		]);
-		const helper = getHelper();
-		mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves({commandsMap: commandMap});
-		return moduleUnderTest.run(helper, { group: 'test-group', command: 'apple' }).then(() => {
-			assert.isTrue(appleEjectStub.called);
-			assert.isFalse(orangeEjectStub.called);
-			assert.isFalse(blueberryEjectStub.called);
-		});
-	});
-
-	it(`should error when 'eject' doesn't exist on command passed in via 'command' argument`, () => {
-		const blueberryCommand = getCommandWrapperWithConfiguration({
-			group: 'test-group',
-			name: 'blueberry'
-		});
-		const commandMap: CommandsMap = new Map<string, CommandWrapper>([
-			['blueberry', blueberryCommand]
-		]);
-		const helper = getHelper();
-		mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves({commandsMap: commandMap});
-		return moduleUnderTest.run(helper, { group: 'test-group', command: 'blueberry' }).catch((error: { message: string }) => {
-			assert.equal(error.message, `command test-group-blueberry does not implement eject`);
-		});
-	});
-
-	it(`should error when command passed in via 'command' argument doesn't exist`, () => {
-		const blueberryCommand = getCommandWrapperWithConfiguration({
-			group: 'test-group',
-			name: 'blueberry'
-		});
-		const commandMap: CommandsMap = new Map<string, CommandWrapper>([
-			['blueberry', blueberryCommand]
-		]);
-		const helper = getHelper();
-		mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves({commandsMap: commandMap});
-		return moduleUnderTest.run(helper, { group: 'test-group', command: 'apple' }).catch((error: { message: string }) => {
-			assert.equal(error.message, `command test-group-apple does not implement eject`);
 		});
 	});
 
