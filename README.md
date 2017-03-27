@@ -6,12 +6,22 @@ The CLI is the officially supported way to create and maintain Dojo 2 apps.
 
 **WARNING** This is _beta_ software. While we do not anticipate significant changes to the API at this stage, we may feel the need to do so. This is not yet production ready, so you should use at your own risk.
 
-It is designed to save you time, by promoting a standardised workflow, and automating away more mundane boilerplate tasks.
-
+- [Why use this cli?](#why-use-this-cli)
 - [Usage](#usage)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
 - [Features](#features)
+- [A warning on ejecting](#a-warning-on-ejecting)
+
+
+## Why use this cli?
+It is designed to save you time, by promoting a standardised workflow, and automating away more mundane boilerplate tasks.
+
+*Single dependency* - instead of having to download and configure multiple tools such as `Webpack`, `Intern` and `tslint`, you can just install the `cli` and know that all of these tools will work together.
+
+*Make the common tasks simple* - because you don't need to install and configure the individual tools yourself, you can be sure that the versions being used all work together and they they are running with sensible defaults.
+
+*Make the advanced tasks possible* - you can `eject` to a custom setup at any time. When you `eject`, all the configuration and build dependencies of the included tools will be moved into your project. If you are adept at configuring these tools, then you can now do so without the `cli` using its defaults.
 
 ## Usage
 
@@ -36,7 +46,7 @@ This should output the following:
 ```
 dojo help
 
-Usage: dojo <command> [subCommand] [options]
+Usage: dojo <group> <command> [options]
 
 Hey there, here are all the things you can do with @dojo/cli:
 ...
@@ -54,18 +64,19 @@ If you don't see `@dojo/cli` in the list of global dependencies, then please re-
 
 The CLI has the following format:
 
-`dojo group [command]` - where [command] is optional
+`dojo <group> [command] [options]` - where [command] and [options] are optional
 
-e.g.
+e.g. (group specified, no command specified)
 
-`dojo build`
+`dojo help`
 
-where `build` is the group, and no command is specified, so the default build command is run.
-The above will output generic help information.
+where `help` is the group, and no command is specified, will run the default help command (in this case, generic help for the cli is outputted).
 
-`dojo build custombuild`
+e.g. (group specified, command specified)
 
-where `build` is the group and `custombuild` is an installed command.
+`dojo help create`
+
+where `help` is the group and `create` is the command, will run the `create` command in the `help` group (in this case, it will output help for the `create` command).
 
 The CLI has the following in-built options:
 
@@ -73,16 +84,26 @@ The CLI has the following in-built options:
 
 The CLI has the following in-built groups:
 
+`dojo create` - provides scaffolding for new Dojo 2 projects.
+`dojo eject` - allows users to configure and run command instead of the cli.
 `dojo version` - provides information on the versions of installed commands and the cli itself.
 
-`dojo create app` and `dojo build` are not installed by default with @dojo/cli. To use them, you must install them separately, e.g. with `npm i @dojo/cli-create-app -g`.
+`dojo build` and `dojo test` are not installed by default with `@dojo/cli`. To use them, you must install them separately, e.g.
+
+`npm i @dojo/cli-build-webpack` and `npm i @dojo/cli-test-intern`
+These two groups are not included by default to allow different versions of these groups to be installed per project.
+
+## A warning on ejecting
+
+Once you run `dojo eject`, the configuration and dependencies for the bundled tools are now part of your project.
+This action is one-way and you cannot go back to having the tools managed by the `cli`.
 
 ## How do I contribute?
 
 We appreciate your interest!  Please see the [Dojo 2 Meta Repository](https://github.com/dojo/meta#readme) for the
 Contributing Guidelines and Style Guide.
 
-### Installation
+### Installation of source
 
 To start working with this package, clone the repository and run `npm install`.
 
