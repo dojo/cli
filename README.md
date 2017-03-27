@@ -46,7 +46,7 @@ This should output the following:
 ```
 dojo help
 
-Usage: dojo <command> [subCommand] [options]
+Usage: dojo <group> <command> [options]
 
 Hey there, here are all the things you can do with @dojo/cli:
 ...
@@ -64,15 +64,15 @@ If you don't see `@dojo/cli` in the list of global dependencies, then please re-
 
 The CLI has the following format:
 
-`dojo group [command]` - where [command] is optional
+`dojo <group> [command] [options]` - where [command] and [options] are optional
 
-e.g. (no command specified)
+e.g. (group specified, no command specified)
 
 `dojo help`
 
 where `help` is the group, and no command is specified, will run the default help command (in this case, generic help for the cli is outputted).
 
-e.g. (command specified)
+e.g. (group specified, command specified)
 
 `dojo help create`
 
@@ -88,7 +88,10 @@ The CLI has the following in-built groups:
 `dojo eject` - allows users to configure and run command instead of the cli.
 `dojo version` - provides information on the versions of installed commands and the cli itself.
 
-`dojo build` and `dojo test` are not installed by default with `@dojo/cli`. To use them, you must install them separately, e.g. with `npm i @dojo/cli-build-webpack` and `npm i @dojo/cli-test-intern`. These two groups are not included by default to allow different versions of these groups to be installed per project.
+`dojo build` and `dojo test` are not installed by default with `@dojo/cli`. To use them, you must install them separately, e.g.
+
+`npm i @dojo/cli-build-webpack` and `npm i @dojo/cli-test-intern`
+These two groups are not included by default to allow different versions of these groups to be installed per project.
 
 ## A warning on ejecting
 
