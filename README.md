@@ -21,7 +21,7 @@ It is designed to save you time, by promoting a standardised workflow, and autom
 
 *Make the common tasks simple* - because you don't need to install and configure the individual tools yourself, you can be sure that the versions being used all work together and they they are running with sensible defaults.
 
-*Make the advanced tasks possible* - you can `eject` to a custom setup at any time. When you `eject`, all the configuration and build dependencies of the included tools will be moved into your project. If you are adept at configuring these tools, then you can now do so without the `cli` imposing its defaults.
+*Make the advanced tasks possible* - you can `eject` to a custom setup at any time. When you `eject`, all the configuration and build dependencies of the included tools will be moved into your project. If you are adept at configuring these tools, then you can now do so without the `cli` using its defaults.
 
 ## Usage
 
