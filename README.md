@@ -88,7 +88,7 @@ The CLI has the following in-built groups:
 `dojo eject` - allows users to configure and run command instead of the cli.
 `dojo version` - provides information on the versions of installed commands and the cli itself.
 
-`dojo build` and `dojo test` are not installed by default with `@dojo/cli`. To use them, you must install them separately, e.g. with `npm i @dojo/cli-build-webpack` and `npm i @dojo/cli-test-intern`. The reason for not bundling these 2 groups, is so you can run different versions of these groups per-project.
+`dojo build` and `dojo test` are not installed by default with `@dojo/cli`. To use them, you must install them separately, e.g. with `npm i @dojo/cli-build-webpack` and `npm i @dojo/cli-test-intern`. These two groups are not included by default to allow different versions of these groups to be installed per project.
 
 ## A warning on ejecting
 
