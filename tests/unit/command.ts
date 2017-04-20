@@ -1,7 +1,9 @@
 import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
 import { getCommandsMap, GroupDef } from '../support/testHelper';
-const command = require('intern/dojo/node!../../src/command');
+import * as UnitUnderTest from '../../src/command';
+
+const command: typeof UnitUnderTest = require('intern/dojo/node!../../src/command');
 const expectedCommand = require('intern/dojo/node!../support/test-prefix-foo-bar');
 const expectedBuiltInCommand = require('intern/dojo/node!../support/commands/test-prefix-foo-bar');
 const expectedEsModuleCommand = require('intern/dojo/node!../support/esmodule-prefix-foo-bar').default;
@@ -11,6 +13,7 @@ const testName = 'bar';
 const testSearchPrefixes = [ 'test-prefix' ];
 const testEsModuleSearchPrefixes = [ 'esmodule-prefix' ];
 const testEsModuleFailSearchPrefixes = [ 'esmodule-fail' ];
+const testSearchPrefixesDashedNames = [ 'dash-names' ];
 let commandWrapper: any;
 const groupDef: GroupDef = [
 	{
@@ -120,6 +123,16 @@ registerSuite({
 				assert.isTrue(error instanceof Error);
 				assert.isTrue(error.message.indexOf('does not satisfy the Command interface') > -1);
 			}
+		}
+	},
+	'load of commands parsed correctly': {
+		'setup'() {
+			loader = command.initCommandLoader(testSearchPrefixesDashedNames);
+			commandWrapper = loader('../tests/support/dash-names-foo-bar-baz');
+		},
+		'Should parse group names correctly'() {
+			assert.equal('foo', commandWrapper.group);
+			assert.equal('bar-baz', commandWrapper.name);
 		}
 	},
 	'getGroupDescription': {
