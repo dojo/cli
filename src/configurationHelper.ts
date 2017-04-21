@@ -33,9 +33,17 @@ class SingleCommandConfigurationHelper implements ConfigurationHelper {
 	/**
 	 * Retrieves the configurationFactory object from the file system
 	 *
-	 * @returns Promise - an object representation of .dojorc
+	 * @returns an object representation of .dojorc
 	 */
-	get(): Config {
+	get(): Config;
+	/**
+	 * Retrieves the configurationFactory object from the file system
+	 *
+	 * @param commandName - the command name that's accessing config
+	 * @returns an object representation of .dojorc
+	 */
+	get(commandName: string): Config;
+	get(commandName?: string): Config {
 		const config = getConfigFile();
 		return config[this._configurationKey] || {};
 	}
@@ -44,9 +52,18 @@ class SingleCommandConfigurationHelper implements ConfigurationHelper {
 	 * persists configurationFactory data to .dojorc
 	 *
 	 * @param config - the configurationFactory to save
+	 */
+	set(config: Config): void;
+	/**
+	 * @deprecated
+	 *
+	 * persists configurationFactory data to .dojorc
+	 *
+	 * @param config - the configurationFactory to save
 	 * @param commandName - the command name that's accessing config
 	 */
-	set(config: Config): void {
+	set(config: Config, commandName: string): void;
+	set(config: Config, commandName?: string): void {
 		if (!dojoRcPath) {
 			console.warn(red('You cannot save a config outside of a project directory'));
 			return;

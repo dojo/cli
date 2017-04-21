@@ -84,6 +84,15 @@ registerSuite({
 			const config = configurationHelper.sandbox('testGroupName', 'testCommandName').get();
 			assert.isTrue(mockFs.readFileSync.calledOnce);
 			assert.deepEqual(config, existingConfig);
+		},
+		'Should accept and ignore commandName parameter'() {
+			const newConfig = { foo: 'bar' };
+			mockFs.readFileSync = sinon.stub().returns(JSON.stringify({ 'testGroupName-testCommandName': {} }));
+			configurationHelper.sandbox('testGroupName', 'testCommandName').set(newConfig, 'invalid name');
+
+			assert.isTrue(mockFs.writeFileSync.calledOnce);
+			assert.equal(mockFs.writeFileSync.firstCall.args[0], dojoRcPath);
+			assert.equal(mockFs.writeFileSync.firstCall.args[1], JSON.stringify({ 'testGroupName-testCommandName': newConfig }, null, 2));
 		}
 	},
 	'package dir does not exist': {
