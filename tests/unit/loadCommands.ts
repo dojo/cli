@@ -1,10 +1,10 @@
 import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
-import { stub, SinonStub, sandbox } from 'sinon';
-import { getCommandWrapper, getYargsStub } from '../support/testHelper';
 import { join, resolve as pathResolve } from 'path';
+import { stub, SinonStub, sandbox } from 'sinon';
 import { Config } from '../../src/config';
 import MockModule from '../support/MockModule';
+import { getCommandWrapper, getYargsStub } from '../support/testHelper';
 const enumBuiltInCommands = require('intern/dojo/node!../../src/loadCommands').enumerateBuiltInCommands;
 const enumInstalledCommands = require('intern/dojo/node!../../src/loadCommands').enumerateInstalledCommands;
 const loadCommands = require('intern/dojo/node!../../src/loadCommands').loadCommands;
@@ -133,8 +133,10 @@ registerSuite({
 			mockModule.dependencies([
 				'./configurationHelper'
 			]);
-			const configHelper = mockModule.getMock('./configurationHelper');
-			configHelper.get = testSandbox.stub().returns({ ejected: true });
+			const configHelper = mockModule.getMock('./configurationHelper').default;
+			testSandbox.stub(configHelper, 'sandbox', () => {
+				return { get: testSandbox.stub().returns({ ejected: true }) };
+			});
 			mockedLoadCommands = mockModule.getModuleUnderTest().loadCommands;
 		},
 		afterEach() {

@@ -2,8 +2,8 @@ import * as chalk from 'chalk';
 import { Yargs, Argv, Options } from 'yargs';
 import { getGroupDescription, CommandsMap, CommandWrapper } from './command';
 import CommandHelper from './CommandHelper';
-import configurationHelper from './configurationHelper';
-import Helper from './Helper';
+import configurationHelperFactory from './configurationHelper';
+import HelperFactory from './Helper';
 import { CommandError } from './interfaces';
 import { YargsCommandNames } from './loadCommands';
 import { helpUsage, helpEpilog } from './text';
@@ -38,7 +38,7 @@ function reportError(error: CommandError) {
  * @param commandOptions The set of commandOption keys
  * @param commandsMap The map of composite keys to commands
  */
-function registerGroups(yargs: Yargs, helper: Helper, groupName: string, commandOptions: Set<string>, commandsMap: CommandsMap): void {
+function registerGroups(yargs: Yargs, helper: HelperFactory, groupName: string, commandOptions: Set<string>, commandsMap: CommandsMap): void {
 	const groupDescription = getGroupDescription(commandOptions, commandsMap);
 	const defaultCommand = <CommandWrapper> commandsMap.get(groupName);
 	const defaultCommandAvailable = !!(defaultCommand && defaultCommand.register && defaultCommand.run);
@@ -49,7 +49,7 @@ function registerGroups(yargs: Yargs, helper: Helper, groupName: string, command
 					group: `Default Command Options ('${defaultCommand.name}')`,
 					...options
 				});
-			}, helper);
+			}, helper.sandbox(groupName));
 		}
 		registerCommands(subYargs, helper, groupName, commandOptions, commandsMap);
 		return subYargs;
@@ -60,7 +60,7 @@ function registerGroups(yargs: Yargs, helper: Helper, groupName: string, command
 		// so we call default command, else, the subcommand will
 		// have been ran and we don't want to run the default.
 		if (defaultCommandAvailable && argv._.length === 1) {
-			return defaultCommand.run(helper, argv).catch(reportError);
+			return defaultCommand.run(helper.sandbox(groupName), argv).catch(reportError);
 		}
 	});
 }
@@ -74,7 +74,7 @@ function registerGroups(yargs: Yargs, helper: Helper, groupName: string, command
  * @param commandOptions The set of commandOption keys
  * @param commandsMap The map of composite keys to commands
  */
-function registerCommands(yargs: Yargs, helper: Helper, groupName: string, commandOptions: Set<string>, commandsMap: CommandsMap): void {
+function registerCommands(yargs: Yargs, helper: HelperFactory, groupName: string, commandOptions: Set<string>, commandsMap: CommandsMap): void {
 	[...commandOptions].filter((command: string) => {
 		return `${groupName}-` !== command;
 	}).forEach((command: string) => {
@@ -85,11 +85,11 @@ function registerCommands(yargs: Yargs, helper: Helper, groupName: string, comma
 			(optionsYargs: Yargs) => {
 				register((key: string, options: Options) => {
 					optionsYargs.option(key, options);
-				}, helper);
+				}, helper.sandbox(groupName, command));
 				return optionsYargs;
 			},
 			(argv: Argv) => {
-				return run(helper, argv).catch(reportError);
+				return run(helper.sandbox(groupName, command), argv).catch(reportError);
 			}
 		)
 		.strict();
@@ -104,9 +104,9 @@ function registerCommands(yargs: Yargs, helper: Helper, groupName: string, comma
  * @param commandOptions The set of commandOption keys
  * @param commandsMap The map of composite keys to commands
  */
-function registerAliases(yargs: Yargs, helper: Helper, commandOptions: Set<string>, commandsMap: CommandsMap): void {
+function registerAliases(yargs: Yargs, helper: HelperFactory, commandOptions: Set<string>, commandsMap: CommandsMap): void {
 	[...commandOptions].forEach((command: string) => {
-		const {run, register, alias: aliases} = <CommandWrapper> commandsMap.get(command);
+		const { run, register, alias: aliases, group } = <CommandWrapper> commandsMap.get(command);
 		if (aliases) {
 			(Array.isArray(aliases) ? aliases : [aliases]).forEach((alias) => {
 				const { name, description, options: aliasOpts } = alias;
@@ -118,7 +118,7 @@ function registerAliases(yargs: Yargs, helper: Helper, commandOptions: Set<strin
 							if (!aliasOpts || !aliasOpts.some((option) => option.option === key)) {
 								aliasYargs.option(key, options);
 							}
-						}, helper);
+						}, helper.sandbox(group, command));
 						return aliasYargs;
 					},
 					(argv: Argv) => {
@@ -130,7 +130,7 @@ function registerAliases(yargs: Yargs, helper: Helper, commandOptions: Set<strin
 								};
 							}, argv);
 						}
-						return run(helper, argv).catch(reportError);
+						return run(helper.sandbox(group, command), argv).catch(reportError);
 					});
 			});
 		}
@@ -149,11 +149,12 @@ function registerAliases(yargs: Yargs, helper: Helper, commandOptions: Set<strin
 export default function(yargs: Yargs, commandsMap: CommandsMap, yargsCommandNames: YargsCommandNames): void {
 	const helperContext = {};
 
-	const commandHelper = new CommandHelper(commandsMap, helperContext);
-	const helper = new Helper(commandHelper, yargs, helperContext, configurationHelper);
+	const commandHelper = new CommandHelper(commandsMap, helperContext, configurationHelperFactory);
+	const helperFactory = new HelperFactory(commandHelper, yargs, helperContext, configurationHelperFactory);
+
 	yargsCommandNames.forEach((commandOptions, commandName) => {
-		registerGroups(yargs, helper, commandName, commandOptions, commandsMap);
-		registerAliases(yargs, helper, commandOptions, commandsMap);
+		registerGroups(yargs, helperFactory, commandName, commandOptions, commandsMap);
+		registerAliases(yargs, helperFactory, commandOptions, commandsMap);
 	});
 
 	yargs.demand(1, '')

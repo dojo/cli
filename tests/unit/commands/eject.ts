@@ -1,14 +1,13 @@
+import { yellow, underline } from 'chalk';
 import { beforeEach, afterEach, describe, it } from 'intern!bdd';
 import * as assert from 'intern/chai!assert';
-import MockModule from '../../support/MockModule';
-import * as sinon from 'sinon';
-import { yellow, underline } from 'chalk';
-require('sinon-as-promised')(Promise);
-
 import { join, resolve as pathResolve } from 'path';
+import * as sinon from 'sinon';
 
 import { CommandsMap, CommandWrapper } from '../../../src/command';
+import MockModule from '../../support/MockModule';
 import { getCommandWrapperWithConfiguration } from '../../support/testHelper';
+require('sinon-as-promised')(Promise);
 
 describe('eject command', () => {
 	const ejectPackagePath = join(pathResolve('.'), '/_build/tests/support/eject');
@@ -33,7 +32,7 @@ describe('eject command', () => {
 			command: 'eject',
 			configuration: {
 				get: sandbox.stub().returns({}),
-				save: sandbox.stub()
+				set: sandbox.stub()
 			}
 		};
 
@@ -43,7 +42,7 @@ describe('eject command', () => {
 	beforeEach(() => {
 		sandbox = sinon.sandbox.create();
 		mockModule = new MockModule('../../src/commands/eject');
-		mockModule.dependencies(['inquirer', 'fs', 'fs-extra', 'pkg-dir', '../allCommands', '../npmInstall', `${ejectPackagePath}/package.json`]);
+		mockModule.dependencies(['inquirer', 'fs', 'fs-extra', 'pkg-dir', '../allCommands', '../npmInstall', `${ejectPackagePath}/package.json`, '../configurationHelper']);
 		mockPkgDir = mockModule.getMock('pkg-dir');
 		mockPkgDir.ctor.sync = sandbox.stub().returns(ejectPackagePath);
 		mockFsExtra = mockModule.getMock('fs-extra');
@@ -104,9 +103,17 @@ describe('eject command', () => {
 			]);
 			const helper = getHelper();
 			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves({commandsMap: commandMap});
+
+			const configurationHelper = mockModule.getMock('../configurationHelper').default;
+
+			const setStub = sinon.stub();
+			configurationHelper.sandbox = sinon.stub().returns({
+				set: setStub
+			});
+
 			return moduleUnderTest.run(helper, {}).then(() => {
-				assert.isTrue(helper.configuration.save.calledOnce);
-				assert.isTrue(helper.configuration.save.firstCall.calledWith({ ejected: true }));
+				assert.isTrue(setStub.calledOnce);
+				assert.isTrue(setStub.firstCall.calledWith({ ejected: true }));
 			});
 		});
 	});

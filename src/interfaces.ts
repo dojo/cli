@@ -5,8 +5,8 @@ export interface Config {
 }
 
 export interface ConfigurationHelper {
-	save(config: Config, commandName: string): void;
-	get(commandName: string): {};
+	set(config: Config): void;
+	get(): {};
 }
 
 export interface CommandHelper {

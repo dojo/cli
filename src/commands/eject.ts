@@ -8,6 +8,7 @@ import { CommandWrapper } from '../command';
 import { loadExternalCommands } from '../allCommands';
 import { deepAssign } from '@dojo/core/lang';
 import { installDependencies, installDevDependencies } from '../npmInstall';
+import configurationHelper from '../configurationHelper';
 
 const copiedFilesDir = 'config';
 const ejectedKey = 'ejected';
@@ -66,7 +67,7 @@ async function run(helper: Helper, args: EjectArgs): Promise<any> {
 						deepAssign(npmPackages, npm);
 						copy && copyFiles(commandKey, copy);
 						hints && allHints.push(...hints);
-						helper.configuration.save({ [ejectedKey]: true }, commandKey);
+						configurationHelper.sandbox(command.group, command.name).set({ [ejectedKey]: true });
 					});
 
 					if (Object.keys(npmPackages.dependencies).length) {

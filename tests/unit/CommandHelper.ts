@@ -1,6 +1,7 @@
 import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
 import { getCommandsMap, GroupDef } from '../support/testHelper';
+import configurationHelperFactory from '../../src/configurationHelper';
 const commandHelperCtor = require('intern/dojo/node!../../src/CommandHelper').default;
 
 const groupDef: GroupDef = [
@@ -26,11 +27,11 @@ registerSuite({
 	name: 'CommandHelper',
 	'beforeEach'() {
 		commandsMap = getCommandsMap(groupDef);
-		commandHelper = new commandHelperCtor(commandsMap, context);
+		commandHelper = new commandHelperCtor(commandsMap, context, configurationHelperFactory);
 	},
 	'Should set commandsMap and context'() {
-		assert.strictEqual(commandsMap, commandHelper.commandsMap);
-		assert.strictEqual(context, commandHelper.context);
+		assert.strictEqual(commandsMap, commandHelper._commandsMap);
+		assert.strictEqual(context, commandHelper._context);
 	},
 	'Should return exists = true when a queried command exists'() {
 		assert.isTrue(commandHelper.exists('group1', 'command1'));
