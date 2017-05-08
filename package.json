@@ -70,6 +70,6 @@
     "remap-istanbul": "^0.6.4",
     "sinon": "^1.17.5",
     "sinon-as-promised": "^4.0.2",
-    "typescript": "~2.2.1"
+    "typescript": "~2.3.2"
   }
 }
