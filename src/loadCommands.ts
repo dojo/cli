@@ -68,7 +68,7 @@ export async function loadCommands(paths: string[], load: (path: string) => Comm
 				const {group, name} = commandWrapper;
 				const compositeKey = `${group}-${name}`;
 
-				if (!isEjected(group, compositeKey)) {
+				if (!isEjected(group, name)) {
 					if (!commandsMap.has(group)) {
 						// First of each type will be 'default' for now
 						setDefaultGroup(commandsMap, group, commandWrapper);

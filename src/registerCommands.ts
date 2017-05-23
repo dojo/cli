@@ -42,6 +42,8 @@ function registerGroups(yargs: Yargs, helper: HelperFactory, groupName: string, 
 	const groupDescription = getGroupDescription(commandOptions, commandsMap);
 	const defaultCommand = <CommandWrapper> commandsMap.get(groupName);
 	const defaultCommandAvailable = !!(defaultCommand && defaultCommand.register && defaultCommand.run);
+	const defaultCommandName = defaultCommand && defaultCommand.name;
+
 	yargs.command(groupName, groupDescription, (subYargs: Yargs) => {
 		if (defaultCommandAvailable) {
 			defaultCommand.register((key: string, options: Options) => {
@@ -49,7 +51,7 @@ function registerGroups(yargs: Yargs, helper: HelperFactory, groupName: string, 
 					group: `Default Command Options ('${defaultCommand.name}')`,
 					...options
 				});
-			}, helper.sandbox(groupName));
+			}, helper.sandbox(groupName, defaultCommandName));
 		}
 		registerCommands(subYargs, helper, groupName, commandOptions, commandsMap);
 		return subYargs;
@@ -60,7 +62,7 @@ function registerGroups(yargs: Yargs, helper: HelperFactory, groupName: string, 
 		// so we call default command, else, the subcommand will
 		// have been ran and we don't want to run the default.
 		if (defaultCommandAvailable && argv._.length === 1) {
-			return defaultCommand.run(helper.sandbox(groupName), argv).catch(reportError);
+			return defaultCommand.run(helper.sandbox(groupName, defaultCommandName), argv).catch(reportError);
 		}
 	});
 }
@@ -85,11 +87,11 @@ function registerCommands(yargs: Yargs, helper: HelperFactory, groupName: string
 			(optionsYargs: Yargs) => {
 				register((key: string, options: Options) => {
 					optionsYargs.option(key, options);
-				}, helper.sandbox(groupName, command));
+				}, helper.sandbox(groupName, name));
 				return optionsYargs;
 			},
 			(argv: Argv) => {
-				return run(helper.sandbox(groupName, command), argv).catch(reportError);
+				return run(helper.sandbox(groupName, name), argv).catch(reportError);
 			}
 		)
 		.strict();
@@ -118,7 +120,7 @@ function registerAliases(yargs: Yargs, helper: HelperFactory, commandOptions: Se
 							if (!aliasOpts || !aliasOpts.some((option) => option.option === key)) {
 								aliasYargs.option(key, options);
 							}
-						}, helper.sandbox(group, command));
+						}, helper.sandbox(group, name));
 						return aliasYargs;
 					},
 					(argv: Argv) => {
@@ -130,7 +132,7 @@ function registerAliases(yargs: Yargs, helper: HelperFactory, commandOptions: Se
 								};
 							}, argv);
 						}
-						return run(helper.sandbox(group, command), argv).catch(reportError);
+						return run(helper.sandbox(group, name), argv).catch(reportError);
 					});
 			});
 		}
