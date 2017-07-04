@@ -1,16 +1,13 @@
 {
-	"version": "2.1.5",
 	"compilerOptions": {
 		"declaration": false,
 		"module": "umd",
-		"noImplicitAny": true,
-		"noImplicitThis": true,
-		"strictNullChecks": true,
+		"moduleResolution": "node",
 		"outDir": "_build/",
 		"removeComments": false,
 		"sourceMap": true,
-		"target": "es6",
-		"moduleResolution": "node"
+		"strict": true,
+		"target": "es2017"
 	},
 	"include": [
 		"./typings/index.d.ts",
