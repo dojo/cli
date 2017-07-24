@@ -57,14 +57,16 @@ export function initExplicitCommandLoader(): (path: string) => CommandWrapper {
 			let {group = '', name = ''} = command;
 
 			//  derive the group and name from the module directory name, e.g. dojo-cli-group-name
-			const [, derivedGroup, derivedName] = <string[]> commandRegExp.exec(path);
+			if (commandRegExp.test(path)) {
+				const [, derivedGroup, derivedName] = <string[]> commandRegExp.exec(path);
 
-			if (!group) {
-				group = derivedGroup;
-			}
+				if (!group) {
+					group = derivedGroup;
+				}
 
-			if (!name) {
-				name = derivedName;
+				if (!name) {
+					name = derivedName;
+				}
 			}
 
 			return {

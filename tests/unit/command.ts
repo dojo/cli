@@ -139,6 +139,12 @@ registerSuite({
 			assert.equal('command', commandWrapper.name);
 			assert.equal(expectedNamelessExplicitCommand.description, commandWrapper.description);
 		},
+		'Should not error if filename is not the right format'() {
+			commandWrapper = loader('../tests/support/test-prefix-foo-bar');
+			assert.isUndefined(commandWrapper.group);
+			assert.isUndefined(commandWrapper.name);
+			assert.equal(expectedNamelessExplicitCommand.description, commandWrapper.description);
+		},
 		'Should get group, name, and description from loaded file'() {
 			assert.equal(expectedExplicitCommand.group, commandWrapper.group);
 			assert.equal(expectedExplicitCommand.name, commandWrapper.name);
