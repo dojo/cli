@@ -44,6 +44,10 @@ export async function enumerateBuiltInCommands (config: Config): Promise <string
 	return globby(builtInCommandParentDirGlob, (<globby.Options> { ignore: '**/*.map' }));
 }
 
+export async function enumerateExplicitCommands (config: Config): Promise <string []> {
+	return Promise.resolve(config.explicitCommands);
+}
+
 /**
  * Function to load commands given a search path and a load function. The load
  * function is injected for the purposes of abstraction and testing.

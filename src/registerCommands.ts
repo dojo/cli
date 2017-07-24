@@ -164,6 +164,9 @@ export default function(yargs: Yargs, commandsMap: CommandsMap, yargsCommandName
 		.epilog(helpEpilog)
 		.help('h')
 		.alias('h', 'help')
+		.option('command', {
+			describe: 'Specify the module ID of a command to load. Useful for running commands while developing.'
+		})
 		.strict()
 		.argv;
 }

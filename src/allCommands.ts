@@ -2,11 +2,13 @@ import {
 	loadCommands,
 	enumerateInstalledCommands,
 	enumerateBuiltInCommands,
+	enumerateExplicitCommands,
 	LoadedCommands
 } from './loadCommands';
 import {
 	initCommandLoader,
-	createBuiltInCommandLoader }
+	createBuiltInCommandLoader, initExplicitCommandLoader
+}
 	from './command';
 import config from './config';
 
@@ -35,6 +37,12 @@ export async function loadBuiltInCommands(): Promise<LoadedCommands> {
 	return await loadCommands(builtInCommandsPaths, builtInCommandLoader);
 }
 
+export async function loadExplicitCommands(): Promise<LoadedCommands> {
+	const explicitCommandLoader = initExplicitCommandLoader();
+	const explicitCommandPaths = await enumerateExplicitCommands(config);
+	return await loadCommands(explicitCommandPaths, explicitCommandLoader);
+}
+
 export default async function loadAllCommands(): Promise<LoadedCommands> {
 	if (loaded) {
 		return Promise.resolve(commands);
@@ -42,9 +50,10 @@ export default async function loadAllCommands(): Promise<LoadedCommands> {
 
 	const builtInCommands = await loadBuiltInCommands();
 	const installedCommands = await loadExternalCommands();
+	const explicitCommands = await loadExplicitCommands();
 
-	commands.commandsMap = new Map([...installedCommands.commandsMap, ...builtInCommands.commandsMap]);
-	commands.yargsCommandNames = new Map([...installedCommands.yargsCommandNames, ...builtInCommands.yargsCommandNames]);
+	commands.commandsMap = new Map([...installedCommands.commandsMap, ...builtInCommands.commandsMap, ...explicitCommands.commandsMap]);
+	commands.yargsCommandNames = new Map([...installedCommands.yargsCommandNames, ...builtInCommands.yargsCommandNames, ...explicitCommands.yargsCommandNames]);
 	loaded = true;
 	return Promise.resolve(commands);
 }

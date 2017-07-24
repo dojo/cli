@@ -1,12 +1,24 @@
 import { join } from 'path';
 const pkgDir = require('pkg-dir');
 const packagePath = pkgDir.sync(__dirname);
+const yargs = require('yargs');
 
 export type Config = {
 	searchPaths: string[],
 	searchPrefixes: string[],
-	builtInCommandLocation: string
+	builtInCommandLocation: string,
+	explicitCommands: string[]
 };
+
+const explicitCommands: string[] = [];
+
+if (yargs.argv && yargs.argv.command) {
+	const paths = Array.isArray(yargs.argv.command) ? yargs.argv.command : [yargs.argv.command];
+
+	paths.forEach((path: string) => {
+		explicitCommands.push(path);
+	});
+}
 
 export default {
 	searchPaths: [
@@ -14,6 +26,7 @@ export default {
 		join(__dirname, '..', '..'),
 		join(packagePath, 'node_modules')
 	],
-	searchPrefixes: [ '@dojo/cli', 'dojo-cli' ],
-	builtInCommandLocation: join(__dirname, '/commands')  // better to be relative to this file (like an import) than link to publish structure
+	searchPrefixes: ['@dojo/cli', 'dojo-cli'],
+	builtInCommandLocation: join(__dirname, '/commands'),  // better to be relative to this file (like an import) than link to publish structure
+	explicitCommands
 } as Config;

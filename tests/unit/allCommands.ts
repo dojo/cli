@@ -45,23 +45,26 @@ describe('AllCommands', () => {
 			.then(function(){
 				assert.isTrue(mockCommand.createBuiltInCommandLoader.calledOnce, 'should call builtin command loader');
 				assert.isTrue(mockCommand.initCommandLoader.calledOnce, 'should call installed command loader');
+				assert.isTrue(mockCommand.initExplicitCommandLoader.calledOnce, 'should call explicit command loader');
 				assert.isTrue(mockLoadCommands.enumerateBuiltInCommands.calledOnce, 'should call builtin command enumerator');
 				assert.isTrue(mockLoadCommands.enumerateInstalledCommands.calledOnce, 'should call installed command enumerator');
 				assert.isTrue(mockLoadCommands.enumerateInstalledCommands.calledAfter(mockLoadCommands.enumerateBuiltInCommands));
-				assert.isTrue(mockLoadCommands.loadCommands.calledTwice, 'should call load commands twice');
+				assert.isTrue(mockLoadCommands.loadCommands.calledThrice, 'should call load commands thrice');
 				assert.isTrue(mockLoadCommands.loadCommands.calledAfter(mockLoadCommands.enumerateInstalledCommands),
 					'should call loadcommands after both enumerations');
 			});
 	});
 
-	it('should perform initialsation only once', () => {
+	it('should perform initialisation only once', () => {
 		return moduleUnderTest.default()
 			.then(function(){
 				assert.isTrue(mockCommand.createBuiltInCommandLoader.calledOnce, 'should call builtin command loader once');
 				assert.isTrue(mockCommand.initCommandLoader.calledOnce, 'should call installed command loader once');
+				assert.isTrue(mockCommand.initExplicitCommandLoader.calledOnce, 'should call explicit command loader once');
 				assert.isTrue(mockLoadCommands.enumerateBuiltInCommands.calledOnce, 'should call builtin command enumerator once');
 				assert.isTrue(mockLoadCommands.enumerateInstalledCommands.calledOnce, 'should call installed command enumerator once');
-				assert.isTrue(mockLoadCommands.loadCommands.calledTwice, 'should call load commands twice');
+				assert.isTrue(mockLoadCommands.enumerateExplicitCommands.calledOnce, 'should call installed command enumerator once only');
+				assert.isTrue(mockLoadCommands.loadCommands.calledThrice, 'should call load commands thrice');
 
 				moduleUnderTest.default()
 					.then(function(){
@@ -69,6 +72,7 @@ describe('AllCommands', () => {
 						assert.isTrue(mockCommand.initCommandLoader.calledOnce, 'should call installed command loader once only');
 						assert.isTrue(mockLoadCommands.enumerateBuiltInCommands.calledOnce, 'should call builtin command enumerator once only');
 						assert.isTrue(mockLoadCommands.enumerateInstalledCommands.calledOnce, 'should call installed command enumerator once only');
+						assert.isTrue(mockLoadCommands.enumerateExplicitCommands.calledOnce, 'should call installed command enumerator once only');
 						assert.isTrue(mockLoadCommands.loadCommands.calledTwice, 'should call load commands twice only');
 					});
 			});
@@ -78,18 +82,22 @@ describe('AllCommands', () => {
 			.then(function(){
 				assert.isTrue(mockCommand.createBuiltInCommandLoader.calledOnce, 'should call builtin command loader once');
 				assert.isTrue(mockCommand.initCommandLoader.calledOnce, 'should call installed command loader once');
+				assert.isTrue(mockCommand.initCommandLoader.calledOnce, 'should call explicit command loader once');
 				assert.isTrue(mockLoadCommands.enumerateBuiltInCommands.calledOnce, 'should call builtin command enumerator once');
 				assert.isTrue(mockLoadCommands.enumerateInstalledCommands.calledOnce, 'should call installed command enumerator once');
-				assert.isTrue(mockLoadCommands.loadCommands.calledTwice, 'should call load commands twice only');
+				assert.isTrue(mockLoadCommands.enumerateExplicitCommands.calledOnce, 'should call explicit command enumerator once');
+				assert.isTrue(mockLoadCommands.loadCommands.calledThrice, 'should call load commands twice only');
 
 				moduleUnderTest.reset();
 				moduleUnderTest.default()
 					.then(function(){
 						assert.isTrue(mockCommand.createBuiltInCommandLoader.calledTwice, 'should call builtin command loader once');
 						assert.isTrue(mockCommand.initCommandLoader.calledTwice, 'should call installed command loader once');
+						assert.isTrue(mockCommand.initCommandLoader.calledTwice, 'should call explicit command loader once');
 						assert.isTrue(mockLoadCommands.enumerateBuiltInCommands.calledTwice, 'should call builtin command enumerator once');
 						assert.isTrue(mockLoadCommands.enumerateInstalledCommands.calledTwice, 'should call installed command enumerator once');
-						assert.equal(mockLoadCommands.loadCommands.callCount, 4, 'should call load commands twice only');
+						assert.isTrue(mockLoadCommands.enumerateExplicitCommands.calledTwice, 'should call explicit command enumerator once');
+						assert.equal(mockLoadCommands.loadCommands.callCount, 6, 'should call load commands twice only');
 					});
 			});
 	});

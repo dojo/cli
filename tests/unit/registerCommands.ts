@@ -93,14 +93,14 @@ registerSuite({
 		},
 		'should register options'() {
 			registerCommands(yargsStub, commandsMap, createYargsCommandNames({'group1': new Set([ 'group1-command1' ])}));
-			assert.isTrue(yargsStub.option.calledTwice);
+			assert.isTrue(yargsStub.option.calledThrice);
 		},
 		'should not register provided options'() {
 			const key = 'group1-command1';
 			const command = commandsMap.get(key);
 			command.register = stub().callsArgWith(0, 'w', {}).returns(key),
 			registerCommands(yargsStub, commandsMap, createYargsCommandNames({'group1': new Set([ key ])}));
-			assert.isTrue(yargsStub.option.calledOnce);
+			assert.isTrue(yargsStub.option.calledTwice);
 		},
 		'should register when alias is an array'() {
 			const key = 'group1-command1';
@@ -117,7 +117,7 @@ registerSuite({
 				}
 			];
 			registerCommands(yargsStub, commandsMap, createYargsCommandNames({'group1': new Set([ key ])}));
-			assert.isTrue(yargsStub.option.calledTwice);
+			assert.isTrue(yargsStub.option.calledThrice);
 		},
 		'should augment argv when run'() {
 			const key = 'group1-command1';

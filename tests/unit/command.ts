@@ -7,6 +7,8 @@ const command: typeof UnitUnderTest = require('intern/dojo/node!../../src/comman
 const expectedCommand = require('intern/dojo/node!../support/test-prefix-foo-bar');
 const expectedBuiltInCommand = require('intern/dojo/node!../support/commands/test-prefix-foo-bar');
 const expectedEsModuleCommand = require('intern/dojo/node!../support/esmodule-prefix-foo-bar').default;
+const expectedExplicitCommand = require('intern/dojo/node!../support/cli-test-command').default;
+const expectedNamelessExplicitCommand = require('intern/dojo/node!../support/cli-nameless-command').default;
 
 const testGroup = 'foo';
 const testName = 'bar';
@@ -113,6 +115,39 @@ registerSuite({
 	'load builtin command that does not meet Command interface': {
 		'setup'() {
 			loader = command.createBuiltInCommandLoader();
+		},
+		'Should throw an error when attempting to load'() {
+			try {
+				commandWrapper = loader(getBuiltInCommandPath(true));
+				assert.fail(null, null, 'Should not get here');
+			}
+			catch (error) {
+				assert.isTrue(error instanceof Error);
+				assert.isTrue(error.message.indexOf('does not satisfy the Command interface') > -1);
+			}
+		}
+	},
+	'load explicit commands': {
+		'beforeEach'() {
+			loader = command.initExplicitCommandLoader();
+			commandWrapper = loader('../tests/support/cli-test-command');
+		},
+		'Should get group and name from filename'() {
+			commandWrapper = loader('../tests/support/cli-nameless-command');
+
+			assert.equal('nameless', commandWrapper.group);
+			assert.equal('command', commandWrapper.name);
+			assert.equal(expectedNamelessExplicitCommand.description, commandWrapper.description);
+		},
+		'Should get group, name, and description from loaded file'() {
+			assert.equal(expectedExplicitCommand.group, commandWrapper.group);
+			assert.equal(expectedExplicitCommand.name, commandWrapper.name);
+			assert.equal(expectedExplicitCommand.description, commandWrapper.description);
+		}
+	},
+	'load explicit command that does not meet command interface': {
+		'setup'() {
+			loader = command.initExplicitCommandLoader();
 		},
 		'Should throw an error when attempting to load'() {
 			try {

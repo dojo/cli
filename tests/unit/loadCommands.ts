@@ -7,6 +7,7 @@ import MockModule from '../support/MockModule';
 import { getCommandWrapper, getYargsStub } from '../support/testHelper';
 const enumBuiltInCommands = require('intern/dojo/node!../../src/loadCommands').enumerateBuiltInCommands;
 const enumInstalledCommands = require('intern/dojo/node!../../src/loadCommands').enumerateInstalledCommands;
+const enumExplicitCommands = require('intern/dojo/node!../../src/loadCommands').enumerateExplicitCommands;
 const loadCommands = require('intern/dojo/node!../../src/loadCommands').loadCommands;
 
 let loadStub: SinonStub;
@@ -24,12 +25,14 @@ function config(invalid = false): Config {
 	const config: Config = {
 		searchPaths: [ '_build/tests/support' ],
 		searchPrefixes: [ 'test-prefix' ],
-		builtInCommandLocation: join(pathResolve('.'), '/_build/tests/support/commands')
+		builtInCommandLocation: join(pathResolve('.'), '/_build/tests/support/commands'),
+		explicitCommands: []
 	};
 	const badConfig: Config = {
 		searchPaths: [ 'just/garbage', 'yep/really/bad/paths/here' ],
 		searchPrefixes: [ 'bad-prefix' ],
-		builtInCommandLocation : 'dirThatDoesNotExist'
+		builtInCommandLocation : 'dirThatDoesNotExist',
+		explicitCommands: ['dirThatDoesNotExist']
 	};
 
 	return invalid ? badConfig : config;
@@ -60,6 +63,13 @@ registerSuite({
 		async 'Should successfully enumerate builtin commands'() {
 			const builtInPaths = await enumBuiltInCommands(goodConfig);
 			assert.equal(builtInPaths.length, 2);   // includes invalid commands
+		},
+		async 'Should successfully enumerate explicit commands'() {
+			const emptyPaths = await enumExplicitCommands(goodConfig);
+			assert.equal(emptyPaths.length, 0);
+
+			const singlePath = await enumExplicitCommands({...goodConfig, explicitCommands: ['/some/path']});
+			assert.equal(singlePath.length, 1);
 		}
 	},
 	'unsuccessful enumeration': {
