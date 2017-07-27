@@ -1,0 +1,25 @@
+# Test against the latest version of this Node.js version
+environment:
+  nodejs_version: "6"
+
+# Install scripts. (runs after repo cloning)
+install:
+  # Get the latest stable version of Node.js or io.js
+  - ps: Install-Product node $env:nodejs_version
+  # install modules
+  - npm install grunt cli
+  - npm install
+
+# Post-install test scripts.
+test_script:
+  # Output useful info for debugging.
+  - node --version
+  - npm --version
+  # run tests
+  - node_modules\.bin\grunt.cmd
+  - node_modules\.bin\grunt.cmd intern:node
+  - node_modules\.bin\grunt.cmd remapIstanbul:ci
+  - node_modules\.bin\grunt.cmd uploadCoverage
+
+# Don't actually build.
+build: off
