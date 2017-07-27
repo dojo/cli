@@ -1,7 +1,7 @@
 import { yellow, underline } from 'chalk';
 import { beforeEach, afterEach, describe, it } from 'intern!bdd';
 import * as assert from 'intern/chai!assert';
-import { join, resolve as pathResolve } from 'path';
+import { join, resolve as pathResolve, sep } from 'path';
 import * as sinon from 'sinon';
 
 import { CommandsMap, CommandWrapper } from '../../../src/command';
@@ -140,8 +140,8 @@ describe('eject command', () => {
 			const helper = getHelper();
 			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves({commandsMap: commandMap});
 			return moduleUnderTest.run(helper, {}).then(() => {
-				assert.isTrue(consoleLogStub.secondCall.calledWith(` ${yellow('creating')} ./config/test-group-test-eject/file1`));
-				assert.isTrue(consoleLogStub.thirdCall.calledWith(` ${yellow('creating')} ./config/test-group-test-eject/file2`));
+				assert.isTrue(consoleLogStub.secondCall.calledWith(` ${yellow('creating')} .${sep}config${sep}test-group-test-eject${sep}file1`));
+				assert.isTrue(consoleLogStub.thirdCall.calledWith(` ${yellow('creating')} .${sep}config${sep}test-group-test-eject${sep}file2`));
 				assert.isTrue(mockFsExtra.copySync.calledTwice);
 			});
 		});
