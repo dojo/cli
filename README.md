@@ -1,6 +1,7 @@
 # @dojo/cli
 
-[![Build Status](https://travis-ci.org/dojo/cli.svg?branch=master)](https://travis-ci.org/dojo/cli) [![codecov](https://codecov.io/gh/dojo/cli/branch/master/graph/badge.svg)](https://codecov.io/gh/dojo/cli) [![npm version](https://badge.fury.io/js/%40dojo%2Fcli.svg)](https://badge.fury.io/js/%40dojo%2Fcli)
+[![Build Status](https://travis-ci.org/dojo/cli.svg?branch=master)](https://travis-ci.org/dojo/cli) [![Build status](https://ci.appveyor.com/api/projects/status/mvbjrd0jcv8itvho/branch/master?svg=true)](https://ci.appveyor.com/project/Dojo/cli/branch/master)
+ [![codecov](https://codecov.io/gh/dojo/cli/branch/master/graph/badge.svg)](https://codecov.io/gh/dojo/cli) [![npm version](https://badge.fury.io/js/%40dojo%2Fcli.svg)](https://badge.fury.io/js/%40dojo%2Fcli)
 
 The CLI is the officially supported way to create and maintain Dojo 2 apps.
 
