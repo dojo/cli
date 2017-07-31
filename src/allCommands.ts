@@ -39,7 +39,7 @@ export async function loadBuiltInCommands(): Promise<LoadedCommands> {
 
 export async function loadExplicitCommands(): Promise<LoadedCommands> {
 	const explicitCommandLoader = initExplicitCommandLoader();
-	const explicitCommandPaths = await enumerateExplicitCommands(config);
+	const explicitCommandPaths = enumerateExplicitCommands(config);
 	return await loadCommands(explicitCommandPaths, explicitCommandLoader);
 }
 

@@ -1,4 +1,4 @@
-import {Command} from './interfaces';
+import { Command } from './interfaces';
 
 const cliui = require('cliui');
 
@@ -25,9 +25,9 @@ export function initCommandLoader(searchPrefixes: string[]): (path: string) => C
 
 		try {
 			const command = convertModuleToCommand(module);
-			const {description, register, run, alias, eject} = command;
+			const { description, register, run, alias, eject } = command;
 			//  derive the group and name from the module directory name, e.g. dojo-cli-group-name
-			const [, group, name] = <string[]> commandRegExp.exec(path);
+			const [ , group, name ] = commandRegExp.exec(path) as string[];
 
 			return {
 				name,
@@ -39,22 +39,28 @@ export function initCommandLoader(searchPrefixes: string[]): (path: string) => C
 				path,
 				eject
 			};
-		} catch (err) {
+		}
+		catch (err) {
 			throw new Error(`Path: ${path} returned module that does not satisfy the Command interface. ${err}`);
 		}
 	};
 }
 
+/**
+ * Function to create a loader that loads explicit commands. This differs from the normal command loader by trying to
+ * find the command name/group from the command & filename.
+ * @returns A command loader
+ */
 export function initExplicitCommandLoader(): (path: string) => CommandWrapper {
-	const commandRegExp = new RegExp(`cli-([^-]+)-([^/]+)`);
+	const commandRegExp = /cli-([^-]+)-([^/]+)/;
 
 	return function load(path: string): CommandWrapper {
 		let module = require(path);
 
 		try {
 			const command = convertModuleToCommand(module);
-			const {description, register, run, alias, eject} = command;
-			let {group = '', name = ''} = command;
+			const { description, register, run, alias, eject } = command;
+			let { group = '', name = '' } = command;
 
 			//  derive the group and name from the module directory name, e.g. dojo-cli-group-name
 			if (commandRegExp.test(path)) {
@@ -89,14 +95,13 @@ export function initExplicitCommandLoader(): (path: string) => CommandWrapper {
  * Creates a builtIn command loader function.
  */
 export function createBuiltInCommandLoader(): (path: string) => CommandWrapper {
-
 	return function load(path: string): CommandWrapper {
 		const module = require(path);
 
 		try {
 			const command = convertModuleToCommand(module);
 			//  derive the name and group of the built in commands from the command itself (these are optional props)
-			const {name = '', group = '', alias, description, register, run} = command;
+			const { name = '', group = '', alias, description, register, run } = command;
 
 			return {
 				name,
@@ -132,7 +137,7 @@ export function getGroupDescription(commandNames: Set<string>, commands: Command
 		return getMultiCommandDescription(commandNames, commands);
 	}
 	else {
-		const {description} = <CommandWrapper> commands.get(Array.from(commandNames.keys())[0]);
+		const { description } = <CommandWrapper> commands.get(Array.from(commandNames.keys())[ 0 ]);
 		return description;
 	}
 }

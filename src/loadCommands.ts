@@ -44,8 +44,13 @@ export async function enumerateBuiltInCommands (config: Config): Promise <string
 	return globby(builtInCommandParentDirGlob, (<globby.Options> { ignore: '**/*.map' }));
 }
 
-export async function enumerateExplicitCommands (config: Config): Promise <string []> {
-	return Promise.resolve(config.explicitCommands);
+/**
+ * Return a list to the absolute path of all the explicitly specified commands
+ * @param {Config} config
+ * @returns {Promise<string[]>} The list of explicit commands
+ */
+export function enumerateExplicitCommands (config: Config): string [] {
+	return config.explicitCommands;
 }
 
 /**
