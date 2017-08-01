@@ -45,6 +45,15 @@ export async function enumerateBuiltInCommands (config: Config): Promise <string
 }
 
 /**
+ * Return a list to the absolute path of all the explicitly specified commands
+ * @param {Config} config
+ * @returns {Promise<string[]>} The list of explicit commands
+ */
+export function enumerateExplicitCommands (config: Config): string [] {
+	return config.explicitCommands;
+}
+
+/**
  * Function to load commands given a search path and a load function. The load
  * function is injected for the purposes of abstraction and testing.
  * The commands are stored in a CommandsMap which uses a composite key of

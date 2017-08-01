@@ -1,4 +1,5 @@
 import { Command } from './interfaces';
+
 const cliui = require('cliui');
 
 export interface CommandWrapper extends Command {
@@ -12,9 +13,9 @@ export type CommandsMap = Map<string, CommandWrapper>;
 /**
  * Function to create a loader instance, this allows the config to be injected
  * @param: searchPrefix A string that tells the command loader how cli commands will be named, ie.
- * 	'@dojo/cli-' is the default meaning commands could be
- * 		- '@dojo/cli-build-webpack'
- * 		- '@dojo/cli-serve-dist'
+ *    '@dojo/cli-' is the default meaning commands could be
+ *        - '@dojo/cli-build-webpack'
+ *        - '@dojo/cli-serve-dist'
  */
 export function initCommandLoader(searchPrefixes: string[]): (path: string) => CommandWrapper {
 	const commandRegExp = new RegExp(`(?:${searchPrefixes.join('|').replace('\/', '\\/')})-([^-]+)-(.+)$`);
@@ -26,7 +27,53 @@ export function initCommandLoader(searchPrefixes: string[]): (path: string) => C
 			const command = convertModuleToCommand(module);
 			const { description, register, run, alias, eject } = command;
 			//  derive the group and name from the module directory name, e.g. dojo-cli-group-name
-			const [ , group, name] = <string[]> commandRegExp.exec(path);
+			const [ , group, name ] = commandRegExp.exec(path) as string[];
+
+			return {
+				name,
+				group,
+				alias,
+				description,
+				register,
+				run,
+				path,
+				eject
+			};
+		}
+		catch (err) {
+			throw new Error(`Path: ${path} returned module that does not satisfy the Command interface. ${err}`);
+		}
+	};
+}
+
+/**
+ * Function to create a loader that loads explicit commands. This differs from the normal command loader by trying to
+ * find the command name/group from the command & filename.
+ * @returns A command loader
+ */
+export function initExplicitCommandLoader(): (path: string) => CommandWrapper {
+	const commandRegExp = /cli-([^-]+)-([^/]+)/;
+
+	return function load(path: string): CommandWrapper {
+		let module = require(path);
+
+		try {
+			const command = convertModuleToCommand(module);
+			const { description, register, run, alias, eject } = command;
+			let { group = '', name = '' } = command;
+
+			//  derive the group and name from the module directory name, e.g. dojo-cli-group-name
+			if (commandRegExp.test(path)) {
+				const [, derivedGroup, derivedName] = <string[]> commandRegExp.exec(path);
+
+				if (!group) {
+					group = derivedGroup;
+				}
+
+				if (!name) {
+					name = derivedName;
+				}
+			}
 
 			return {
 				name,
@@ -48,7 +95,6 @@ export function initCommandLoader(searchPrefixes: string[]): (path: string) => C
  * Creates a builtIn command loader function.
  */
 export function createBuiltInCommandLoader(): (path: string) => CommandWrapper {
-
 	return function load(path: string): CommandWrapper {
 		const module = require(path);
 
@@ -91,14 +137,14 @@ export function getGroupDescription(commandNames: Set<string>, commands: Command
 		return getMultiCommandDescription(commandNames, commands);
 	}
 	else {
-		const { description } = <CommandWrapper> commands.get(Array.from(commandNames.keys())[0]);
+		const { description } = <CommandWrapper> commands.get(Array.from(commandNames.keys())[ 0 ]);
 		return description;
 	}
 }
 
 function getMultiCommandDescription(commandNames: Set<string>, commands: CommandsMap): string {
 	const descriptions = Array.from(commandNames.keys(), (commandName) => {
-		const { name, description } = (<CommandWrapper> commands.get(commandName));
+		const {name, description} = (<CommandWrapper> commands.get(commandName));
 		return `${name}  \t${description}`;
 	});
 	const ui = cliui({
