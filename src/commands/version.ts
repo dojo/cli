@@ -1,5 +1,5 @@
 import { CommandsMap } from '../command';
-import { Helper, OptionsHelper } from '../interfaces';
+import { Helper, OptionsHelper } from '@dojo/interfaces/cli';
 import { join } from 'path';
 import { Argv } from 'yargs';
 import { yellow } from 'chalk';
