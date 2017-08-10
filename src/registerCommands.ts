@@ -1,10 +1,10 @@
 import * as chalk from 'chalk';
-import { Yargs, Argv, Options } from 'yargs';
+import { Argv, Options } from 'yargs';
 import { getGroupDescription, CommandsMap, CommandWrapper } from './command';
 import CommandHelper from './CommandHelper';
 import configurationHelperFactory from './configurationHelper';
 import HelperFactory from './Helper';
-import { CommandError } from './interfaces';
+import { CommandError } from '@dojo/interfaces/cli';
 import { YargsCommandNames } from './loadCommands';
 import { helpUsage, helpEpilog } from './text';
 
@@ -38,13 +38,13 @@ function reportError(error: CommandError) {
  * @param commandOptions The set of commandOption keys
  * @param commandsMap The map of composite keys to commands
  */
-function registerGroups(yargs: Yargs, helper: HelperFactory, groupName: string, commandOptions: Set<string>, commandsMap: CommandsMap): void {
+function registerGroups(yargs: Argv, helper: HelperFactory, groupName: string, commandOptions: Set<string>, commandsMap: CommandsMap): void {
 	const groupDescription = getGroupDescription(commandOptions, commandsMap);
 	const defaultCommand = <CommandWrapper> commandsMap.get(groupName);
 	const defaultCommandAvailable = !!(defaultCommand && defaultCommand.register && defaultCommand.run);
 	const defaultCommandName = defaultCommand && defaultCommand.name;
 
-	yargs.command(groupName, groupDescription, (subYargs: Yargs) => {
+	yargs.command(groupName, groupDescription, (subYargs: Argv) => {
 		if (defaultCommandAvailable) {
 			defaultCommand.register((key: string, options: Options) => {
 				subYargs.option(key, {
@@ -56,7 +56,7 @@ function registerGroups(yargs: Yargs, helper: HelperFactory, groupName: string, 
 		registerCommands(subYargs, helper, groupName, commandOptions, commandsMap);
 		return subYargs;
 	},
-	(argv: Argv) => {
+	(argv: any) => {
 		// argv._ is an array of commands.
 		// if `dojo example` was called, it will only be size one,
 		// so we call default command, else, the subcommand will
@@ -76,7 +76,7 @@ function registerGroups(yargs: Yargs, helper: HelperFactory, groupName: string, 
  * @param commandOptions The set of commandOption keys
  * @param commandsMap The map of composite keys to commands
  */
-function registerCommands(yargs: Yargs, helper: HelperFactory, groupName: string, commandOptions: Set<string>, commandsMap: CommandsMap): void {
+function registerCommands(yargs: Argv, helper: HelperFactory, groupName: string, commandOptions: Set<string>, commandsMap: CommandsMap): void {
 	[...commandOptions].filter((command: string) => {
 		return `${groupName}-` !== command;
 	}).forEach((command: string) => {
@@ -84,13 +84,13 @@ function registerCommands(yargs: Yargs, helper: HelperFactory, groupName: string
 		yargs.command(
 			name,
 			description,
-			(optionsYargs: Yargs) => {
+			(optionsYargs: Argv) => {
 				register((key: string, options: Options) => {
 					optionsYargs.option(key, options);
 				}, helper.sandbox(groupName, name));
 				return optionsYargs;
 			},
-			(argv: Argv) => {
+			(argv: any) => {
 				return run(helper.sandbox(groupName, name), argv).catch(reportError);
 			}
 		)
@@ -106,7 +106,7 @@ function registerCommands(yargs: Yargs, helper: HelperFactory, groupName: string
  * @param commandOptions The set of commandOption keys
  * @param commandsMap The map of composite keys to commands
  */
-function registerAliases(yargs: Yargs, helper: HelperFactory, commandOptions: Set<string>, commandsMap: CommandsMap): void {
+function registerAliases(yargs: Argv, helper: HelperFactory, commandOptions: Set<string>, commandsMap: CommandsMap): void {
 	[...commandOptions].forEach((command: string) => {
 		const { run, register, alias: aliases, group } = <CommandWrapper> commandsMap.get(command);
 		if (aliases) {
@@ -115,7 +115,7 @@ function registerAliases(yargs: Yargs, helper: HelperFactory, commandOptions: Se
 				yargs.command(
 					name,
 					description || '',
-					(aliasYargs: Yargs) => {
+					(aliasYargs: Argv) => {
 						register((key: string, options: Options) => {
 							if (!aliasOpts || !aliasOpts.some((option) => option.option === key)) {
 								aliasYargs.option(key, options);
@@ -123,7 +123,7 @@ function registerAliases(yargs: Yargs, helper: HelperFactory, commandOptions: Se
 						}, helper.sandbox(group, name));
 						return aliasYargs;
 					},
-					(argv: Argv) => {
+					(argv: any) => {
 						if (aliasOpts) {
 							argv = aliasOpts.reduce((accumulator, option) => {
 								return {
@@ -148,7 +148,7 @@ function registerAliases(yargs: Yargs, helper: HelperFactory, commandOptions: Se
  * @param commandsMap The map of composite keys to commands
  * @param yargsCommandNames Map of groups and names to composite keys
  */
-export default function(yargs: Yargs, commandsMap: CommandsMap, yargsCommandNames: YargsCommandNames): void {
+export default function(yargs: Argv, commandsMap: CommandsMap, yargsCommandNames: YargsCommandNames): void {
 	const helperContext = {};
 
 	const commandHelper = new CommandHelper(commandsMap, helperContext, configurationHelperFactory);

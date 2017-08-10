@@ -1,6 +1,6 @@
-import { Yargs } from 'yargs';
+import { Argv } from 'yargs';
 import { ConfigurationHelperFactory } from './configurationHelper';
-import { CommandHelper, Helper } from './interfaces';
+import { CommandHelper, Helper } from '@dojo/interfaces/cli';
 
 /**
  * The Helper that is passed to each command's 'run' function. Provides
@@ -9,14 +9,14 @@ import { CommandHelper, Helper } from './interfaces';
  * other tasks.
  */
 export class HelperFactory {
-	constructor(commandHelper: CommandHelper, yargs: Yargs, context: any, configurationFactory: ConfigurationHelperFactory) {
+	constructor(commandHelper: CommandHelper, yargs: Argv, context: any, configurationFactory: ConfigurationHelperFactory) {
 		this.command = commandHelper;
 		this.yargs = yargs;
 		this.context = context;
 		this.configurationFactory = configurationFactory;
 	};
 	command: CommandHelper;
-	yargs: Yargs;
+	yargs: Argv;
 	context: any;
 	configurationFactory: ConfigurationHelperFactory;
 

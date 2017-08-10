@@ -10,7 +10,6 @@
 		"target": "es2016"
 	},
 	"include": [
-		"./typings/index.d.ts",
 		"./src/**/*.ts",
 		"./tests/**/*.ts"
 	]
