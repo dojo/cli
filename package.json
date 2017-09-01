@@ -31,10 +31,10 @@
     "typings.json"
   ],
   "dependencies": {
-    "@dojo/cli-create-app": "next",
-    "@dojo/core": "next",
-    "@dojo/has": "next",
-    "@dojo/shim": "next",
+    "@dojo/cli-create-app": "beta2",
+    "@dojo/core": "beta2",
+    "@dojo/has": "beta2",
+    "@dojo/shim": "beta2",
     "chalk": "^1.1.3",
     "cliui": "^3.2.0",
     "cross-spawn": "^4.0.0",
@@ -48,8 +48,8 @@
     "yargs": "^5.0.0"
   },
   "devDependencies": {
-    "@dojo/interfaces": "next",
-    "@dojo/loader": "next",
+    "@dojo/interfaces": "beta2",
+    "@dojo/loader": "beta2",
     "@types/chai": "^3.4.34",
     "@types/chalk": "^0.4.31",
     "@types/fs-extra": "0.0.34",
