@@ -11,5 +11,6 @@ import './registerCommands';
 import './text';
 import './updateNotifier';
 import './commands/eject';
+import './commands/init';
 import './commands/version';
 import './bin/dojo';
