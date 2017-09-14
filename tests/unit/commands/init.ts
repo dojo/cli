@@ -14,6 +14,8 @@ describe('init command', () => {
 		mockModule = new MockModule('../../src/commands/init');
 		mockModule.dependencies([ 'fs', 'pkg-dir', '../allCommands' ]);
 
+		sandbox.stub(console, 'log');
+
 		const pkgDir = mockModule.getMock('pkg-dir');
 		pkgDir.ctor.sync = sandbox.stub().returns('./');
 
