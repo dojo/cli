@@ -234,7 +234,7 @@ function run(helper: Helper, args: VersionArgs): Promise<any> {
 export default {
 	name: '',
 	group: 'version',
-	description: 'provides version information for all installed commands and the cli itself.',
+	description: 'provides version information for all installed commands and the cli itself',
 	register,
 	run
 };
