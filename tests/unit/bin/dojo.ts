@@ -51,7 +51,7 @@ describe('cli .bin', () => {
 
 		// Give a stacktrace for the unhandled rejections should they occur
 		process.on('unhandledRejection', (reason: string, p: any) => {
-			assert.fail('Unhandled Rejection at: Promise', p, 'reason:', reason);
+			assert.fail(null, null, 'Unhandled Rejection at: Promise' + p + 'reason:' + reason);
 		});
 	});
 
@@ -67,7 +67,7 @@ describe('cli .bin', () => {
 			}, 100);
 		})
 		.catch((error: Error) => {
-			assert.fail(error.message);
+			assert.fail(null, null, error.message);
 		});
 	});
 });
