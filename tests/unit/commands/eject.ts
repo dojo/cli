@@ -143,7 +143,7 @@ describe('eject command', () => {
 	describe('eject copy config', () => {
 		it('should run copy files', () => {
 			const commandMap: CommandsMap = new Map<string, CommandWrapper>([
-				['apple', loadCommand('/command-with-full-eject')]
+				['apple', loadCommand('command-with-full-eject')]
 			]);
 			const helper = getHelper();
 			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves({commandsMap: commandMap});
@@ -158,7 +158,7 @@ describe('eject command', () => {
 
 		it('should not copy files if no files are specified', () => {
 			const commandMap: CommandsMap = new Map<string, CommandWrapper>([
-				['apple', loadCommand('/command-with-nofile-eject')]
+				['apple', loadCommand('command-with-nofile-eject')]
 			]);
 			const helper = getHelper();
 			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves({commandsMap: commandMap});
@@ -173,7 +173,7 @@ describe('eject command', () => {
 	describe('eject hints', () => {
 		it('should show hints when supplied', () => {
 			const commandMap: CommandsMap = new Map<string, CommandWrapper>([
-				['apple', loadCommand('/command-with-hints')]
+				['apple', loadCommand('command-with-hints')]
 			]);
 			const helper = getHelper();
 			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves({commandsMap: commandMap});
