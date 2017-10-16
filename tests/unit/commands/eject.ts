@@ -70,7 +70,9 @@ describe('eject command', () => {
 		const helper = getHelper();
 		mockInquirer.prompt = sandbox.stub().resolves({ eject: false });
 		mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves({commandsMap: commandMap});
-		return moduleUnderTest.run(helper, {}).catch((error: { message: string }) => {
+		return moduleUnderTest.run(helper, {}).then(() => {
+			assert.fail('The promise should not have resolved');
+		}, (error: { message: string }) => {
 			assert.equal(error.message, abortOutput);
 		});
 	});
