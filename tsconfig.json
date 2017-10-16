@@ -7,7 +7,8 @@
 		"removeComments": false,
 		"sourceMap": true,
 		"strict": true,
-		"target": "es2016"
+		"target": "es2016",
+		"types": [ "intern", "sinon-as-promised" ]
 	},
 	"include": [
 		"./src/**/*.ts",

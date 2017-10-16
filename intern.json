@@ -1,0 +1,39 @@
+{
+	"environments": [
+		{ "browserName": "node" }
+	],
+
+	"suites": [
+		"./_build/tests/unit/all.js"
+	],
+
+	"configs": {
+		"coverage": {
+			"coverage": [
+				"./_build/src/**/*.js"
+			]
+		},
+
+		"remoteCapabilities": {
+			"capabilities": {
+				"project": "Dojo 2",
+				"name": "@dojo/cli",
+				"fixSessionCapabilities": false
+			}
+		},
+
+		"local": {
+			"extends": [ "coverage", "remoteCapabilities" ],
+
+			"tunnel": "selenium",
+			"tunnelOptions": {
+				"hostname": "localhost",
+				"port": 4444
+			},
+
+			"environments+": [
+				{ "browserName": "chrome" }
+			]
+		}
+	}
+}

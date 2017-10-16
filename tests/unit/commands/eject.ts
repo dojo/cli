@@ -1,6 +1,7 @@
+const { beforeEach, afterEach, describe, it } = intern.getInterface('bdd');
+const { assert } = intern.getPlugin('chai');
+
 import { yellow, underline } from 'chalk';
-import { beforeEach, afterEach, describe, it } from 'intern!bdd';
-import * as assert from 'intern/chai!assert';
 import { join, resolve as pathResolve, sep } from 'path';
 import * as sinon from 'sinon';
 
@@ -10,7 +11,7 @@ import { getCommandWrapperWithConfiguration } from '../../support/testHelper';
 require('sinon-as-promised')(Promise);
 
 describe('eject command', () => {
-	const ejectPackagePath = join(pathResolve('.'), '/_build/tests/support/eject');
+	const ejectPackagePath = join(pathResolve(__dirname), '../../support/eject');
 	let moduleUnderTest: any;
 	let mockModule: MockModule;
 	let mockPkgDir: any;
@@ -24,7 +25,7 @@ describe('eject command', () => {
 	let sandbox: sinon.SinonSandbox;
 
 	function loadCommand(command: string): any {
-		return require(`intern/dojo/node!${ejectPackagePath}/${command}`);
+		return require(`${ejectPackagePath}/${command}`);
 	}
 
 	function getHelper(config?: any) {
@@ -41,7 +42,7 @@ describe('eject command', () => {
 
 	beforeEach(() => {
 		sandbox = sinon.sandbox.create();
-		mockModule = new MockModule('../../src/commands/eject');
+		mockModule = new MockModule('../../../src/commands/eject', require);
 		mockModule.dependencies(['inquirer', 'fs', 'fs-extra', 'pkg-dir', '../allCommands', '../npmInstall', `${ejectPackagePath}/package.json`, '../configurationHelper']);
 		mockPkgDir = mockModule.getMock('pkg-dir');
 		mockPkgDir.ctor.sync = sandbox.stub().returns(ejectPackagePath);

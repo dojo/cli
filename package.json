@@ -69,7 +69,7 @@
     "glob": "^7.0.3",
     "grunt": "~1.0.1",
     "grunt-dojo2": "latest",
-    "intern": "^3.4.1",
+    "intern": "~4.0.2",
     "istanbul": "^0.4.3",
     "mockery": "^1.7.0",
     "remap-istanbul": "^0.6.4",

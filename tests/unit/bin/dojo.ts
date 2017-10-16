@@ -1,5 +1,6 @@
-import { beforeEach, afterEach, describe, it } from 'intern!bdd';
-import * as assert from 'intern/chai!assert';
+const { beforeEach, afterEach, describe, it } = intern.getInterface('bdd');
+const { assert } = intern.getPlugin('chai');
+
 import MockModule from '../../support/MockModule';
 import * as sinon from 'sinon';
 
@@ -18,7 +19,7 @@ describe('cli .bin', () => {
 
 	beforeEach(() => {
 		sandbox = sinon.sandbox.create();
-		mockModule = new MockModule('../../src/bin/dojo');
+		mockModule = new MockModule('../../../src/bin/dojo', require);
 		mockModule.dependencies(['yargs', './allCommands', './registerCommands']);
 		mockYargs = mockModule.getMock('yargs');
 		mockYargs.ctor.command = sandbox.stub();

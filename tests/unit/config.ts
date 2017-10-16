@@ -1,12 +1,12 @@
-import * as registerSuite from 'intern!object';
-import * as assert from 'intern/chai!assert';
+const { registerSuite } = intern.getInterface('object');
+const { assert } = intern.getPlugin('chai');
+
 import { resolve } from 'path';
 
-const config = require('intern/dojo/node!./../../src/config').default;
+import config from '../../src/config';
 const expectedSearchPrefixes = [ '@dojo/cli', 'dojo-cli' ];
 
-registerSuite({
-	name: 'config',
+registerSuite('config', {
 	'Should provide a search prefix'() {
 		const prefix = config.searchPrefixes;
 		assert.isTrue(Array.isArray(prefix));

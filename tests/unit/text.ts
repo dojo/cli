@@ -1,17 +1,17 @@
-import * as registerSuite from 'intern!object';
-import * as assert from 'intern/chai!assert';
-const text = require('intern/dojo/node!../../src/text');
+const { registerSuite } = intern.getInterface('object');
+const { assert } = intern.getPlugin('chai');
 
-registerSuite({
-	name: 'text',
+import * as text from '../../src/text';
+
+registerSuite('text', {
 	exports: (function (exportedStrings) {
-		const tests: (() => void)[] = [];
+		const tests: { [key: string]: () => void; } = {};
 
 		exportedStrings.forEach(function (exportedString) {
-			tests.push(function () {
-				assert.isNotNull(text[exportedString]);
-				assert.isString(text[exportedString]);
-			});
+			tests[exportedString] = () => {
+				assert.isNotNull((<any> text)[exportedString]);
+				assert.isString((<any> text)[exportedString]);
+			};
 		});
 
 		return tests;

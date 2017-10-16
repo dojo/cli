@@ -1,45 +1,12 @@
-import { RootRequire } from '@dojo/interfaces/loader';
-declare const require: RootRequire;
-
 import * as mockery from 'mockery';
 import * as sinon from 'sinon';
-
-const dojoNodePlugin = 'intern/dojo/node';
-
-function load(modulePath: string): any {
-	const mid = `${dojoNodePlugin}!${modulePath}`;
-	return require(mid);
-}
-
-function unload(modulePath: string): void {
-	const abs = require.toUrl(modulePath);
-	const plugin = require.toAbsMid(dojoNodePlugin);
-	require.undef(`${plugin}!${abs}`);
-}
+import * as path from 'path';
 
 function resolvePath(base: string, mid: string): string {
-	const isRelative = mid.match(/\.\//);
-	let result = base;
-	if (isRelative) {
-		if (mid.match(/^\.\//)) {
-			mid = mid.replace(/\.\//, '');
-		}
-		const up = mid.match(/^(\.\.\/)/);
-		if (up) {
-			const chunks = base.split('/');
-			chunks.splice(chunks.length - (up.length - 1));
-			result = chunks.join('/');
-			mid = mid.replace(/\.\.\//g, '');
-		}
-		mid = result + '/' + mid;
+	if (mid[0] !== '.') {
+		return mid;
 	}
-	return mid;
-}
-
-function getBasePath(modulePath: string): string {
-	const chunks = modulePath.split('/');
-	chunks.pop();
-	return chunks.join('/');
+	return path.resolve(base, mid);
 }
 
 export default class MockModule {
@@ -48,24 +15,18 @@ export default class MockModule {
 	private mocks: any;
 	private sandbox: sinon.SinonSandbox;
 
-	constructor(moduleUnderTestPath: string) {
-		this.basePath = getBasePath(moduleUnderTestPath);
-		this.moduleUnderTestPath = moduleUnderTestPath;
+	constructor(moduleUnderTestPath: string, require: NodeRequire) {
+		this.moduleUnderTestPath = require.resolve(moduleUnderTestPath);
+		this.basePath = path.dirname(this.moduleUnderTestPath);
 		this.sandbox = sinon.sandbox.create();
 		this.mocks = {};
 	}
 
 	dependencies(dependencies: string[]): void {
-		unload(this.moduleUnderTestPath);
-
-		dependencies
-			.map((dep) => resolvePath(this.basePath, dep))
-			.map((dep) => unload(dep));
-
 		dependencies.forEach((dependencyName) => {
 			let dependency;
 			try {
-				dependency = load(resolvePath(this.basePath, dependencyName));
+				dependency = require(resolvePath(this.basePath, dependencyName));
 			}
 			catch (e) {
 				dependency = {};
@@ -99,16 +60,11 @@ export default class MockModule {
 
 	getModuleUnderTest(): any {
 		mockery.enable({ warnOnUnregistered: false, useCleanCache: true });
-		const allowable = require.toUrl(this.moduleUnderTestPath) + '.js';
-		mockery.registerAllowable(allowable, true);
-		return load(this.moduleUnderTestPath);
+		mockery.registerAllowable(this.moduleUnderTestPath, true);
+		return require(this.moduleUnderTestPath);
 	}
 
 	destroy(): void {
-		unload(this.moduleUnderTestPath);
-		Object.keys(this.mocks)
-			.map((dep) => resolvePath(this.basePath, dep))
-			.map((dep) => unload(dep));
 		this.sandbox.restore();
 		mockery.deregisterAll();
 		mockery.disable();

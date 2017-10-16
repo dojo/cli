@@ -1,5 +1,6 @@
-import { beforeEach, afterEach, describe, it } from 'intern!bdd';
-import * as assert from 'intern/chai!assert';
+const { beforeEach, afterEach, describe, it } = intern.getInterface('bdd');
+const { assert } = intern.getPlugin('chai');
+
 import MockModule from '../../support/MockModule';
 import * as sinon from 'sinon';
 require('sinon-as-promised')(Promise);
@@ -8,8 +9,8 @@ import { join, resolve as pathResolve } from 'path';
 
 import { CommandsMap, CommandWrapper } from '../../../src/command';
 import { getCommandWrapperWithConfiguration } from '../../support/testHelper';
-const validPackageInfo = require('intern/dojo/node!../../support/valid-package/package.json');
-const anotherValidPackageInfo = require('intern/dojo/node!../../support/another-valid-package/package.json');
+const validPackageInfo: any =  require('../../support/valid-package/package.json');
+const anotherValidPackageInfo: any = require('../../support/another-valid-package/package.json');
 
 describe('version command', () => {
 
@@ -22,7 +23,7 @@ describe('version command', () => {
 
 	beforeEach(() => {
 		sandbox = sinon.sandbox.create();
-		mockModule = new MockModule('../../src/commands/version');
+		mockModule = new MockModule('../../../src/commands/version', require);
 		mockModule.dependencies(['david', 'pkg-dir', '../allCommands']);
 		mockDavid = mockModule.getMock('david');
 		mockPkgDir = mockModule.getMock('pkg-dir');
