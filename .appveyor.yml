@@ -17,8 +17,7 @@ test_script:
   - npm --version
   # run tests
   - node_modules\.bin\grunt.cmd
-  - node_modules\.bin\grunt.cmd intern:node
-  - node_modules\.bin\grunt.cmd remapIstanbul:ci
+  - node_modules\.bin\grunt.cmd intern:local
   - node_modules\.bin\grunt.cmd uploadCoverage
 
 # Don't actually build.
