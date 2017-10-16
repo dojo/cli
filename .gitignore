@@ -13,6 +13,7 @@ deploy_key
 .tscache
 .tsconfig*.json
 .history
+coverage-final.lcov
 coverage-unmapped.json
 npm-debug.log
 /_apidoc
