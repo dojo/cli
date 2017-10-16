@@ -60,6 +60,9 @@ describe('version command', () => {
 		return moduleUnderTest.run(helper, { outdated: false }).then(() => {
 			assert.isTrue(mockDavid.getUpdatedDependencies.notCalled);
 			assert.equal((<sinon.SinonStub> console.log).args[0][0], noCommandOutput);
+		})
+		.catch(() => {
+			assert.fail(null, null, 'moduleUnderTest.run should not have rejected promise');
 		});
 	});
 
@@ -81,6 +84,9 @@ describe('version command', () => {
 		return moduleUnderTest.run(helper, { outdated: false }).then(() => {
 			assert.isTrue(mockDavid.getUpdatedDependencies.notCalled);
 			assert.equal((<sinon.SinonStub> console.log).args[0][0], noCommandOutput);
+		})
+		.catch(() => {
+			assert.fail(null, null, 'moduleUnderTest.run should not have rejected promise');
 		});
 	});
 
@@ -107,6 +113,9 @@ describe('version command', () => {
 		return moduleUnderTest.run(helper, { outdated: false }).then(() => {
 			assert.isTrue(mockDavid.getUpdatedDependencies.notCalled);
 			assert.equal((<sinon.SinonStub> console.log).args[0][0], expectedOutput);
+		})
+		.catch(() => {
+			assert.fail(null, null, 'moduleUnderTest.run should not have rejected promise');
 		});
 	});
 
@@ -135,6 +144,9 @@ describe('version command', () => {
 		return moduleUnderTest.run(helper, { outdated: false }).then(() => {
 			assert.isTrue(mockDavid.getUpdatedDependencies.notCalled);
 			assert.equal((<sinon.SinonStub> console.log).args[0][0], expectedOutput);
+		})
+		.catch(() => {
+			assert.fail(null, null, 'moduleUnderTest.run should not have rejected promise');
 		});
 	});
 
@@ -158,6 +170,9 @@ describe('version command', () => {
 		return moduleUnderTest.run(helper, { 'outdated': true }).then(() => {
 			assert.equal('Fetching latest version information...', (<sinon.SinonStub> console.log).args[0][0]);
 			assert.equal((<sinon.SinonStub> console.log).args[1][0], expectedOutput);
+		})
+		.catch(() => {
+			assert.fail(null, null, 'moduleUnderTest.run should not have rejected promise');
 		});
 	});
 
@@ -182,6 +197,9 @@ describe('version command', () => {
 		return moduleUnderTest.run(helper, { 'outdated': true }).then(() => {
 			assert.equal('Fetching latest version information...', (<sinon.SinonStub> console.log).args[0][0]);
 			assert.equal((<sinon.SinonStub> console.log).args[1][0], expectedOutput);
+		})
+		.catch(() => {
+			assert.fail(null, null, 'moduleUnderTest.run should not have rejected promise');
 		});
 	});
 
@@ -205,6 +223,9 @@ describe('version command', () => {
 		return moduleUnderTest.run(helper, { 'outdated': true }).then(() => {
 			assert.equal('Fetching latest version information...', (<sinon.SinonStub> console.log).args[0][0]);
 			assert.equal((<sinon.SinonStub> console.log).args[1][0], expectedOutput);
+		})
+		.catch(() => {
+			assert.fail(null, null, 'moduleUnderTest.run should not have rejected promise');
 		});
 	});
 

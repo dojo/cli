@@ -70,7 +70,7 @@ export function getCommandWrapperWithConfiguration(config: CommandWrapperConfig)
 		description,
 		path,
 		register: stub().returns('registered'),
-		run: stub().returns(runs ? Promise.resolve('success') : Promise.reject(new Error()))
+		run: stub().returns(runs ? 'success' : 'error')
 	};
 
 	if (eject) {

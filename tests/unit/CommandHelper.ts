@@ -46,6 +46,9 @@ registerSuite({
 		const key = 'group1-command1';
 		return commandHelper.run(key).then((response: string) => {
 			assert.equal(key, response);
+		})
+		.catch(() => {
+			assert.fail(null, null, 'commandHelper.run should not have rejected promise');
 		});
 	},
 	'Should run a command that exists with args and return a promise that resolves'() {
@@ -55,6 +58,9 @@ registerSuite({
 			assert.isTrue(mockCommand.runStub.called);
 			assert.equal(mockCommand.runStub.getCall(0).args[1], 'args');
 			assert.equal(key, response);
+		})
+		.catch(() => {
+			assert.fail(null, null, 'commandHelper.run should not have rejected promise');
 		});
 	},
 	'Should run a command that exists and return a rejected promise when it fails'() {
@@ -66,7 +72,10 @@ registerSuite({
 			(error: Error) => {
 				assert.equal(key, error.message);
 			}
-		);
+		)
+		.catch(() => {
+			assert.fail(null, null, 'commandHelper.run should not have rejected promise');
+		});
 	},
 	'Should not run a command that does not exist and return a rejected promise'() {
 		const key = 'nogroup-nocommand';
@@ -78,6 +87,9 @@ registerSuite({
 			(error: Error) => {
 				assert.equal(expectedErrorMsg, error.message);
 			}
-		);
+		)
+		.catch(() => {
+			assert.fail(null, null, 'commandHelper.run should not have rejected promise');
+		});
 	}
 });

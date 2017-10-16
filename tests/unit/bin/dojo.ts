@@ -48,6 +48,11 @@ describe('cli .bin', () => {
 		mockRegisterCommands = mockModule.getMock('./registerCommands');
 		mockRegisterCommands.default = sandbox.stub();
 		moduleUnderTest = mockModule.getModuleUnderTest();
+
+		// Give a stacktrace for the unhandled rejections should they occur
+		process.on('unhandledRejection', (reason: string, p: any) => {
+			assert.fail(null, null, 'Unhandled Rejection at: Promise' + p + 'reason:' + reason);
+		});
 	});
 
 	afterEach(() => {
@@ -60,6 +65,9 @@ describe('cli .bin', () => {
 			setTimeout(() => {
 				assert.isTrue(mockRegisterCommands.default.called);
 			}, 100);
+		})
+		.catch((error: Error) => {
+			assert.fail(null, null, error.message);
 		});
 	});
 });

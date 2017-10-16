@@ -51,6 +51,9 @@ describe('AllCommands', () => {
 				assert.isTrue(mockLoadCommands.loadCommands.calledTwice, 'should call load commands twice');
 				assert.isTrue(mockLoadCommands.loadCommands.calledAfter(mockLoadCommands.enumerateInstalledCommands),
 					'should call loadcommands after both enumerations');
+			})
+			.catch(() => {
+				assert.fail(null, null, 'moduleUnderTest.run should not have rejected promise');
 			});
 	});
 
@@ -70,7 +73,13 @@ describe('AllCommands', () => {
 						assert.isTrue(mockLoadCommands.enumerateBuiltInCommands.calledOnce, 'should call builtin command enumerator once only');
 						assert.isTrue(mockLoadCommands.enumerateInstalledCommands.calledOnce, 'should call installed command enumerator once only');
 						assert.isTrue(mockLoadCommands.loadCommands.calledTwice, 'should call load commands twice only');
+					})
+					.catch(() => {
+						assert.fail(null, null, 'moduleUnderTest.run should not have rejected promise');
 					});
+			})
+			.catch(() => {
+				assert.fail(null, null, 'moduleUnderTest.run should not have rejected promise');
 			});
 	});
 	it('should reset the command cache', () => {
@@ -90,7 +99,13 @@ describe('AllCommands', () => {
 						assert.isTrue(mockLoadCommands.enumerateBuiltInCommands.calledTwice, 'should call builtin command enumerator once');
 						assert.isTrue(mockLoadCommands.enumerateInstalledCommands.calledTwice, 'should call installed command enumerator once');
 						assert.equal(mockLoadCommands.loadCommands.callCount, 4, 'should call load commands twice only');
+					})
+					.catch(() => {
+						assert.fail(null, null, 'moduleUnderTest.run should not have rejected promise');
 					});
+			})
+			.catch(() => {
+				assert.fail(null, null, 'moduleUnderTest.run should not have rejected promise');
 			});
 	});
 });
