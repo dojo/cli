@@ -1,5 +1,6 @@
-import { beforeEach, afterEach, describe, it } from 'intern!bdd';
-import * as assert from 'intern/chai!assert';
+const { beforeEach, afterEach, describe, it } = intern.getInterface('bdd');
+const { assert } = intern.getPlugin('chai');
+
 import MockModule from '../support/MockModule';
 import * as OrigSinon from 'sinon';
 const sap = require('sinon-as-promised');
@@ -21,7 +22,7 @@ describe('cli main module', () => {
 			beforeEach(() => {
 
 				sandbox = sinon.sandbox.create();
-				mockModule = new MockModule('../../src/index');
+				mockModule = new MockModule('../../src/index', require);
 				mockModule.dependencies([
 					'./updateNotifier',
 					'pkg-dir',
@@ -71,7 +72,7 @@ describe('cli main module', () => {
 			beforeEach(() => {
 
 				sandbox = sinon.sandbox.create();
-				mockModule = new MockModule('../../src/index');
+				mockModule = new MockModule('../../src/index', require);
 				mockModule.dependencies([
 					'./updateNotifier',
 					'pkg-dir',

@@ -1,5 +1,5 @@
 import {CommandWrapper} from '../../src/command';
-import { stub } from 'sinon';
+import { stub, spy } from 'sinon';
 
 export type GroupDef = [{
 	groupName: string;
@@ -24,16 +24,17 @@ export function getCommandsMap(groupDef: GroupDef) {
 	groupDef.forEach((group) => {
 		group.commands.forEach((command) => {
 			const compositeKey = `${group.groupName}-${command.commandName}`;
-			const runStub = stub();
+			const runSpy = spy(() => command.fails ?
+					Promise.reject(new Error(compositeKey)) :
+					Promise.resolve(compositeKey)
+			);
 			const commandWrapper = {
 				name: command.commandName,
 				group: group.groupName,
 				description: compositeKey,
 				register: stub().callsArgWith(0, 'key', {}).returns(compositeKey),
-				runStub,
-				run: runStub.returns(command.fails ?
-					Promise.reject(new Error(compositeKey)) :
-					Promise.resolve(compositeKey))
+				runSpy,
+				run: runSpy
 			};
 			commands.set(compositeKey, commandWrapper);
 		});

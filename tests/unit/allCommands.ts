@@ -1,5 +1,6 @@
-import { beforeEach, afterEach, describe, it } from 'intern!bdd';
-import * as assert from 'intern/chai!assert';
+const { beforeEach, afterEach, describe, it } = intern.getInterface('bdd');
+const { assert } = intern.getPlugin('chai');
+
 import MockModule from '../support/MockModule';
 const sap = require('sinon-as-promised');
 const sinon = new sap(Promise);
@@ -14,7 +15,7 @@ describe('AllCommands', () => {
 
 	beforeEach(() => {
 		sandbox = sinon.sandbox.create();
-		mockModule = new MockModule('../../src/allCommands');
+		mockModule = new MockModule('../../src/allCommands', require);
 		mockModule.dependencies([
 			'./command',
 			'./loadCommands',

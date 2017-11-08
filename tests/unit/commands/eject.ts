@@ -1,6 +1,7 @@
+const { beforeEach, afterEach, describe, it } = intern.getInterface('bdd');
+const { assert } = intern.getPlugin('chai');
+
 import { yellow, underline } from 'chalk';
-import { beforeEach, afterEach, describe, it } from 'intern!bdd';
-import * as assert from 'intern/chai!assert';
 import { join, resolve as pathResolve, sep } from 'path';
 import * as sinon from 'sinon';
 
@@ -10,7 +11,7 @@ import { getCommandWrapperWithConfiguration } from '../../support/testHelper';
 require('sinon-as-promised')(Promise);
 
 describe('eject command', () => {
-	const ejectPackagePath = join(pathResolve('.'), '/_build/tests/support/eject');
+	const ejectPackagePath = join(pathResolve(__dirname), '../../support/eject');
 	let moduleUnderTest: any;
 	let mockModule: MockModule;
 	let mockPkgDir: any;
@@ -24,7 +25,7 @@ describe('eject command', () => {
 	let sandbox: sinon.SinonSandbox;
 
 	function loadCommand(command: string): any {
-		return require(`intern/dojo/node!${ejectPackagePath}/${command}`);
+		return require(`${ejectPackagePath}/${command}`);
 	}
 
 	function getHelper(config?: any) {
@@ -41,7 +42,7 @@ describe('eject command', () => {
 
 	beforeEach(() => {
 		sandbox = sinon.sandbox.create();
-		mockModule = new MockModule('../../src/commands/eject');
+		mockModule = new MockModule('../../../src/commands/eject', require);
 		mockModule.dependencies(['inquirer', 'fs', 'fs-extra', 'pkg-dir', '../allCommands', '../npmInstall', `${ejectPackagePath}/package.json`, '../configurationHelper']);
 		mockPkgDir = mockModule.getMock('pkg-dir');
 		mockPkgDir.ctor.sync = sandbox.stub().returns(ejectPackagePath);
@@ -69,7 +70,9 @@ describe('eject command', () => {
 		const helper = getHelper();
 		mockInquirer.prompt = sandbox.stub().resolves({ eject: false });
 		mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves({commandsMap: commandMap});
-		return moduleUnderTest.run(helper, {}).catch((error: { message: string }) => {
+		return moduleUnderTest.run(helper, {}).then(() => {
+			assert.fail('The promise should not have resolved');
+		}, (error: { message: string }) => {
 			assert.equal(error.message, abortOutput);
 		});
 	});
@@ -94,7 +97,7 @@ describe('eject command', () => {
 		mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves({commandsMap: commandMap});
 		return moduleUnderTest.run(helper, {}).then(() => {
 			assert.equal(consoleLogStub.args[0][0], runOutput);
-		}).catch(() => {
+		}, () => {
 			assert.fail(null, null, 'moduleUnderTest.run should not have rejected promise');
 		});
 	});
@@ -117,7 +120,7 @@ describe('eject command', () => {
 			return moduleUnderTest.run(helper, {}).then(() => {
 				assert.isTrue(setStub.calledOnce);
 				assert.isTrue(setStub.firstCall.calledWith({ ejected: true }));
-			}).catch(() => {
+			}, () => {
 				assert.fail(null, null, 'moduleUnderTest.run should not have rejected promise');
 			});
 		});
@@ -133,7 +136,7 @@ describe('eject command', () => {
 			return moduleUnderTest.run(helper, {}).then(() => {
 				assert.isTrue(mockNpmInstall.installDependencies.calledOnce);
 				assert.isTrue(mockNpmInstall.installDevDependencies.calledOnce);
-			}).catch(() => {
+			}, () => {
 				assert.fail(null, null, 'moduleUnderTest.run should not have rejected promise');
 			});
 		});
@@ -142,7 +145,7 @@ describe('eject command', () => {
 	describe('eject copy config', () => {
 		it('should run copy files', () => {
 			const commandMap: CommandsMap = new Map<string, CommandWrapper>([
-				['apple', loadCommand('/command-with-full-eject')]
+				['apple', loadCommand('command-with-full-eject')]
 			]);
 			const helper = getHelper();
 			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves({commandsMap: commandMap});
@@ -150,20 +153,20 @@ describe('eject command', () => {
 				assert.isTrue(consoleLogStub.secondCall.calledWith(` ${yellow('creating')} .${sep}config${sep}test-group-test-eject${sep}file1`));
 				assert.isTrue(consoleLogStub.thirdCall.calledWith(` ${yellow('creating')} .${sep}config${sep}test-group-test-eject${sep}file2`));
 				assert.isTrue(mockFsExtra.copySync.calledTwice);
-			}).catch(() => {
+			}, () => {
 				assert.fail(null, null, 'moduleUnderTest.run should not have rejected promise');
 			});
 		});
 
 		it('should not copy files if no files are specified', () => {
 			const commandMap: CommandsMap = new Map<string, CommandWrapper>([
-				['apple', loadCommand('/command-with-nofile-eject')]
+				['apple', loadCommand('command-with-nofile-eject')]
 			]);
 			const helper = getHelper();
 			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves({commandsMap: commandMap});
 			return moduleUnderTest.run(helper, {}).then(() => {
 				assert.isTrue(mockFsExtra.copySync.notCalled);
-			}).catch(() => {
+			}, () => {
 				assert.fail(null, null, 'moduleUnderTest.run should not have rejected promise');
 			});
 		});
@@ -172,7 +175,7 @@ describe('eject command', () => {
 	describe('eject hints', () => {
 		it('should show hints when supplied', () => {
 			const commandMap: CommandsMap = new Map<string, CommandWrapper>([
-				['apple', loadCommand('/command-with-hints')]
+				['apple', loadCommand('command-with-hints')]
 			]);
 			const helper = getHelper();
 			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves({commandsMap: commandMap});
@@ -183,7 +186,7 @@ describe('eject command', () => {
 				assert.isTrue(consoleLogStub.getCall(hintsCall).calledWith(underline('\nhints')), 'should underline hints');
 				assert.isTrue(consoleLogStub.getCall(hintsCall + 1).calledWith(' hint 1'), 'should show hint1');
 				assert.isTrue(consoleLogStub.getCall(hintsCall + 2).calledWith(' hint 2'), 'should show hint2');
-			}).catch(() => {
+			}, () => {
 				assert.fail(null, null, 'moduleUnderTest.run should not have rejected promise');
 			});
 		});
