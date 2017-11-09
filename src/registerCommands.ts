@@ -4,7 +4,7 @@ import { getGroupDescription, CommandsMap, CommandWrapper } from './command';
 import CommandHelper from './CommandHelper';
 import configurationHelperFactory from './configurationHelper';
 import HelperFactory from './Helper';
-import { CommandError } from '@dojo/interfaces/cli';
+import { CommandError } from './interfaces';
 import { YargsCommandNames } from './loadCommands';
 import { helpUsage, helpEpilog } from './text';
 

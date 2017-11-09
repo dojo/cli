@@ -1,4 +1,4 @@
-import { NpmPackage } from '@dojo/interfaces/cli';
+import { NpmPackage } from './interfaces';
 const cs: any = require('cross-spawn');
 
 function convertToInlineDependencies(dependencies: {[key: string]: string}): string[] {
