@@ -1,3 +1,5 @@
+import '@dojo/shim/main';
+
 import * as yargs from 'yargs';
 import updateNotifier from './updateNotifier';
 import registerCommands from './registerCommands';
