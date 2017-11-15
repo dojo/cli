@@ -1,6 +1,6 @@
 {
   "name": "@dojo/cli",
-  "version": "0.2.1-pre",
+  "version": "0.3.0-pre",
   "description": "Dojo 2 CLI utility",
   "homepage": "https://dojo.io",
   "bugs": {
@@ -32,10 +32,10 @@
     "typings.json"
   ],
   "peerDependencies": {
-    "@dojo/has": "./tarballs/dojo-has-0.1.1-beta.1.tgz",
-    "@dojo/shim": "./tarballs/dojo-shim-0.2.3-beta.1.tgz",
-    "@dojo/cli-create-app": "./tarballs/dojo-cli-create-app-0.1.1-beta.1.tgz",
-    "@dojo/core": "./tarballs/dojo-core-0.2.2-beta.1.tgz"
+    "@dojo/has": "./tarballs/dojo-has-0.2.0-beta.1.tgz",
+    "@dojo/shim": "./tarballs/dojo-shim-0.3.0-beta.1.tgz",
+    "@dojo/cli-create-app": "./tarballs/dojo-cli-create-app-0.3.0-beta.1.tgz",
+    "@dojo/core": "./tarballs/dojo-core-0.3.0-beta.1.tgz"
   },
   "dependencies": {
     "chalk": "^1.1.3",
