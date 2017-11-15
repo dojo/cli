@@ -34,10 +34,10 @@
   "peerDependencies": {
     "@dojo/has": "./tarballs/dojo-has-0.1.1-beta.1.tgz",
     "@dojo/shim": "./tarballs/dojo-shim-0.2.3-beta.1.tgz",
+    "@dojo/cli-create-app": "./tarballs/dojo-cli-create-app-0.1.1-beta.1.tgz",
     "@dojo/core": "./tarballs/dojo-core-0.2.2-beta.1.tgz"
   },
   "dependencies": {
-    "@dojo/cli-create-app": "~0.1.0",
     "chalk": "^1.1.3",
     "cliui": "^3.2.0",
     "cross-spawn": "^4.0.0",
@@ -52,6 +52,7 @@
     "yargs": "^5.0.0"
   },
   "devDependencies": {
+    "@dojo/interfaces": "./tarballs/dojo-interfaces-0.2.0-beta.1.tgz",
     "@dojo/loader": "./tarballs/dojo-loader-0.1.1-beta.1.tgz",
     "@types/chai": "^3.4.34",
     "@types/chalk": "^0.4.31",
