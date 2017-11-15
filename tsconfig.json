@@ -8,8 +8,7 @@
 		"sourceMap": true,
 		"strict": true,
 		"target": "es2016",
-		"noEmitHelpers": true,
-		"downlevelIteration": true,
+		"importHelpers": true,
 		"types": [ "intern", "sinon-as-promised" ]
 	},
 	"include": [
