@@ -31,7 +31,7 @@
     "typings.json"
   ],
   "dependencies": {
-    "@dojo/cli-create-app": "~0.1.0",
+    "@dojo/cli-create-app": "~0.2.0",
     "@dojo/core": "~0.2.1",
     "@dojo/has": "~0.1.0",
     "@dojo/shim": "~0.2.2",
