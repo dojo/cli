@@ -1,7 +1,7 @@
 import { red } from 'chalk';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
-import { ConfigurationHelper, Config } from './interfaces';
+import { ConfigurationHelper, Config } from '@dojo/interfaces/cli';
 const pkgDir = require('pkg-dir');
 
 const appPath = pkgDir.sync(process.cwd());

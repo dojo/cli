@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import * as detectIndent from 'detect-indent';
-import { Helper } from '../interfaces';
+import { Helper } from '@dojo/interfaces/cli';
 import { loadExternalCommands } from '../allCommands';
 import { white } from 'chalk';
 

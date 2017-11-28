@@ -1,6 +1,6 @@
 import { Argv } from 'yargs';
 import { ConfigurationHelperFactory } from './configurationHelper';
-import { CommandHelper, Helper } from './interfaces';
+import { CommandHelper, Helper } from '@dojo/interfaces/cli';
 
 /**
  * The Helper that is passed to each command's 'run' function. Provides
