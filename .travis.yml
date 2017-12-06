@@ -17,7 +17,7 @@ install:
 - travis_retry npm install
 script:
 - grunt
-- grunt intern:node --test-reporter
+- grunt intern:node --test-reporter --color
 - grunt uploadCoverage
 - grunt doc
 notifications:
