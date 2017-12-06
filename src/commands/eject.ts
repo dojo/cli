@@ -19,6 +19,10 @@ export interface EjectableCommandWrapper extends CommandWrapper {
 	eject(helper: Helper): EjectOutput;
 }
 
+function isEjectableCommandWrapper(object: CommandWrapper): object is EjectableCommandWrapper {
+	return typeof object.eject === 'function';
+}
+
 function register(options: OptionsHelper): void {}
 
 function copyFiles(commandName: string, { path, files }: FileCopyConfig): void {
@@ -40,7 +44,7 @@ async function run(helper: Helper, args: EjectArgs): Promise<any> {
 		name: 'eject',
 		message: 'Are you sure you want to eject (this is a permanent operation)?',
 		default: false
-	}).then((answer: { eject: boolean }) => {
+	}).then((answer) => {
 		if (!answer.eject) {
 			throw Error('Aborting eject');
 		}
@@ -51,18 +55,20 @@ async function run(helper: Helper, args: EjectArgs): Promise<any> {
 					devDependencies: {}
 				};
 
-				const toEject = [ ...commands.commandsMap.values() ].reduce((toEject: Set<CommandWrapper>, command) => {
-					command.eject && toEject.add(command);
+				const toEject = [ ...commands.commandsMap.values() ].reduce((toEject, command) => {
+					if (isEjectableCommandWrapper(command)) {
+						toEject.add(command);
+					}
 					return toEject;
-				}, new Set<CommandWrapper>());
+				}, new Set<EjectableCommandWrapper>());
 
 				if (toEject.size) {
 					const allHints: string[] = [];
-					[...toEject].forEach((command: EjectableCommandWrapper) => {
+					[...toEject].forEach((command) => {
 						const commandKey = `${command.group}-${command.name}`;
 						console.log(green('\nejecting ') + commandKey);
 
-						const { npm = {}, copy, hints }: EjectOutput = command.eject(helper);
+						const { npm = {}, copy = false, hints = false } = command.eject(helper);
 
 						deepAssign(npmPackages, npm);
 						copy && copyFiles(commandKey, copy);
@@ -70,12 +76,12 @@ async function run(helper: Helper, args: EjectArgs): Promise<any> {
 						configurationHelper.sandbox(command.group, command.name).set({ [ejectedKey]: true });
 					});
 
-					if (Object.keys(npmPackages.dependencies).length) {
+					if (Object.keys(npmPackages.dependencies || {}).length) {
 						console.log(underline('\nrunning npm install dependencies...'));
 						await installDependencies(npmPackages);
 					}
 
-					if (Object.keys(npmPackages.devDependencies).length) {
+					if (Object.keys(npmPackages.devDependencies || {}).length) {
 						console.log(underline('\nrunning npm install devDependencies...'));
 						await installDevDependencies(npmPackages);
 					}
