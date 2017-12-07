@@ -8,6 +8,7 @@ import './loadCommands';
 import './npmInstall';
 import './registerCommands';
 import './text';
+// import './template';
 import './updateNotifier';
 import './commands/eject';
 import './commands/init';

@@ -1,9 +1,10 @@
 const { registerSuite } = intern.getInterface('object');
 const { assert } = intern.getPlugin('chai');
 
+import { SinonStub, stub } from 'sinon';
+import * as mockery from 'mockery';
 import { getCommandsMap, GroupDef } from '../support/testHelper';
 import configurationHelperFactory from '../../src/configurationHelper';
-import commandHelperCtor from '../../src/CommandHelper';
 
 const groupDef: GroupDef = [
 	{
@@ -20,16 +21,31 @@ const groupDef: GroupDef = [
 ];
 let commandsMap: any;
 let commandHelper: any;
+const templateStub: SinonStub = stub();
+
 const context = {
 	'testKey': 'testValue'
 };
 
 registerSuite('CommandHelper', {
-	'beforeEach'() {
+	'before'() {
+		mockery.enable({warnOnUnregistered: false, useCleanCache: true});
+
+		mockery.registerMock('./template', {
+			'default': templateStub
+		});
+
 		commandsMap = getCommandsMap(groupDef);
+		const commandHelperCtor = require('../../src/CommandHelper').default;
 		commandHelper = new commandHelperCtor(commandsMap, context, configurationHelperFactory);
 	},
-
+	'beforeEach'() {
+		templateStub.reset();
+	},
+	'after'() {
+		mockery.deregisterAll();
+		mockery.disable();
+	},
 	tests: {
 		'Should set commandsMap and context'() {
 			assert.strictEqual(commandsMap, commandHelper._commandsMap);
@@ -93,6 +109,34 @@ registerSuite('CommandHelper', {
 			.catch(() => {
 				assert.fail(null, null, 'commandHelper.run should not have rejected promise');
 			});
+		},
+		'Should call template for each file in the config'() {
+			const testRenderData = {
+				'appName': 'testName'
+			};
+
+			const testFilesConfig = [
+				{ src: 'test/a', dest: 'dest/a' },
+				{ src: 'test/b', dest: 'dest/b' }
+			];
+
+			commandHelper.renderFiles(testFilesConfig, testRenderData);
+			assert.equal(2, templateStub.callCount);
+		},
+		'Should call template with the src and dest from config'() {
+			const testRenderData = {
+				'appName': 'testName'
+			};
+
+			const testFilesConfig = [
+				{ src: 'test/a', dest: 'dest/a' },
+				{ src: 'test/b', dest: 'dest/b' }
+			];
+
+			commandHelper.renderFiles(testFilesConfig, testRenderData);
+			const [ file1, file2 ] = testFilesConfig;
+			assert.isTrue(templateStub.firstCall.calledWithMatch(file1.src, file1.dest));
+			assert.isTrue(templateStub.secondCall.calledWithMatch(file2.src, file2.dest));
 		}
 	}
 });
