@@ -1,7 +1,7 @@
 {
 	"compilerOptions": {
 		"declaration": false,
-		"module": "umd",
+		"module": "commonjs",
 		"moduleResolution": "node",
 		"outDir": "_build/",
 		"removeComments": false,
