@@ -28,7 +28,8 @@ const context = {
 };
 
 registerSuite('CommandHelper', {
-	'before'() {
+	'beforeEach'() {
+		templateStub.reset();
 		mockery.enable({warnOnUnregistered: false, useCleanCache: true});
 
 		mockery.registerMock('./template', {
@@ -39,10 +40,8 @@ registerSuite('CommandHelper', {
 		const commandHelperCtor = require('../../src/CommandHelper').default;
 		commandHelper = new commandHelperCtor(commandsMap, context, configurationHelperFactory);
 	},
-	'beforeEach'() {
-		templateStub.reset();
-	},
-	'after'() {
+
+	'afterEach'() {
 		mockery.deregisterAll();
 		mockery.disable();
 	},
