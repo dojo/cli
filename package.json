@@ -32,6 +32,7 @@
   ],
   "dependencies": {
     "@dojo/cli-create-app": "~0.3.0",
+    "@dojo/cli-create-widget": "~0.1.0",
     "@dojo/core": "~0.3.0",
     "@dojo/has": "~0.1.1",
     "@dojo/shim": "~0.2.3",
