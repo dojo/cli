@@ -2,12 +2,18 @@ import * as yargs from 'yargs';
 import { CommandsMap } from './command';
 import { ConfigurationHelperFactory } from './configurationHelper';
 import HelperFactory from './Helper';
+import template from './template';
 import { CommandHelper, Command } from '@dojo/interfaces/cli';
 
 function getCommand(commandsMap: CommandsMap, group: string, commandName?: string): Command | undefined {
 	const commandKey = commandName ? `${group}-${commandName}` : group;
 	return commandsMap.get(commandKey);
 }
+
+export type RenderFilesConfig = {
+	src: string;
+	dest: string;
+}[];
 
 /**
  * CommandHelper class which is passed into each command's run function
@@ -22,6 +28,12 @@ export class SingleCommandHelper implements CommandHelper {
 		this._commandsMap = commandsMap;
 		this._context = context;
 		this._configurationFactory = configurationHelperFactory;
+	}
+
+	renderFiles(renderFilesConfig: RenderFilesConfig, renderData: any) {
+		renderFilesConfig.forEach(({ src, dest }) => {
+			template(src, dest, renderData);
+		});
 	}
 
 	run(group: string, commandName?: string, args?: yargs.Argv): Promise<any> {
