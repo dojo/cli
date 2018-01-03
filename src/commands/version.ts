@@ -2,7 +2,7 @@ import { CommandsMap } from '../command';
 import { Helper, OptionsHelper } from '@dojo/interfaces/cli';
 import { join } from 'path';
 import { Argv } from 'yargs';
-import { yellow } from 'chalk';
+import chalk from 'chalk';
 import allCommands from '../allCommands';
 const david = require('david');
 const pkgDir = require('pkg-dir');
@@ -13,7 +13,7 @@ You are currently running @dojo/cli {version}
 `;
 export const versionNoRegisteredCommands = `
 There are no registered commands available.`;
-export const versionNoVersion = yellow('package.json missing');
+export const versionNoVersion = chalk.yellow('package.json missing');
 export const versionRegisteredCommands = `
 The currently installed groups are:
 `;
@@ -75,7 +75,7 @@ function areCommandsOutdated(moduleVersions: ModuleVersion[]): Promise<any> {
 			resolve(moduleVersions.map((command) => {
 				const canBeUpdated = deps[command.name];    // david returns all deps that can be updated
 				const versionStr = canBeUpdated ?
-					`${command.version} ${yellow(`(can be updated to ${deps[command.name].latest})`)}.` :
+					`${command.version} ${chalk.yellow(`(can be updated to ${deps[command.name].latest})`)}.` :
 					`${command.version} (on latest stable version).`;
 				return {
 					name: command.name,
