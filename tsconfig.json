@@ -3,6 +3,7 @@
 		"declaration": false,
 		"module": "commonjs",
 		"moduleResolution": "node",
+		"noUnusedLocals": true,
 		"outDir": "_build/",
 		"removeComments": false,
 		"sourceMap": true,
