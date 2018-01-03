@@ -2,8 +2,7 @@ const { beforeEach, afterEach, describe, it } = intern.getInterface('bdd');
 const { assert } = intern.getPlugin('chai');
 
 import MockModule from '../support/MockModule';
-const sap = require('sinon-as-promised');
-const sinon = new sap(Promise);
+import * as sinon from 'sinon';
 
 describe('AllCommands', () => {
 
