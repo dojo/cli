@@ -8,7 +8,6 @@ import * as sinon from 'sinon';
 import { CommandsMap, CommandWrapper } from '../../../src/command';
 import MockModule from '../../support/MockModule';
 import { getCommandWrapperWithConfiguration } from '../../support/testHelper';
-require('sinon-as-promised')(Promise);
 
 const { yellow, underline } = chalk;
 

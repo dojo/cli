@@ -61,7 +61,6 @@
     "@types/mockery": "^1.4.29",
     "@types/node": "^8.5.2",
     "@types/sinon": "^4.1.2",
-    "@types/sinon-as-promised": "^4.0.5",
     "@types/update-notifier": "^1.0.1",
     "@types/yargs": "^10.0.0",
     "codecov.io": "0.1.6",
@@ -71,7 +70,6 @@
     "intern": "~4.1.0",
     "mockery": "^2.1.0",
     "sinon": "^4.1.3",
-    "sinon-as-promised": "^4.0.2",
     "typescript": "~2.6.1"
   }
 }
