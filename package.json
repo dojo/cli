@@ -49,7 +49,7 @@
     "yargs": "^10.0.3"
   },
   "devDependencies": {
-    "@dojo/interfaces": "file:dojo-interfaces-0.2.2-alpha.1.tgz",
+    "@dojo/interfaces": "file:tarballs/dojo-interfaces-0.2.2.tgz",
     "@dojo/loader": "~0.1.1",
     "@types/detect-indent": "^5.0.0",
     "@types/ejs": "^2.3.33",
