@@ -40,6 +40,7 @@
     "cross-spawn": "^5.1.0",
     "david": "^11.0.0",
     "detect-indent": "^5.0.0",
+    "ejs": "^2.5.7",
     "fs-extra": "^5.0.0",
     "globby": "^7.1.1",
     "inquirer": "^4.0.2",
