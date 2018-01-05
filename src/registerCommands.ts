@@ -7,6 +7,7 @@ import HelperFactory from './Helper';
 import { CommandError } from './interfaces';
 import { YargsCommandNames } from './loadCommands';
 import { helpUsage, helpEpilog } from './text';
+import { NpmPackageDetails } from './interfaces';
 
 /**
  * General purpose error handler for commands. If the command has an exit code, it is considered
@@ -148,7 +149,7 @@ function registerAliases(yargs: Argv, helper: HelperFactory, commandOptions: Set
  * @param commandsMap The map of composite keys to commands
  * @param yargsCommandNames Map of groups and names to composite keys
  */
-export default function(yargs: Argv, commandsMap: CommandsMap, yargsCommandNames: YargsCommandNames): void {
+export default function(yargs: Argv, commandsMap: CommandsMap, yargsCommandNames: YargsCommandNames, installableCommands: NpmPackageDetails[] = []): void {
 	const helperContext = {};
 
 	const commandHelper = new CommandHelper(commandsMap, helperContext, configurationHelperFactory);
@@ -161,7 +162,7 @@ export default function(yargs: Argv, commandsMap: CommandsMap, yargsCommandNames
 
 	yargs.demand(1, '')
 		.usage(helpUsage)
-		.epilog(helpEpilog)
+		.epilog(helpEpilog(installableCommands))
 		.help('h')
 		.alias('h', 'help')
 		.strict()
