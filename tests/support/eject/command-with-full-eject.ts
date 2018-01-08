@@ -21,7 +21,8 @@ export function eject(helper: any, npm: any, files: any) {
 			path: 'testPath',
 			files: [
 				'./file1',
-				'./file2'
+				'./file2',
+				'/file3'
 			]
 		}
 	};

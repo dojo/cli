@@ -152,7 +152,8 @@ describe('eject command', () => {
 			return moduleUnderTest.run(helper, {}).then(() => {
 				assert.isTrue(consoleLogStub.secondCall.calledWith(` ${yellow('creating')} .${sep}config${sep}test-group-test-eject${sep}file1`));
 				assert.isTrue(consoleLogStub.thirdCall.calledWith(` ${yellow('creating')} .${sep}config${sep}test-group-test-eject${sep}file2`));
-				assert.isTrue(mockFsExtra.copySync.calledTwice);
+				assert.isTrue(consoleLogStub.getCall(3).calledWith(` ${yellow('creating')} .${sep}config${sep}test-group-test-eject${sep}file3`));
+				assert.isTrue(mockFsExtra.copySync.calledThrice);
 			}, () => {
 				assert.fail(null, null, 'moduleUnderTest.run should not have rejected promise');
 			});
