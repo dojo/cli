@@ -224,7 +224,7 @@ function run(helper: Helper, args: VersionArgs): Promise<any> {
 		console.log('Fetching latest version information...');
 	}
 
-	return allCommands()
+	return allCommands([])
 		.then((commands) => {
 			return createVersionsString(commands.commandsMap, checkOutdated);
 		})

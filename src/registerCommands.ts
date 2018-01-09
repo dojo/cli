@@ -149,7 +149,7 @@ function registerAliases(yargs: Argv, helper: HelperFactory, commandOptions: Set
  * @param commandsMap The map of composite keys to commands
  * @param yargsCommandNames Map of groups and names to composite keys
  */
-export default function(yargs: Argv, commandsMap: CommandsMap, yargsCommandNames: YargsCommandNames, installableCommands: NpmPackageDetails[] = []): void {
+export default function(yargs: Argv, commandsMap: CommandsMap, yargsCommandNames: YargsCommandNames): void {
 	const helperContext = {};
 
 	const commandHelper = new CommandHelper(commandsMap, helperContext, configurationHelperFactory);
@@ -162,7 +162,7 @@ export default function(yargs: Argv, commandsMap: CommandsMap, yargsCommandNames
 
 	yargs.demand(1, '')
 		.usage(helpUsage)
-		.epilog(helpEpilog(installableCommands))
+		.epilog(helpEpilog)
 		.help('h')
 		.alias('h', 'help')
 		.strict()

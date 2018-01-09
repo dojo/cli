@@ -7,7 +7,7 @@ const INITIAL_TIMEOUT = 3000;
 export default async function(name: string) {
 	const conf = new Configstore(name);
 
-	let commands = conf.get('commands') || [];
+	let commands: NpmPackageDetails[] = conf.get('commands') || [];
 	if (!commands.length) {
 		commands = await getLatestCommands(name, conf);
 	}
@@ -15,8 +15,8 @@ export default async function(name: string) {
 	return commands;
 }
 
-async function getLatestCommands(packageName: string, conf: Configstore) {
-	let commands;
+async function getLatestCommands(packageName: string, conf: Configstore): Promise<NpmPackageDetails[]> {
+	let commands: NpmPackageDetails[] = [];
 
 	try {
 		commands = await search(INITIAL_TIMEOUT);
@@ -31,6 +31,7 @@ async function getLatestCommands(packageName: string, conf: Configstore) {
 }
 
 async function search(timeout: number = 0): Promise<NpmPackageDetails[]> {
+	console.log('FETCHING');
 	return execa('npm', ['search', '@dojo', 'cli-', '--json'], { timeout }).then(result => {
 		const commands = JSON.parse(result.stdout);
 		return commands.filter(({ name }: NpmPackageDetails) => {

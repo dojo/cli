@@ -11,11 +11,11 @@ export type LoadedCommands = {
 	yargsCommandNames: YargsCommandNames
 };
 
-function setDefaultGroup(commandsMap: CommandsMap, commandName: string, commandWrapper: CommandWrapper) {
+export function setDefaultGroup(commandsMap: CommandsMap, commandName: string, commandWrapper: CommandWrapper) {
 	commandsMap.set(commandName, commandWrapper);
 }
 
-function isEjected(groupName: string, command: string): boolean {
+export function isEjected(groupName: string, command: string): boolean {
 	const config: any = configurationHelper.sandbox(groupName, command).get();
 	return config && config['ejected'];
 }
