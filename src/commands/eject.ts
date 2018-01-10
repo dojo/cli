@@ -1,5 +1,5 @@
 import { copySync } from 'fs-extra';
-import { resolve } from 'path';
+import { basename, isAbsolute, resolve } from 'path';
 import { Argv } from 'yargs';
 import { green, underline, yellow } from 'chalk';
 import * as inquirer from 'inquirer';
@@ -29,8 +29,9 @@ function copyFiles(commandName: string, { path, files }: FileCopyConfig): void {
 	const cwd = process.cwd();
 	if (path && files && files.length > 0) {
 		files.forEach((fileName) => {
-			const sourcePath = resolve(path, fileName);
-			const destPath = resolve(cwd, copiedFilesDir, commandName, fileName);
+			const sourcePath = isAbsolute(fileName) ? fileName : resolve(path, fileName);
+			const destFileName = isAbsolute(fileName) ? basename(fileName) : fileName;
+			const destPath = resolve(cwd, copiedFilesDir, commandName, destFileName);
 
 			console.log(` ${yellow('creating')} ${destPath.replace(cwd, '.')}`);
 			copySync(sourcePath, destPath);
