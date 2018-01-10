@@ -3,7 +3,7 @@ import { join } from 'path';
 import * as detectIndent from 'detect-indent';
 import { Helper } from '@dojo/interfaces/cli';
 import { loadExternalCommands } from '../allCommands';
-import { white } from 'chalk';
+import chalk from 'chalk';
 
 const pkgDir = require('pkg-dir');
 
@@ -31,7 +31,7 @@ async function run(helper: Helper, args: {}) {
 	}
 
 	writeFileSync(dojoRcPath, JSON.stringify(json, null, indent));
-	console.log(white(`Successfully wrote .dojorc to ${dojoRcPath}`));
+	console.log(chalk.white(`Successfully wrote .dojorc to ${dojoRcPath}`));
 }
 
 export default {

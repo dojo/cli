@@ -1,6 +1,6 @@
-import { bold } from 'chalk';
+import chalk from 'chalk';
 
-export const helpUsage = `${bold('dojo help')}
+export const helpUsage = `${chalk.bold('dojo help')}
 
 Usage: dojo <group> <command> [options]
 

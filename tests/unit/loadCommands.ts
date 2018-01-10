@@ -144,8 +144,8 @@ registerSuite('loadCommands', {
 					'./configurationHelper'
 				]);
 				const configHelper = mockModule.getMock('./configurationHelper').default;
-				testSandbox.stub(configHelper, 'sandbox', () => {
-					return { get: testSandbox.stub().returns({ ejected: true }) };
+				testSandbox.stub(configHelper, 'sandbox').returns({
+					get: testSandbox.stub().returns({ ejected: true })
 				});
 				mockedLoadCommands = mockModule.getModuleUnderTest().loadCommands;
 			},

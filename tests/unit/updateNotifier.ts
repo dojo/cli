@@ -6,7 +6,7 @@ import { SinonStub, stub } from 'sinon';
 
 let updateNotifier: any;
 const notifyStub: SinonStub = stub();
-const updateNotifierStub: SinonStub = stub().returns({ 'notify': notifyStub });
+const updateNotifierStub: SinonStub = stub();
 const testPkg = { 'testKey': 'testValue' };
 const testInterval = 100;
 
@@ -23,6 +23,7 @@ registerSuite('updateNotifier', {
 	'beforeEach'() {
 		notifyStub.reset();
 		updateNotifierStub.reset();
+		updateNotifierStub.returns({ 'notify': notifyStub });
 	},
 	'after'() {
 		mockery.deregisterAll();

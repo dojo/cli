@@ -2,9 +2,7 @@ const { beforeEach, afterEach, describe, it } = intern.getInterface('bdd');
 const { assert } = intern.getPlugin('chai');
 
 import MockModule from '../support/MockModule';
-import * as OrigSinon from 'sinon';
-const sap = require('sinon-as-promised');
-const sinon = new sap(Promise);
+import * as sinon from 'sinon';
 import { join, resolve as pathResolve } from 'path';
 
 describe('cli main module', () => {
@@ -93,7 +91,7 @@ describe('cli main module', () => {
 
 			it('catches runtime error', () => {
 				assert.throw(mockUpdate.default, Error, errMessage);
-				assert.equal((<OrigSinon.SinonStub> console.log).args[0][0], `Commands are not available: Error: ${errMessage}`);
+				assert.equal((console.log as sinon.SinonStub).args[0][0], `Commands are not available: Error: ${errMessage}`);
 			});
 		});
 

@@ -3,7 +3,6 @@ const { assert } = intern.getPlugin('chai');
 
 import MockModule from '../../support/MockModule';
 import * as sinon from 'sinon';
-require('sinon-as-promised')(Promise);
 
 import { join, resolve as pathResolve } from 'path';
 
