@@ -14,3 +14,4 @@ import './commands/eject';
 import './commands/init';
 import './commands/version';
 import './bin/dojo';
+import './interfaces';
