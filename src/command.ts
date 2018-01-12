@@ -1,4 +1,4 @@
-import { Command } from '@dojo/interfaces/cli';
+import { Command } from './interfaces';
 const cliui = require('cliui');
 
 export interface CommandWrapper extends Command {
