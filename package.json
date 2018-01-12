@@ -50,7 +50,6 @@
     "yargs": "^5.0.0"
   },
   "devDependencies": {
-    "@types/assertion-error": "~1.0.30",
     "@dojo/interfaces": "~0.2.0",
     "@dojo/loader": "~0.1.1",
     "@types/chalk": "^0.4.31",
@@ -67,7 +66,6 @@
     "@types/sinon-as-promised": "^4.0.5",
     "@types/update-notifier": "^1.0.1",
     "@types/yargs": "^8.0.2",
-    "assertion-error": "^1.0.2",
     "codecov.io": "0.1.6",
     "glob": "^7.0.3",
     "grunt": "~1.0.1",
