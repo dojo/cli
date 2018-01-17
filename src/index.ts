@@ -20,7 +20,7 @@ async function init() {
 		const packageJsonFilePath = join(packagePath, 'package.json');
 		const packageJson = <any> require(packageJsonFilePath);
 
-		updateNotifier(packageJson, 0);
+		updateNotifier(packageJson);
 
 		const availableCommands = await installableCommands(packageJson.name);
 		const allCommands = await commandLoader();

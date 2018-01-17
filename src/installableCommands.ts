@@ -1,4 +1,6 @@
 import * as execa from 'execa';
+import { join } from 'path';
+const cs: any = require('cross-spawn');
 import { NpmPackageDetails } from './interfaces';
 import * as Configstore from 'configstore';
 import {
@@ -14,6 +16,7 @@ import {
 import chalk from 'chalk';
 
 const INITIAL_TIMEOUT = 3000;
+const ONE_DAY = 1000 * 60 * 60 * 24;
 
 export default async function(name: string) {
 	const conf = new Configstore(name);
@@ -21,29 +24,31 @@ export default async function(name: string) {
 	let commands: NpmPackageDetails[] = conf.get('commands') || [];
 	if (!commands.length) {
 		commands = await getLatestCommands(name, conf);
+	} else {
+		const lastUpdated = conf.get('lastUpdated');
+		if (Date.now() - lastUpdated >= ONE_DAY) {
+			cs.spawn(process.execPath, [join(__dirname, 'detachedCheckForNewCommands.js'), JSON.stringify({ name }) ], {
+				detached: true,
+				stdio: 'ignore'
+			}).unref();
+		}
 	}
 
 	return commands;
 }
 
-async function getLatestCommands(packageName: string, conf: Configstore): Promise<NpmPackageDetails[]> {
+export async function getLatestCommands(packageName: string, conf: Configstore): Promise<NpmPackageDetails[]> {
 	let commands: NpmPackageDetails[] = [];
 
-	try {
-		commands = await search(INITIAL_TIMEOUT);
-		conf.set('commands', commands);
-		conf.set('lastUpdated', Date.now());
-	}
-	catch (error) {
-		// console.log('\nProcess timed out when fetching command list');
-	}
+	commands = await search(INITIAL_TIMEOUT);
+	conf.set('commands', commands);
+	conf.set('lastUpdated', Date.now());
 
 	return commands;
 }
 
 async function search(timeout: number = 0): Promise<NpmPackageDetails[]> {
-	console.log('FETCHING');
-	return execa('npm', ['search', '@dojo', 'cli-', '--json'], { timeout }).then(result => {
+	return execa('npm', ['search', '@dojo', 'cli-', '--json', '--searchstaleness', '0'], { timeout }).then(result => {
 		const commands = JSON.parse(result.stdout);
 		return commands.filter(({ name }: NpmPackageDetails) => {
 			return name !== '@dojo/cli';
