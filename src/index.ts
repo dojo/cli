@@ -32,5 +32,5 @@ async function init() {
 	}
 }
 
-process.env.DOJO_CLI = 'true';
+process.env.DOJO_ENV = 'cli';
 init();
