@@ -7,7 +7,6 @@ import HelperFactory from './Helper';
 import { CommandError } from './interfaces';
 import { YargsCommandNames } from './loadCommands';
 import { helpUsage, helpEpilog } from './text';
-import { NpmPackageDetails } from './interfaces';
 
 /**
  * General purpose error handler for commands. If the command has an exit code, it is considered

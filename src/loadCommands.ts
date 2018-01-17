@@ -66,7 +66,10 @@ export async function loadCommands(paths: string[], load: (path: string) => Comm
 			try {
 				const commandWrapper = load(path);
 				const {group, name} = commandWrapper;
-				const compositeKey = `${group}-${name}`;
+				let compositeKey = group;
+				if (name) {
+					compositeKey = `${group}-${name}`;
+				}
 
 				if (!isEjected(group, name)) {
 					if (!commandsMap.has(group)) {
