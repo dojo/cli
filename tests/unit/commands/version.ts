@@ -6,7 +6,7 @@ import * as sinon from 'sinon';
 
 import { join, resolve as pathResolve } from 'path';
 
-import { CommandsMap, CommandWrapper } from '../../../src/command';
+import { CommandsMap, CommandWrapper } from '../../../src/interfaces';
 import { getCommandWrapperWithConfiguration } from '../../support/testHelper';
 const validPackageInfo: any =  require('../../support/valid-package/package.json');
 const anotherValidPackageInfo: any = require('../../support/another-valid-package/package.json');

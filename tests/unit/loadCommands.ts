@@ -3,7 +3,7 @@ const { assert } = intern.getPlugin('chai');
 
 import { join, resolve as pathResolve } from 'path';
 import { stub, SinonStub, sandbox } from 'sinon';
-import { Config } from '../../src/config';
+import { CliConfig } from '../../src/interfaces';
 import MockModule from '../support/MockModule';
 import { getCommandWrapper, getYargsStub } from '../support/testHelper';
 import {
@@ -17,19 +17,19 @@ let yargsStub: any;
 let commandWrapper1: any;
 let commandWrapper2: any;
 let consoleStub: SinonStub;
-let goodConfig: Config;
+let goodConfig: CliConfig;
 let mockModule: MockModule;
 let mockedLoadCommands: any;
 let testSandbox: any;
 
-function config(invalid = false): Config {
+function config(invalid = false): CliConfig {
 	// tests are run in package-dir (from cli, using grunt test) - FIX to use pkg-dir
-	const config: Config = {
+	const config: CliConfig = {
 		searchPaths: [ '_build/tests/support' ],
 		searchPrefixes: [ 'test-prefix' ],
 		builtInCommandLocation: join(pathResolve('.'), '/_build/tests/support/commands')
 	};
-	const badConfig: Config = {
+	const badConfig: CliConfig = {
 		searchPaths: [ 'just/garbage', 'yep/really/bad/paths/here' ],
 		searchPrefixes: [ 'bad-prefix' ],
 		builtInCommandLocation : 'dirThatDoesNotExist'

@@ -5,7 +5,7 @@ import chalk from 'chalk';
 import { join, resolve as pathResolve, sep } from 'path';
 import * as sinon from 'sinon';
 
-import { CommandsMap, CommandWrapper } from '../../../src/command';
+import { CommandsMap, CommandWrapper } from '../../../src/interfaces';
 import MockModule from '../../support/MockModule';
 import { getCommandWrapperWithConfiguration } from '../../support/testHelper';
 

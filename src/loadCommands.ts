@@ -1,15 +1,7 @@
 import * as globby from 'globby';
 import { resolve as pathResolve, join } from 'path';
-import { CommandsMap, CommandWrapper } from './command';
-import { Config } from './config';
+import { CliConfig, CommandsMap, CommandWrapper, LoadedCommands, YargsCommandNames } from './interfaces';
 import configurationHelper from './configurationHelper';
-
-export type YargsCommandNames = Map<string, Set<string>>;
-
-export type LoadedCommands = {
-	commandsMap: CommandsMap,
-	yargsCommandNames: YargsCommandNames
-};
 
 export function setDefaultGroup(commandsMap: CommandsMap, commandName: string, commandWrapper: CommandWrapper) {
 	commandsMap.set(commandName, commandWrapper);
@@ -26,7 +18,7 @@ export function isEjected(groupName: string, command: string): boolean {
  * @param config
  * @returns {Promise<string []>} the paths of all installed commands
  */
-export async function enumerateInstalledCommands (config: Config): Promise <string []> {
+export async function enumerateInstalledCommands (config: CliConfig): Promise <string []> {
 	const { searchPrefixes } = config;
 	const globPaths = searchPrefixes.reduce((globPaths: string[], key) => {
 		return globPaths.concat(config.searchPaths.map((depPath) => pathResolve(depPath, `${key}-*`)));
@@ -39,7 +31,7 @@ export async function enumerateInstalledCommands (config: Config): Promise <stri
  * @param config
  * @returns {Promise<string []>} the paths of all builtIn commands
  */
-export async function enumerateBuiltInCommands (config: Config): Promise <string []> {
+export async function enumerateBuiltInCommands (config: CliConfig): Promise <string []> {
 	const builtInCommandParentDirGlob = join(config.builtInCommandLocation, '/*.js');
 	return globby(builtInCommandParentDirGlob, { ignore: '**/*.map' });
 }

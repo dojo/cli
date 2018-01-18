@@ -1,5 +1,4 @@
-import { CommandsMap } from '../command';
-import { Helper, OptionsHelper } from '../interfaces';
+import { Helper, OptionsHelper, CommandsMap } from '../interfaces';
 import { join } from 'path';
 import { Argv } from 'yargs';
 import chalk from 'chalk';

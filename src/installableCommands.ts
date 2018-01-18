@@ -1,24 +1,15 @@
 import * as execa from 'execa';
 import { join } from 'path';
 const cs: any = require('cross-spawn');
-import { NpmPackageDetails } from './interfaces';
+import { NpmPackageDetails, LoadedCommands,	YargsCommandNames, CommandsMap, CommandWrapper } from './interfaces';
 import * as Configstore from 'configstore';
-import {
-	LoadedCommands,
-	YargsCommandNames,
-	isEjected,
-	setDefaultGroup
-} from './loadCommands';
-import {
-	CommandsMap,
-	CommandWrapper }
-	from './command';
+import { isEjected, setDefaultGroup } from './loadCommands';
 import chalk from 'chalk';
 
 const INITIAL_TIMEOUT = 3000;
 const ONE_DAY = 1000 * 60 * 60 * 24;
 
-export default async function(name: string) {
+export default async function(name: string): Promise<NpmPackageDetails[]> {
 	const conf = new Configstore(name);
 
 	let commands: NpmPackageDetails[] = conf.get('commands') || [];

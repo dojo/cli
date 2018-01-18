@@ -4,8 +4,7 @@ const { assert } = intern.getPlugin('chai');
 import MockModule from '../../support/MockModule';
 import * as sinon from 'sinon';
 
-import { LoadedCommands } from '../../../src/loadCommands';
-import { CommandsMap, CommandWrapper } from '../../../src/command';
+import { CommandsMap, CommandWrapper, LoadedCommands } from '../../../src/interfaces';
 import { getCommandWrapperWithConfiguration } from '../../support/testHelper';
 
 describe('cli .bin', () => {

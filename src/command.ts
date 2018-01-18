@@ -1,13 +1,5 @@
-import { Command } from './interfaces';
+import { Command, CommandWrapper, CommandsMap } from './interfaces';
 const cliui = require('cliui');
-
-export interface CommandWrapper extends Command {
-	name: string;
-	group: string;
-	path: string;
-}
-
-export type CommandsMap = Map<string, CommandWrapper>;
 
 /**
  * Function to create a loader instance, this allows the config to be injected
