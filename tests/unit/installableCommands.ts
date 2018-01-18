@@ -111,6 +111,12 @@ describe('installableCommands', () => {
 		assert.isTrue(yargsCommandNames.get('test').has('test-foo'));
 	});
 
+	it('does not generate duplicate command promps', () => {
+		const { commandsMap, yargsCommandNames } = moduleUnderTest.createInstallableCommandPrompts([ testCommandDetails, testCommandDetails ]);
+		assert.equal(commandsMap.size, 2);
+		assert.equal(yargsCommandNames.size, 1);
+	});
+
 	it('does not create command prompts for ejected commands', () => {
 		configHelperGetStub.returns({ ejected: true });
 		const { commandsMap, yargsCommandNames } = moduleUnderTest.createInstallableCommandPrompts([ testCommandDetails ]);
