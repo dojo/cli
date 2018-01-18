@@ -15,6 +15,8 @@ describe('installableCommands', () => {
 	let mockConfigStore: any;
 	let mockConfigStoreGet: sinon.SinonStub;
 	let mockConfigStoreSet: sinon.SinonStub;
+	let mockConfigurationHelper: any;
+	let configHelperGetStub: sinon.SinonStub;
 	let mockCrossSpawn: any;
 	let mockExeca: any;
 	const ONE_DAY = 1000 * 60 * 60 * 24;
@@ -23,6 +25,11 @@ describe('installableCommands', () => {
 		description: 'testDescription',
 		version: 'testVersion'
 	};
+	const testCommandDetails2 = {
+		name: '@dojo/cli-test-foo',
+		description: 'testDescription2',
+		version: 'testVersion2'
+	};
 
 	beforeEach(() => {
 		sandbox = sinon.sandbox.create();
@@ -30,7 +37,9 @@ describe('installableCommands', () => {
 		mockModule.dependencies([
 			'execa',
 			'cross-spawn',
-			'configstore']);
+			'configstore',
+			'./configurationHelper'
+		]);
 
 		mockConfigStore = mockModule.getMock('configstore');
 		mockConfigStoreGet = sinon.stub();
@@ -44,12 +53,20 @@ describe('installableCommands', () => {
 
 		mockCrossSpawn = mockModule.getMock('cross-spawn');
 		mockCrossSpawn.ctor.returns({
-			unref: sinon.stub()
+			unref: sandbox.stub()
 		});
 
 		mockExeca = mockModule.getMock('execa');
 		mockExeca.ctor.resolves({ stdout: '[]' });
+
+		mockConfigurationHelper = mockModule.getMock('./configurationHelper').default;
+		configHelperGetStub = sandbox.stub().returns({ ejected: false });
+		sandbox.stub(mockConfigurationHelper, 'sandbox').returns({
+			get: configHelperGetStub
+		});
+
 		moduleUnderTest = mockModule.getModuleUnderTest();
+
 		sandbox.stub(console, 'log');
 	});
 
@@ -82,13 +99,23 @@ describe('installableCommands', () => {
 	});
 
 	it('creates installable command prompts', () => {
-		const { commandsMap, yargsCommandNames } = moduleUnderTest.createInstallableCommandPrompts([ testCommandDetails ]);
+		const { commandsMap, yargsCommandNames } = moduleUnderTest.createInstallableCommandPrompts([ testCommandDetails, testCommandDetails2 ]);
+		assert.equal(commandsMap.size, 3);
 		assert.isTrue(commandsMap.has('test'));
 		assert.equal(commandsMap.get('test').name, 'command');
 		assert.equal(commandsMap.get('test').group, 'test');
 
+		assert.equal(yargsCommandNames.size, 1);
 		assert.isTrue(yargsCommandNames.has('test'));
 		assert.isTrue(yargsCommandNames.get('test').has('test-command'));
+		assert.isTrue(yargsCommandNames.get('test').has('test-foo'));
+	});
+
+	it('does not create command prompts for ejected commands', () => {
+		configHelperGetStub.returns({ ejected: true });
+		const { commandsMap, yargsCommandNames } = moduleUnderTest.createInstallableCommandPrompts([ testCommandDetails ]);
+		assert.equal(commandsMap.size, 0);
+		assert.equal(yargsCommandNames.size, 0);
 	});
 
 	it('shows installation instructions for installable commands', () => {
