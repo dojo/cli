@@ -1,6 +1,6 @@
 import * as execa from 'execa';
 import { join } from 'path';
-const cs: any = require('cross-spawn');
+const spawn: any = require('cross-spawn');
 import { NpmPackageDetails, LoadedCommands,	YargsCommandNames, CommandsMap, CommandWrapper } from './interfaces';
 import * as Configstore from 'configstore';
 import { isEjected, setDefaultGroup } from './loadCommands';
@@ -18,7 +18,7 @@ export default async function(name: string): Promise<NpmPackageDetails[]> {
 	} else {
 		const lastUpdated = conf.get('lastUpdated');
 		if (Date.now() - lastUpdated >= ONE_DAY) {
-			cs.spawn(process.execPath, [join(__dirname, 'detachedCheckForNewCommands.js'), JSON.stringify({ name }) ], {
+			spawn(process.execPath, [join(__dirname, 'detachedCheckForNewCommands.js'), JSON.stringify({ name }) ], {
 				detached: true,
 				stdio: 'ignore'
 			}).unref();
