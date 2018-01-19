@@ -101,7 +101,6 @@ describe('installableCommands', () => {
 	it('creates installable command prompts', () => {
 		const { commandsMap, yargsCommandNames } = moduleUnderTest.createInstallableCommandPrompts([ testCommandDetails, testCommandDetails2 ]);
 		assert.equal(commandsMap.size, 3);
-		assert.isTrue(commandsMap.has('test'));
 		assert.equal(commandsMap.get('test').name, 'command');
 		assert.equal(commandsMap.get('test').group, 'test');
 
