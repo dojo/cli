@@ -12,7 +12,8 @@
 	],
 
 	"coverage": [
-		"./_build/src/**/*.js"
+		"./_build/src/**/*.js",
+		"!./_build/src/detachedCheckForNewCommands.js"
 	],
 
 	"configs": {
