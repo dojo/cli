@@ -38,8 +38,8 @@ export async function getLatestCommands(packageName: string, conf: Configstore):
 }
 
 async function search(timeout: number = 0): Promise<NpmPackageDetails[] | undefined> {
-	const { stdout } = await execa('npm', ['search', '@dojo', 'cli-', '--json', '--searchstaleness', '0'], { timeout });
 	try {
+		const { stdout } = await execa('npm', ['search', '@dojo', 'cli-', '--json', '--searchstaleness', '0'], { timeout });
 		const commands = JSON.parse(stdout);
 		return commands.filter(({ name }: NpmPackageDetails) => {
 			return name !== '@dojo/cli';
