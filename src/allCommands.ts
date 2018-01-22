@@ -1,9 +1,9 @@
 import {
 	loadCommands,
 	enumerateInstalledCommands,
-	enumerateBuiltInCommands,
-	LoadedCommands
+	enumerateBuiltInCommands
 } from './loadCommands';
+import { LoadedCommands } from './interfaces';
 import {
 	initCommandLoader,
 	createBuiltInCommandLoader }

@@ -1,4 +1,4 @@
-import {CommandWrapper} from '../../src/command';
+import {CommandWrapper} from '../../src/interfaces';
 import { stub, spy } from 'sinon';
 
 export type GroupDef = [{

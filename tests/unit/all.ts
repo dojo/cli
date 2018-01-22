@@ -4,6 +4,7 @@ import './CommandHelper';
 import './configurationHelper';
 import './config';
 import './index';
+import './installableCommands';
 import './loadCommands';
 import './npmInstall';
 import './registerCommands';

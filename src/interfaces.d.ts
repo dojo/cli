@@ -1,5 +1,17 @@
 import { Argv, Options } from 'yargs';
 
+export interface NpmPackageDetails {
+	name: string;
+	description: string;
+	version: string;
+}
+
+export type CliConfig = {
+	searchPaths: string[],
+	searchPrefixes: string[],
+	builtInCommandLocation: string
+};
+
 export interface Config {
 	[key: string]: any;
 }
@@ -81,3 +93,18 @@ export interface CommandError {
 	exitCode?: number;
 	message: string;
 }
+
+export type YargsCommandNames = Map<string, Set<string>>;
+
+export type LoadedCommands = {
+	commandsMap: CommandsMap,
+	yargsCommandNames: YargsCommandNames
+};
+
+export interface CommandWrapper extends Command {
+	name: string;
+	group: string;
+	path: string;
+}
+
+export type CommandsMap = Map<string, CommandWrapper>;

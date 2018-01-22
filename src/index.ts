@@ -5,6 +5,7 @@ import updateNotifier from './updateNotifier';
 import registerCommands from './registerCommands';
 import { join } from 'path';
 import commandLoader from './allCommands';
+import installableCommands, { mergeInstalledCommandsWithAvailableCommands } from './installableCommands';
 const pkgDir = require('pkg-dir');
 
 /**
@@ -17,15 +18,19 @@ async function init() {
 	try {
 		const packagePath = pkgDir.sync(__dirname);
 		const packageJsonFilePath = join(packagePath, 'package.json');
-		const pkg = <any> require(packageJsonFilePath);
+		const packageJson = <any> require(packageJsonFilePath);
 
-		updateNotifier(pkg, 0);
+		updateNotifier(packageJson);
+
+		const availableCommands = await installableCommands(packageJson.name);
 		const allCommands = await commandLoader();
-		registerCommands(yargs, allCommands.commandsMap, allCommands.yargsCommandNames);
+		const mergedCommands = mergeInstalledCommandsWithAvailableCommands(allCommands, availableCommands);
+
+		registerCommands(yargs, mergedCommands.commandsMap, mergedCommands.yargsCommandNames);
 	} catch (err) {
 		console.log(`Commands are not available: ${err}`);
 	}
 }
 
-process.env.DOJO_CLI = true;
+process.env.DOJO_CLI = 'true';
 init();

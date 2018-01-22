@@ -3,11 +3,10 @@ const { assert } = intern.getPlugin('chai');
 
 import MockModule from '../../support/MockModule';
 import * as sinon from 'sinon';
-require('sinon-as-promised')(Promise);
 
 import { join, resolve as pathResolve } from 'path';
 
-import { CommandsMap, CommandWrapper } from '../../../src/command';
+import { CommandsMap, CommandWrapper } from '../../../src/interfaces';
 import { getCommandWrapperWithConfiguration } from '../../support/testHelper';
 const validPackageInfo: any =  require('../../support/valid-package/package.json');
 const anotherValidPackageInfo: any = require('../../support/another-valid-package/package.json');

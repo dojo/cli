@@ -2,9 +2,7 @@ const { beforeEach, afterEach, describe, it } = intern.getInterface('bdd');
 const { assert } = intern.getPlugin('chai');
 
 import MockModule from '../support/MockModule';
-import * as OrigSinon from 'sinon';
-const sap = require('sinon-as-promised');
-const sinon = new sap(Promise);
+import * as sinon from 'sinon';
 import { join, resolve as pathResolve } from 'path';
 
 describe('cli main module', () => {
@@ -12,10 +10,12 @@ describe('cli main module', () => {
 	let moduleUnderTest: any;
 	let mockModule: MockModule;
 	let mockPkgDir: any;
-	let sandbox: any;
+	let mockInstallableCommands: any;
+	let sandbox: sinon.SinonSandbox;
 	let mockUpdate: any;
 	let mockAllCommands: any;
 	let mockRegisterCommands: any;
+	let mergeStub: sinon.SinonStub;
 
 	it('should run functions in order', () => {
 		describe('inner', () => {
@@ -28,7 +28,14 @@ describe('cli main module', () => {
 					'pkg-dir',
 					'yargs',
 					'./allCommands',
-					'./registerCommands']);
+					'./registerCommands',
+					'./installableCommands'
+				]);
+
+				mockInstallableCommands = mockModule.getMock('./installableCommands');
+				mockInstallableCommands.default = sandbox.stub().resolves([]);
+				mergeStub = mockInstallableCommands.mergeInstalledCommandsWithAvailableCommands = sandbox.stub().returnsArg(0);
+
 				mockPkgDir = mockModule.getMock('pkg-dir');
 				mockPkgDir.ctor.sync = sandbox.stub().returns(join(pathResolve('.'), '/_build/tests/support/valid-package'));
 
@@ -56,10 +63,12 @@ describe('cli main module', () => {
 
 			it('should run init to completion', () => {
 				assert.isTrue(mockUpdate.default.calledOnce, 'should call update notifier');
+				assert.isTrue(mockInstallableCommands.default.calledOnce, 'Should look for installable commands');
 				assert.isTrue(mockAllCommands.default.calledOnce, 'should call init');
+				assert.isTrue(mergeStub.calledAfter(mockAllCommands.default));
 				assert.isTrue(mockRegisterCommands.default.calledOnce, 'should call register commands');
-				assert.isTrue(mockRegisterCommands.default.calledAfter(mockAllCommands.default),
-					'should call register commands after init');
+				assert.isTrue(mockRegisterCommands.default.calledAfter(mergeStub),
+					'should call register commands after commands have been merged');
 			});
 		});
 
@@ -93,7 +102,7 @@ describe('cli main module', () => {
 
 			it('catches runtime error', () => {
 				assert.throw(mockUpdate.default, Error, errMessage);
-				assert.equal((<OrigSinon.SinonStub> console.log).args[0][0], `Commands are not available: Error: ${errMessage}`);
+				assert.equal((console.log as sinon.SinonStub).args[0][0], `Commands are not available: Error: ${errMessage}`);
 			});
 		});
 

@@ -1,14 +1,15 @@
 const { beforeEach, afterEach, describe, it } = intern.getInterface('bdd');
 const { assert } = intern.getPlugin('chai');
 
-import { yellow, underline } from 'chalk';
+import chalk from 'chalk';
 import { join, resolve as pathResolve, sep } from 'path';
 import * as sinon from 'sinon';
 
-import { CommandsMap, CommandWrapper } from '../../../src/command';
+import { CommandsMap, CommandWrapper } from '../../../src/interfaces';
 import MockModule from '../../support/MockModule';
 import { getCommandWrapperWithConfiguration } from '../../support/testHelper';
-require('sinon-as-promised')(Promise);
+
+const { yellow, underline } = chalk;
 
 describe('eject command', () => {
 	const ejectPackagePath = join(pathResolve(__dirname), '../../support/eject');

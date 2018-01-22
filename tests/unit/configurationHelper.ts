@@ -3,8 +3,7 @@ const { assert } = intern.getPlugin('chai');
 
 import { resolve as pathResolve } from 'path';
 import MockModule from '../support/MockModule';
-const sap = require('sinon-as-promised');
-const sinon = new sap(Promise);
+import * as sinon from 'sinon';
 
 let sandbox: any;
 let mockModule: MockModule;

@@ -1,6 +1,6 @@
 import { renderFile } from 'ejs';
 import { writeFile } from 'fs-extra';
-import * as chalk from 'chalk';
+import chalk from 'chalk';
 
 export function ejsRender(source: string, replacements: Object): Promise<string> {
 	return new Promise<string>((resolve, reject) => {

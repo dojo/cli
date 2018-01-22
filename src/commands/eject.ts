@@ -1,15 +1,15 @@
 import { copySync } from 'fs-extra';
 import { basename, isAbsolute, resolve } from 'path';
 import { Argv } from 'yargs';
-import { green, underline, yellow } from 'chalk';
+import chalk from 'chalk';
 import * as inquirer from 'inquirer';
-import { Helper, NpmPackage, OptionsHelper, EjectOutput, FileCopyConfig } from '../interfaces';
-import { CommandWrapper } from '../command';
+import { CommandWrapper, Helper, NpmPackage, OptionsHelper, EjectOutput, FileCopyConfig } from '../interfaces';
 import { loadExternalCommands } from '../allCommands';
 import { deepAssign } from '@dojo/core/lang';
 import { installDependencies, installDevDependencies } from '../npmInstall';
 import configurationHelper from '../configurationHelper';
 
+const { green, underline, yellow } = chalk;
 const copiedFilesDir = 'config';
 const ejectedKey = 'ejected';
 

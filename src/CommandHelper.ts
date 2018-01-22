@@ -1,9 +1,8 @@
 import * as yargs from 'yargs';
-import { CommandsMap } from './command';
 import { ConfigurationHelperFactory } from './configurationHelper';
 import HelperFactory from './Helper';
 import template from './template';
-import { CommandHelper, Command } from './interfaces';
+import { CommandHelper, Command, CommandsMap } from './interfaces';
 
 function getCommand(commandsMap: CommandsMap, group: string, commandName?: string): Command | undefined {
 	const commandKey = commandName ? `${group}-${commandName}` : group;

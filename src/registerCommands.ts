@@ -1,11 +1,10 @@
-import * as chalk from 'chalk';
+import chalk from 'chalk';
 import { Argv, Options } from 'yargs';
-import { getGroupDescription, CommandsMap, CommandWrapper } from './command';
+import { getGroupDescription } from './command';
 import CommandHelper from './CommandHelper';
 import configurationHelperFactory from './configurationHelper';
 import HelperFactory from './Helper';
-import { CommandError } from './interfaces';
-import { YargsCommandNames } from './loadCommands';
+import { CommandError, CommandsMap, CommandWrapper, YargsCommandNames } from './interfaces';
 import { helpUsage, helpEpilog } from './text';
 
 /**

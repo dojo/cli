@@ -1,4 +1,4 @@
-import { red } from 'chalk';
+import chalk from 'chalk';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { ConfigurationHelper, Config } from './interfaces';
@@ -65,7 +65,7 @@ class SingleCommandConfigurationHelper implements ConfigurationHelper {
 	set(config: Config, commandName: string): void;
 	set(config: Config, commandName?: string): void {
 		if (!dojoRcPath) {
-			console.warn(red('You cannot save a config outside of a project directory'));
+			console.warn(chalk.red('You cannot save a config outside of a project directory'));
 			return;
 		}
 
