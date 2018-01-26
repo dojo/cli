@@ -19,10 +19,8 @@ describe('eject command', () => {
 	let mockFsExtra: any;
 	let mockInquirer: any;
 	let mockNpmInstall: any;
-	let mockPackageJson: any;
 	let mockAllExternalCommands: any;
 	let consoleLogStub: sinon.SinonStub;
-	let consoleWarnStub: sinon.SinonStub;
 	let sandbox: sinon.SinonSandbox;
 
 	function loadCommand(command: string): any {
@@ -62,9 +60,7 @@ describe('eject command', () => {
 		mockInquirer.prompt = sandbox.stub().resolves({ eject: true });
 		mockAllExternalCommands = mockModule.getMock('../allCommands');
 		mockNpmInstall = mockModule.getMock('../npmInstall');
-		mockPackageJson = mockModule.getMock(`${ejectPackagePath}/package.json`);
 		consoleLogStub = sandbox.stub(console, 'log');
-		consoleWarnStub = sandbox.stub(console, 'warn');
 		moduleUnderTest = mockModule.getModuleUnderTest().default;
 	});
 

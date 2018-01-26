@@ -6,7 +6,6 @@ import * as sinon from 'sinon';
 import { join, resolve as pathResolve } from 'path';
 
 describe('cli main module', () => {
-	let moduleUnderTest: any;
 	let mockModule: MockModule;
 	let mockPkgDir: any;
 	let mockInstallableCommands: any;
@@ -52,7 +51,7 @@ describe('cli main module', () => {
 				});
 				mockRegisterCommands = mockModule.getMock('./registerCommands');
 				sandbox.stub(console, 'log');
-				moduleUnderTest = mockModule.getModuleUnderTest();
+				mockModule.getModuleUnderTest();
 			});
 
 			afterEach(() => {
@@ -90,7 +89,7 @@ describe('cli main module', () => {
 				mockUpdate = mockModule.getMock('./updateNotifier');
 				mockUpdate.default = sandbox.stub().throws(expectedError);
 				sandbox.stub(console, 'log');
-				moduleUnderTest = mockModule.getModuleUnderTest();
+				mockModule.getModuleUnderTest();
 			});
 
 			afterEach(() => {

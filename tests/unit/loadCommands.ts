@@ -5,7 +5,7 @@ import { join, resolve as pathResolve } from 'path';
 import { stub, SinonStub, sandbox } from 'sinon';
 import { CliConfig } from '../../src/interfaces';
 import MockModule from '../support/MockModule';
-import { getCommandWrapper, getYargsStub } from '../support/testHelper';
+import { getCommandWrapper } from '../support/testHelper';
 import {
 	enumerateBuiltInCommands as enumBuiltInCommands,
 	enumerateInstalledCommands as enumInstalledCommands,
@@ -13,7 +13,6 @@ import {
 } from '../../src/loadCommands';
 
 let loadStub: SinonStub;
-let yargsStub: any;
 let commandWrapper1: any;
 let commandWrapper2: any;
 let consoleStub: SinonStub;
@@ -43,7 +42,6 @@ registerSuite('loadCommands', {
 		consoleStub = stub(console, 'error');
 		commandWrapper1 = getCommandWrapper('command1');
 		commandWrapper2 = getCommandWrapper('command2');
-		yargsStub = getYargsStub();
 		loadStub = stub();
 		goodConfig = config();
 	},
