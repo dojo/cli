@@ -37,13 +37,13 @@ describe('cli .bin', () => {
 			group: 'eject',
 			name: ''
 		});
-		const commandMap: CommandsMap = new Map<string, CommandWrapper>([
-			['eject', installedCommandWrapper1]
-		]);
+		const commandMap: CommandsMap = new Map<string, CommandWrapper>([['eject', installedCommandWrapper1]]);
 		commands.commandsMap = commandMap;
-		mockAllCommandsPromise = new Promise((resolve) => setTimeout(() => {
-			resolve(commands);
-		}, 1000));
+		mockAllCommandsPromise = new Promise((resolve) =>
+			setTimeout(() => {
+				resolve(commands);
+			}, 1000)
+		);
 		mockAllCommands.default = sandbox.stub().resolves(mockAllCommandsPromise);
 		mockRegisterCommands = mockModule.getMock('./registerCommands');
 		mockRegisterCommands.default = sandbox.stub();
@@ -61,13 +61,14 @@ describe('cli .bin', () => {
 	});
 
 	it('should call registerCommands', () => {
-		mockAllCommandsPromise.then(() => {
-			setTimeout(() => {
-				assert.isTrue(mockRegisterCommands.default.called);
-			}, 100);
-		})
-		.catch((error: Error) => {
-			assert.fail(null, null, error.message);
-		});
+		mockAllCommandsPromise
+			.then(() => {
+				setTimeout(() => {
+					assert.isTrue(mockRegisterCommands.default.called);
+				}, 100);
+			})
+			.catch((error: Error) => {
+				assert.fail(null, null, error.message);
+			});
 	});
 });

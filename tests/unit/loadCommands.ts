@@ -25,21 +25,21 @@ let testSandbox: any;
 function config(invalid = false): CliConfig {
 	// tests are run in package-dir (from cli, using grunt test) - FIX to use pkg-dir
 	const config: CliConfig = {
-		searchPaths: [ '_build/tests/support' ],
-		searchPrefixes: [ 'test-prefix' ],
+		searchPaths: ['_build/tests/support'],
+		searchPrefixes: ['test-prefix'],
 		builtInCommandLocation: join(pathResolve('.'), '/_build/tests/support/commands')
 	};
 	const badConfig: CliConfig = {
-		searchPaths: [ 'just/garbage', 'yep/really/bad/paths/here' ],
-		searchPrefixes: [ 'bad-prefix' ],
-		builtInCommandLocation : 'dirThatDoesNotExist'
+		searchPaths: ['just/garbage', 'yep/really/bad/paths/here'],
+		searchPrefixes: ['bad-prefix'],
+		builtInCommandLocation: 'dirThatDoesNotExist'
 	};
 
 	return invalid ? badConfig : config;
 }
 
 registerSuite('loadCommands', {
-	'beforeEach'() {
+	beforeEach() {
 		consoleStub = stub(console, 'error');
 		commandWrapper1 = getCommandWrapper('command1');
 		commandWrapper2 = getCommandWrapper('command2');
@@ -47,13 +47,13 @@ registerSuite('loadCommands', {
 		loadStub = stub();
 		goodConfig = config();
 	},
-	'afterEach'() {
+	afterEach() {
 		consoleStub.restore();
 	},
 
 	tests: {
 		'successful enumeration': {
-			'beforeEach'() {
+			beforeEach() {
 				loadStub.onFirstCall().returns(commandWrapper1);
 				loadStub.onSecondCall().returns(commandWrapper2);
 			},
@@ -65,17 +65,17 @@ registerSuite('loadCommands', {
 				},
 				async 'Should successfully enumerate builtin commands'() {
 					const builtInPaths = await enumBuiltInCommands(goodConfig);
-					assert.equal(builtInPaths.length, 2);   // includes invalid commands
+					assert.equal(builtInPaths.length, 2); // includes invalid commands
 				}
 			}
 		},
 		'unsuccessful enumeration': {
 			async 'Should fail to find installed commands that dont exist'() {
-				goodConfig.searchPrefixes = [ 'bad-prefix' ];
+				goodConfig.searchPrefixes = ['bad-prefix'];
 				const badPrefixPaths = await enumInstalledCommands(goodConfig);
 				assert.equal(badPrefixPaths.length, 0);
 
-				const badInstalledPaths = await enumInstalledCommands(config((true)));
+				const badInstalledPaths = await enumInstalledCommands(config(true));
 				assert.equal(badInstalledPaths.length, 0);
 			},
 			async 'Should fail to find built in commands that dont exist'() {
@@ -84,7 +84,7 @@ registerSuite('loadCommands', {
 			}
 		},
 		'successful load': {
-			'beforeEach'() {
+			beforeEach() {
 				loadStub.onFirstCall().returns(commandWrapper1);
 				loadStub.onSecondCall().returns(commandWrapper2);
 				goodConfig = config();
@@ -121,16 +121,15 @@ registerSuite('loadCommands', {
 		'unsuccessful load': {
 			async 'Should fail to load modules that dont satisfy the Command interface'() {
 				const failConfig = {
-					searchPaths: [ '_build/tests/support' ],
-					searchPrefixes: [ 'esmodule-fail' ]
+					searchPaths: ['_build/tests/support'],
+					searchPrefixes: ['esmodule-fail']
 				};
-				const installedPaths = await enumInstalledCommands(<any> failConfig);
+				const installedPaths = await enumInstalledCommands(<any>failConfig);
 
 				loadStub.onFirstCall().throws();
 				try {
 					await loadCommands(installedPaths, loadStub);
-				}
-				catch (error) {
+				} catch (error) {
 					assert.isTrue(error instanceof Error);
 					assert.isTrue(error.message.indexOf('Failed to load module') > -1);
 				}
@@ -140,9 +139,7 @@ registerSuite('loadCommands', {
 			beforeEach() {
 				testSandbox = sandbox.create();
 				mockModule = new MockModule('../../src/loadCommands', require);
-				mockModule.dependencies([
-					'./configurationHelper'
-				]);
+				mockModule.dependencies(['./configurationHelper']);
 				const configHelper = mockModule.getMock('./configurationHelper').default;
 				testSandbox.stub(configHelper, 'sandbox').returns({
 					get: testSandbox.stub().returns({ ejected: true })

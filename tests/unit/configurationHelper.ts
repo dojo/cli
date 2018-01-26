@@ -19,15 +19,10 @@ const dojoRcPath = `${packagePath}/.dojorc`;
 
 registerSuite('Configuration Helper', {
 	'package dir exists': {
-		'beforeEach'() {
+		beforeEach() {
 			sandbox = sinon.sandbox.create();
 			mockModule = new MockModule('../../src/configurationHelper', require);
-			mockModule.dependencies([
-				'pkg-dir',
-				'fs',
-				'path',
-				dojoRcPath
-			]);
+			mockModule.dependencies(['pkg-dir', 'fs', 'path', dojoRcPath]);
 			mockPkgDir = mockModule.getMock('pkg-dir');
 			mockPkgDir.ctor.sync = sandbox.stub().returns(packagePath);
 			mockFs = mockModule.getMock('fs');
@@ -39,7 +34,7 @@ registerSuite('Configuration Helper', {
 			moduleUnderTest = mockModule.getModuleUnderTest().default;
 			configurationHelper = moduleUnderTest;
 		},
-		'afterEach'() {
+		afterEach() {
 			sandbox.restore();
 			mockModule.destroy();
 		},
@@ -52,7 +47,10 @@ registerSuite('Configuration Helper', {
 
 				assert.isTrue(mockFs.writeFileSync.calledOnce);
 				assert.equal(mockFs.writeFileSync.firstCall.args[0], dojoRcPath);
-				assert.equal(mockFs.writeFileSync.firstCall.args[1], JSON.stringify({ 'testGroupName-testCommandName': newConfig }, null, 2));
+				assert.equal(
+					mockFs.writeFileSync.firstCall.args[1],
+					JSON.stringify({ 'testGroupName-testCommandName': newConfig }, null, 2)
+				);
 			},
 			'Should merge new config with old when save called'() {
 				const newConfig = { foo: 'bar' };
@@ -60,7 +58,14 @@ registerSuite('Configuration Helper', {
 				mockFs.readFileSync.returns(JSON.stringify({ 'testGroupName-testCommandName': existingConfig }));
 				configurationHelper.sandbox('testGroupName', 'testCommandName').set(newConfig);
 				assert.isTrue(mockFs.writeFileSync.calledOnce);
-				assert.equal(mockFs.writeFileSync.firstCall.args[1], JSON.stringify({ 'testGroupName-testCommandName': Object.assign(existingConfig, newConfig) }, null, 2));
+				assert.equal(
+					mockFs.writeFileSync.firstCall.args[1],
+					JSON.stringify(
+						{ 'testGroupName-testCommandName': Object.assign(existingConfig, newConfig) },
+						null,
+						2
+					)
+				);
 			},
 			'Should merge new commandNames with existing command config when save called'() {
 				const newConfig = { foo: 'bar' };
@@ -68,10 +73,17 @@ registerSuite('Configuration Helper', {
 				mockFs.readFileSync.returns(JSON.stringify({ existingCommandName: existingConfig }));
 				configurationHelper.sandbox('testGroupName', 'testCommandName').set(newConfig);
 				assert.isTrue(mockFs.writeFileSync.calledOnce);
-				assert.deepEqual(mockFs.writeFileSync.firstCall.args[1], JSON.stringify({
-					existingCommandName: existingConfig,
-					'testGroupName-testCommandName': newConfig
-				}, null, 2));
+				assert.deepEqual(
+					mockFs.writeFileSync.firstCall.args[1],
+					JSON.stringify(
+						{
+							existingCommandName: existingConfig,
+							'testGroupName-testCommandName': newConfig
+						},
+						null,
+						2
+					)
+				);
 			},
 			'Should return undefined config when no dojorc for commandName exists'() {
 				mockFs.existsSync.returns(false);
@@ -93,19 +105,18 @@ registerSuite('Configuration Helper', {
 
 				assert.isTrue(mockFs.writeFileSync.calledOnce);
 				assert.equal(mockFs.writeFileSync.firstCall.args[0], dojoRcPath);
-				assert.equal(mockFs.writeFileSync.firstCall.args[1], JSON.stringify({ 'testGroupName-testCommandName': newConfig }, null, 2));
+				assert.equal(
+					mockFs.writeFileSync.firstCall.args[1],
+					JSON.stringify({ 'testGroupName-testCommandName': newConfig }, null, 2)
+				);
 			}
 		}
 	},
 	'package dir does not exist': {
-		'beforeEach'() {
+		beforeEach() {
 			sandbox = sinon.sandbox.create();
 			mockModule = new MockModule('../../src/configurationHelper', require);
-			mockModule.dependencies([
-				'pkg-dir',
-				'fs',
-				'path'
-			]);
+			mockModule.dependencies(['pkg-dir', 'fs', 'path']);
 			mockPkgDir = mockModule.getMock('pkg-dir');
 			mockPkgDir.ctor.sync = sandbox.stub().returns(null);
 			mockFs = mockModule.getMock('fs');
@@ -117,7 +128,7 @@ registerSuite('Configuration Helper', {
 			moduleUnderTest = mockModule.getModuleUnderTest().default;
 			configurationHelper = moduleUnderTest;
 		},
-		'afterEach'() {
+		afterEach() {
 			sandbox.restore();
 			mockModule.destroy();
 		},

@@ -18,7 +18,7 @@ async function init() {
 	try {
 		const packagePath = pkgDir.sync(__dirname);
 		const packageJsonFilePath = join(packagePath, 'package.json');
-		const packageJson = <any> require(packageJsonFilePath);
+		const packageJson = <any>require(packageJsonFilePath);
 
 		updateNotifier(packageJson);
 

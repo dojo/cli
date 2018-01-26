@@ -40,8 +40,7 @@ export class SingleCommandHelper implements CommandHelper {
 		if (command) {
 			const helper = new HelperFactory(this, yargs, this._context, this._configurationFactory);
 			return command.run(helper.sandbox(group, command.name), args);
-		}
-		else {
+		} else {
 			return Promise.reject(new Error('The command does not exist'));
 		}
 	}

@@ -28,13 +28,13 @@ registerSuite('template', {
 	},
 
 	tests: {
-	async 'can render ejs file'() {
-		await template(testEjsSrc, testDest, { value });
-		assert.strictEqual(writeFileStub.firstCall.args[1].trim(), value);
-	},
-	async 'write file is called with dest path'() {
-		await template(testEjsSrc, testDest, { value });
-		assert.strictEqual(writeFileStub.firstCall.args[0], testDest);
-	}
+		async 'can render ejs file'() {
+			await template(testEjsSrc, testDest, { value });
+			assert.strictEqual(writeFileStub.firstCall.args[1].trim(), value);
+		},
+		async 'write file is called with dest path'() {
+			await template(testEjsSrc, testDest, { value });
+			assert.strictEqual(writeFileStub.firstCall.args[0], testDest);
+		}
 	}
 });

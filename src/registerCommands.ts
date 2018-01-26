@@ -37,33 +37,43 @@ function reportError(error: CommandError) {
  * @param commandOptions The set of commandOption keys
  * @param commandsMap The map of composite keys to commands
  */
-function registerGroups(yargs: Argv, helper: HelperFactory, groupName: string, commandOptions: Set<string>, commandsMap: CommandsMap): void {
+function registerGroups(
+	yargs: Argv,
+	helper: HelperFactory,
+	groupName: string,
+	commandOptions: Set<string>,
+	commandsMap: CommandsMap
+): void {
 	const groupDescription = getGroupDescription(commandOptions, commandsMap);
-	const defaultCommand = <CommandWrapper> commandsMap.get(groupName);
+	const defaultCommand = <CommandWrapper>commandsMap.get(groupName);
 	const defaultCommandAvailable = !!(defaultCommand && defaultCommand.register && defaultCommand.run);
 	const defaultCommandName = defaultCommand && defaultCommand.name;
 
-	yargs.command(groupName, groupDescription, (subYargs: Argv) => {
-		if (defaultCommandAvailable) {
-			defaultCommand.register((key: string, options: Options) => {
-				subYargs.option(key, {
-					group: `Default Command Options ('${defaultCommand.name}')`,
-					...options
-				});
-			}, helper.sandbox(groupName, defaultCommandName));
+	yargs.command(
+		groupName,
+		groupDescription,
+		(subYargs: Argv) => {
+			if (defaultCommandAvailable) {
+				defaultCommand.register((key: string, options: Options) => {
+					subYargs.option(key, {
+						group: `Default Command Options ('${defaultCommand.name}')`,
+						...options
+					});
+				}, helper.sandbox(groupName, defaultCommandName));
+			}
+			registerCommands(subYargs, helper, groupName, commandOptions, commandsMap);
+			return subYargs;
+		},
+		(argv: any) => {
+			// argv._ is an array of commands.
+			// if `dojo example` was called, it will only be size one,
+			// so we call default command, else, the subcommand will
+			// have been ran and we don't want to run the default.
+			if (defaultCommandAvailable && argv._.length === 1) {
+				return defaultCommand.run(helper.sandbox(groupName, defaultCommandName), argv).catch(reportError);
+			}
 		}
-		registerCommands(subYargs, helper, groupName, commandOptions, commandsMap);
-		return subYargs;
-	},
-	(argv: any) => {
-		// argv._ is an array of commands.
-		// if `dojo example` was called, it will only be size one,
-		// so we call default command, else, the subcommand will
-		// have been ran and we don't want to run the default.
-		if (defaultCommandAvailable && argv._.length === 1) {
-			return defaultCommand.run(helper.sandbox(groupName, defaultCommandName), argv).catch(reportError);
-		}
-	});
+	);
 }
 
 /**
@@ -75,26 +85,35 @@ function registerGroups(yargs: Argv, helper: HelperFactory, groupName: string, c
  * @param commandOptions The set of commandOption keys
  * @param commandsMap The map of composite keys to commands
  */
-function registerCommands(yargs: Argv, helper: HelperFactory, groupName: string, commandOptions: Set<string>, commandsMap: CommandsMap): void {
-	[...commandOptions].filter((command: string) => {
-		return `${groupName}-` !== command;
-	}).forEach((command: string) => {
-		const {name, description, register, run} = <CommandWrapper> commandsMap.get(command);
-		yargs.command(
-			name,
-			description,
-			(optionsYargs: Argv) => {
-				register((key: string, options: Options) => {
-					optionsYargs.option(key, options);
-				}, helper.sandbox(groupName, name));
-				return optionsYargs;
-			},
-			(argv: any) => {
-				return run(helper.sandbox(groupName, name), argv).catch(reportError);
-			}
-		)
-		.strict();
-	});
+function registerCommands(
+	yargs: Argv,
+	helper: HelperFactory,
+	groupName: string,
+	commandOptions: Set<string>,
+	commandsMap: CommandsMap
+): void {
+	[...commandOptions]
+		.filter((command: string) => {
+			return `${groupName}-` !== command;
+		})
+		.forEach((command: string) => {
+			const { name, description, register, run } = <CommandWrapper>commandsMap.get(command);
+			yargs
+				.command(
+					name,
+					description,
+					(optionsYargs: Argv) => {
+						register((key: string, options: Options) => {
+							optionsYargs.option(key, options);
+						}, helper.sandbox(groupName, name));
+						return optionsYargs;
+					},
+					(argv: any) => {
+						return run(helper.sandbox(groupName, name), argv).catch(reportError);
+					}
+				)
+				.strict();
+		});
 }
 
 /**
@@ -105,9 +124,14 @@ function registerCommands(yargs: Argv, helper: HelperFactory, groupName: string,
  * @param commandOptions The set of commandOption keys
  * @param commandsMap The map of composite keys to commands
  */
-function registerAliases(yargs: Argv, helper: HelperFactory, commandOptions: Set<string>, commandsMap: CommandsMap): void {
+function registerAliases(
+	yargs: Argv,
+	helper: HelperFactory,
+	commandOptions: Set<string>,
+	commandsMap: CommandsMap
+): void {
 	[...commandOptions].forEach((command: string) => {
-		const { run, register, alias: aliases, group } = <CommandWrapper> commandsMap.get(command);
+		const { run, register, alias: aliases, group } = <CommandWrapper>commandsMap.get(command);
 		if (aliases) {
 			(Array.isArray(aliases) ? aliases : [aliases]).forEach((alias) => {
 				const { name, description, options: aliasOpts } = alias;
@@ -132,7 +156,8 @@ function registerAliases(yargs: Argv, helper: HelperFactory, commandOptions: Set
 							}, argv);
 						}
 						return run(helper.sandbox(group, name), argv).catch(reportError);
-					});
+					}
+				);
 			});
 		}
 	});
@@ -158,11 +183,11 @@ export default function(yargs: Argv, commandsMap: CommandsMap, yargsCommandNames
 		registerAliases(yargs, helperFactory, commandOptions, commandsMap);
 	});
 
-	yargs.demand(1, '')
+	yargs
+		.demand(1, '')
 		.usage(helpUsage)
 		.epilog(helpEpilog)
 		.help('h')
 		.alias('h', 'help')
-		.strict()
-		.argv;
+		.strict().argv;
 }

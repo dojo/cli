@@ -1,13 +1,17 @@
-import {CommandWrapper} from '../../src/interfaces';
+import { CommandWrapper } from '../../src/interfaces';
 import { stub, spy } from 'sinon';
 
-export type GroupDef = [{
-	groupName: string;
-	commands: [{
-		commandName: string;
-		fails?: boolean;
-	}]
-}];
+export type GroupDef = [
+	{
+		groupName: string;
+		commands: [
+			{
+				commandName: string;
+				fails?: boolean;
+			}
+		];
+	}
+];
 
 export interface CommandWrapperConfig {
 	group?: string;
@@ -24,15 +28,16 @@ export function getCommandsMap(groupDef: GroupDef) {
 	groupDef.forEach((group) => {
 		group.commands.forEach((command) => {
 			const compositeKey = `${group.groupName}-${command.commandName}`;
-			const runSpy = spy(() => command.fails ?
-					Promise.reject(new Error(compositeKey)) :
-					Promise.resolve(compositeKey)
+			const runSpy = spy(
+				() => (command.fails ? Promise.reject(new Error(compositeKey)) : Promise.resolve(compositeKey))
 			);
 			const commandWrapper = {
 				name: command.commandName,
 				group: group.groupName,
 				description: compositeKey,
-				register: stub().callsArgWith(0, 'key', {}).returns(compositeKey),
+				register: stub()
+					.callsArgWith(0, 'key', {})
+					.returns(compositeKey),
 				runSpy,
 				run: runSpy
 			};
@@ -41,15 +46,17 @@ export function getCommandsMap(groupDef: GroupDef) {
 	});
 
 	return commands;
-};
+}
 
-const yargsFunctions = [ 'demand', 'usage', 'epilog', 'help', 'alias', 'strict', 'option' ];
+const yargsFunctions = ['demand', 'usage', 'epilog', 'help', 'alias', 'strict', 'option'];
 export function getYargsStub() {
 	const yargsStub: any = {};
 	yargsFunctions.forEach((fnc) => {
 		yargsStub[fnc] = stub().returns(yargsStub);
 	});
-	yargsStub.command = stub().callsArgWith(2, yargsStub).returns(yargsStub);
+	yargsStub.command = stub()
+		.callsArgWith(2, yargsStub)
+		.returns(yargsStub);
 	return yargsStub;
 }
 
@@ -63,7 +70,7 @@ export function getCommandWrapper(name: string, runs: boolean = true) {
 }
 
 export function getCommandWrapperWithConfiguration(config: CommandWrapperConfig): CommandWrapper {
-	const {group = '', name = '', description = '', path = '', runs = false, eject = false } = config;
+	const { group = '', name = '', description = '', path = '', runs = false, eject = false } = config;
 
 	const commandWrapper: CommandWrapper = {
 		group,

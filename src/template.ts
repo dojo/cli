@@ -24,8 +24,8 @@ export function writeRenderedFile(str: string, destination: string): Promise<voi
 	});
 }
 
-export default async function (source: string, destination: string, replacements: Object): Promise<void> {
+export default async function(source: string, destination: string, replacements: Object): Promise<void> {
 	console.info(chalk.green.bold(' create ') + destination);
 	const str = await ejsRender(source, replacements);
 	await writeRenderedFile(str, destination);
-};
+}

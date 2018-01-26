@@ -7,9 +7,9 @@ export interface NpmPackageDetails {
 }
 
 export type CliConfig = {
-	searchPaths: string[],
-	searchPrefixes: string[],
-	builtInCommandLocation: string
+	searchPaths: string[];
+	searchPrefixes: string[];
+	builtInCommandLocation: string;
 };
 
 export interface Config {
@@ -97,8 +97,8 @@ export interface CommandError {
 export type YargsCommandNames = Map<string, Set<string>>;
 
 export type LoadedCommands = {
-	commandsMap: CommandsMap,
-	yargsCommandNames: YargsCommandNames
+	commandsMap: CommandsMap;
+	yargsCommandNames: YargsCommandNames;
 };
 
 export interface CommandWrapper extends Command {

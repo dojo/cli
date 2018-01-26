@@ -4,7 +4,7 @@ const { assert } = intern.getPlugin('chai');
 import { resolve } from 'path';
 
 import config from '../../src/config';
-const expectedSearchPrefixes = [ '@dojo/cli', 'dojo-cli' ];
+const expectedSearchPrefixes = ['@dojo/cli', 'dojo-cli'];
 
 registerSuite('config', {
 	'Should provide a search prefix'() {

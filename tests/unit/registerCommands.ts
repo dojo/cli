@@ -10,11 +10,11 @@ import * as defaultCommandWrapper from '../support/test-prefix-foo-bar';
 const groupDef: GroupDef = [
 	{
 		groupName: 'group1',
-		commands: [ { commandName: 'command1' } ]
+		commands: [{ commandName: 'command1' }]
 	},
 	{
 		groupName: 'group2',
-		commands: [ { commandName: 'command1' }, { commandName: 'command2' }  ]
+		commands: [{ commandName: 'command1' }, { commandName: 'command2' }]
 	}
 ];
 let commandsMap: any;
@@ -26,21 +26,21 @@ const errorMessage = 'test error message';
 
 function createYargsCommandNames(obj: any): Map<string, Set<any>> {
 	const map = new Map();
-	for ( let key in obj ) {
+	for (let key in obj) {
 		map.set(key, obj[key]);
 	}
 	return map;
 }
 
 registerSuite('registerCommands', {
-	'beforeEach'() {
+	beforeEach() {
 		yargsStub = getYargsStub();
 		commandsMap = getCommandsMap(groupDef);
 	},
 
 	tests: {
 		'Should setup correct yargs arguments'() {
-			const yargsArgs = [ 'demand', 'usage', 'epilog', 'help', 'strict' ];
+			const yargsArgs = ['demand', 'usage', 'epilog', 'help', 'strict'];
 			registerCommands(yargsStub, commandsMap, new Map());
 			yargsArgs.forEach((arg) => {
 				assert.isTrue(yargsStub[arg].calledOnce);
@@ -48,16 +48,20 @@ registerSuite('registerCommands', {
 			assert.isTrue(yargsStub.alias.calledOnce, 'Should be called for help aliases');
 		},
 		'Should call strict for all commands'() {
-			registerCommands(yargsStub, commandsMap, createYargsCommandNames({
-				'group1': new Set([ 'group1-command1' ]),
-				'group2': new Set([ 'group2-command1', 'group2-command2' ])
-			}));
+			registerCommands(
+				yargsStub,
+				commandsMap,
+				createYargsCommandNames({
+					group1: new Set(['group1-command1']),
+					group2: new Set(['group2-command1', 'group2-command2'])
+				})
+			);
 			assert.equal(yargsStub.strict.callCount, 4);
 		},
 		'Should call yargs.command once for each yargsCommandName passed and once for the default command'() {
 			const key = 'group1-command1';
 			const { group, description } = commandsMap.get(key);
-			registerCommands(yargsStub, commandsMap, createYargsCommandNames({'group1': new Set([ key ])}));
+			registerCommands(yargsStub, commandsMap, createYargsCommandNames({ group1: new Set([key]) }));
 			assert.isTrue(yargsStub.command.calledTwice);
 			assert.isTrue(yargsStub.command.firstCall.calledWith(group, description), 'First call is for parent');
 			assert.isTrue(yargsStub.command.secondCall.calledWith('command1', key), 'Second call is sub-command');
@@ -65,17 +69,17 @@ registerSuite('registerCommands', {
 		'Should run the passed command when yargs called with group name and command'() {
 			const key = 'group1-command1';
 			const { run } = commandsMap.get(key);
-			registerCommands(yargsStub, commandsMap, createYargsCommandNames({'group1': new Set([ key ])}));
+			registerCommands(yargsStub, commandsMap, createYargsCommandNames({ group1: new Set([key]) }));
 			yargsStub.command.secondCall.args[3]();
 			assert.isTrue(run.calledOnce);
 		},
 		'Should call into register method'() {
 			const key = 'group1-command1';
-			registerCommands(yargsStub, commandsMap, createYargsCommandNames({'group1': new Set([ key ])}));
+			registerCommands(yargsStub, commandsMap, createYargsCommandNames({ group1: new Set([key]) }));
 			assert.isTrue(yargsStub.option.called);
 		},
-		'alias': {
-			'beforeEach'() {
+		alias: {
+			beforeEach() {
 				const command = commandsMap.get('group1-command1');
 				command.alias = {
 					name: 'alias',
@@ -91,19 +95,29 @@ registerSuite('registerCommands', {
 
 			tests: {
 				'should register add itself as a command'() {
-					registerCommands(yargsStub, commandsMap, createYargsCommandNames({'group1': new Set([ 'group1-command1' ])}));
+					registerCommands(
+						yargsStub,
+						commandsMap,
+						createYargsCommandNames({ group1: new Set(['group1-command1']) })
+					);
 					assert.equal(yargsStub.command.thirdCall.args[0], 'alias');
 					assert.equal(yargsStub.command.thirdCall.args[1], 'some description');
 				},
 				'should register options'() {
-					registerCommands(yargsStub, commandsMap, createYargsCommandNames({'group1': new Set([ 'group1-command1' ])}));
+					registerCommands(
+						yargsStub,
+						commandsMap,
+						createYargsCommandNames({ group1: new Set(['group1-command1']) })
+					);
 					assert.isTrue(yargsStub.option.calledTwice);
 				},
 				'should not register provided options'() {
 					const key = 'group1-command1';
 					const command = commandsMap.get(key);
-					command.register = stub().callsArgWith(0, 'w', {}).returns(key),
-					registerCommands(yargsStub, commandsMap, createYargsCommandNames({'group1': new Set([ key ])}));
+					(command.register = stub()
+						.callsArgWith(0, 'w', {})
+						.returns(key)),
+						registerCommands(yargsStub, commandsMap, createYargsCommandNames({ group1: new Set([key]) }));
 					assert.isTrue(yargsStub.option.calledOnce);
 				},
 				'should register when alias is an array'() {
@@ -120,14 +134,14 @@ registerSuite('registerCommands', {
 							]
 						}
 					];
-					registerCommands(yargsStub, commandsMap, createYargsCommandNames({'group1': new Set([ key ])}));
+					registerCommands(yargsStub, commandsMap, createYargsCommandNames({ group1: new Set([key]) }));
 					assert.isTrue(yargsStub.option.calledTwice);
 				},
 				'should augment argv when run'() {
 					const key = 'group1-command1';
 					const command = commandsMap.get(key);
-					registerCommands(yargsStub, commandsMap, createYargsCommandNames({'group1': new Set([ key ])}));
-					yargsStub.command.thirdCall.args[3]({'_': ['group', 'command']});
+					registerCommands(yargsStub, commandsMap, createYargsCommandNames({ group1: new Set([key]) }));
+					yargsStub.command.thirdCall.args[3]({ _: ['group', 'command'] });
 					assert.equal(command.run.firstCall.args[1].w, 10);
 				},
 				'should run without options'() {
@@ -138,8 +152,8 @@ registerSuite('registerCommands', {
 							name: 'alias'
 						}
 					];
-					registerCommands(yargsStub, commandsMap, createYargsCommandNames({'group1': new Set([ key ])}));
-					yargsStub.command.thirdCall.args[3]({'_': ['group', 'command']});
+					registerCommands(yargsStub, commandsMap, createYargsCommandNames({ group1: new Set([key]) }));
+					yargsStub.command.thirdCall.args[3]({ _: ['group', 'command'] });
 					const properties = Object.keys(command.run.firstCall.args[1]);
 					assert.equal(properties.length, 1);
 					['group', 'command'].forEach((key) => {
@@ -149,16 +163,18 @@ registerSuite('registerCommands', {
 			}
 		},
 		'default command': {
-			'beforeEach'() {
+			beforeEach() {
 				const key = 'group1-command1';
-				defaultRegisterStub = stub(defaultCommandWrapper, 'register').callsArgWith(0, 'key', {}).returns(key);
+				defaultRegisterStub = stub(defaultCommandWrapper, 'register')
+					.callsArgWith(0, 'key', {})
+					.returns(key);
 				defaultRunStub = stub(defaultCommandWrapper, 'run').returns(Promise.resolve());
 				commandsMap.set('group1', defaultCommandWrapper);
-				registerCommands(yargsStub, commandsMap, createYargsCommandNames({'group1': new Set([ key ])}));
+				registerCommands(yargsStub, commandsMap, createYargsCommandNames({ group1: new Set([key]) }));
 			},
-			'afterEach'() {
+			afterEach() {
 				defaultRegisterStub.restore();
-				defaultRunStub .restore();
+				defaultRunStub.restore();
 			},
 
 			tests: {
@@ -166,38 +182,38 @@ registerSuite('registerCommands', {
 					assert.isTrue(defaultRegisterStub.calledOnce);
 				},
 				'Should run default command when yargs called with only group name'() {
-					yargsStub.command.firstCall.args[3]({'_': ['group']});
+					yargsStub.command.firstCall.args[3]({ _: ['group'] });
 					assert.isTrue(defaultRunStub.calledOnce);
 				},
 				'Should not run default command when yargs called with group name and command'() {
-					yargsStub.command.firstCall.args[3]({'_': ['group', 'command']});
+					yargsStub.command.firstCall.args[3]({ _: ['group', 'command'] });
 					assert.isFalse(defaultRunStub.called);
 				},
 				'error message': {
-					'beforeEach'() {
+					beforeEach() {
 						consoleErrorStub = stub(console, 'error');
 						defaultRunStub.returns(Promise.reject(new Error(errorMessage)));
 					},
-					'afterEach'() {
+					afterEach() {
 						consoleErrorStub.restore();
 					},
 
 					tests: {
 						async 'Should show error message if the run command rejects'() {
-							await yargsStub.command.firstCall.args[3]({'_': ['group']});
+							await yargsStub.command.firstCall.args[3]({ _: ['group'] });
 							assert.isTrue(consoleErrorStub.calledOnce);
 							assert.isTrue(consoleErrorStub.firstCall.calledWithMatch(errorMessage));
 						}
 					}
 				},
-				'status codes call process exit': (function () {
+				'status codes call process exit': (function() {
 					let processExitStub: SinonStub;
 
 					return {
-						'beforeEach'() {
+						beforeEach() {
 							processExitStub = stub(process, 'exit');
 						},
-						'afterEach'() {
+						afterEach() {
 							processExitStub.restore();
 						},
 
@@ -205,16 +221,18 @@ registerSuite('registerCommands', {
 							async 'Should not exit process if no status code is returned'() {
 								defaultRunStub.returns(Promise.reject(new Error(errorMessage)));
 
-								await yargsStub.command.firstCall.args[ 3 ]({ '_': [ 'group' ] });
+								await yargsStub.command.firstCall.args[3]({ _: ['group'] });
 								assert.isFalse(processExitStub.called);
 							},
 							async 'Should exit process if status code is returned'() {
-								defaultRunStub.returns(Promise.reject({
-									message: errorMessage,
-									exitCode: 1
-								}));
+								defaultRunStub.returns(
+									Promise.reject({
+										message: errorMessage,
+										exitCode: 1
+									})
+								);
 
-								await yargsStub.command.firstCall.args[ 3 ]({ '_': [ 'group' ] });
+								await yargsStub.command.firstCall.args[3]({ _: ['group'] });
 								assert.isTrue(processExitStub.called);
 							}
 						}
