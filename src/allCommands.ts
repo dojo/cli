@@ -1,13 +1,6 @@
-import {
-	loadCommands,
-	enumerateInstalledCommands,
-	enumerateBuiltInCommands
-} from './loadCommands';
+import { loadCommands, enumerateInstalledCommands, enumerateBuiltInCommands } from './loadCommands';
 import { LoadedCommands } from './interfaces';
-import {
-	initCommandLoader,
-	createBuiltInCommandLoader }
-	from './command';
+import { initCommandLoader, createBuiltInCommandLoader } from './command';
 import config from './config';
 
 const commands: LoadedCommands = {
@@ -44,7 +37,10 @@ export default async function loadAllCommands(): Promise<LoadedCommands> {
 	const installedCommands = await loadExternalCommands();
 
 	commands.commandsMap = new Map([...installedCommands.commandsMap, ...builtInCommands.commandsMap]);
-	commands.yargsCommandNames = new Map([...installedCommands.yargsCommandNames, ...builtInCommands.yargsCommandNames]);
+	commands.yargsCommandNames = new Map([
+		...installedCommands.yargsCommandNames,
+		...builtInCommands.yargsCommandNames
+	]);
 	loaded = true;
 	return Promise.resolve(commands);
 }

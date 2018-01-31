@@ -11,16 +11,16 @@ registerSuite('npmInstall', {
 	before() {
 		npmInstall = require('../../src/npmInstall');
 	},
-	'beforeEach'() {
+	beforeEach() {
 		spawnOnStub = stub();
 		const spawnOnResponse = {
-			'on': spawnOnStub
+			on: spawnOnStub
 		};
 
 		spawnOnStub.returns(spawnOnResponse);
 		spawnStub = stub(cs, 'spawn').returns(spawnOnResponse);
 	},
-	'afterEach'() {
+	afterEach() {
 		spawnStub.restore();
 	},
 
@@ -36,21 +36,20 @@ registerSuite('npmInstall', {
 			try {
 				await npmInstall.default();
 				assert.fail(null, null, 'Should not get here');
-			}
-			catch (error) {
+			} catch (error) {
 				assert.equal(errorMessage, error.message);
 			}
 		},
 		async 'Should install dependencies'() {
 			spawnOnStub.onFirstCall().callsArg(1);
-			await npmInstall.installDependencies({ dependencies: { 'foo': '1.2.3' }});
+			await npmInstall.installDependencies({ dependencies: { foo: '1.2.3' } });
 			assert.isTrue(spawnStub.calledOnce);
 			assert.isTrue(spawnStub.firstCall.args[1].indexOf('--save') > -1);
 			assert.isTrue(spawnStub.firstCall.args[1].indexOf('foo@1.2.3') > -1);
 		},
 		async 'Should install dev dependencies'() {
 			spawnOnStub.onFirstCall().callsArg(1);
-			await npmInstall.installDevDependencies({ devDependencies: { 'bar': '1.2.3' }});
+			await npmInstall.installDevDependencies({ devDependencies: { bar: '1.2.3' } });
 			assert.isTrue(spawnStub.calledOnce);
 			assert.isTrue(spawnStub.firstCall.args[1].indexOf('--save-dev') > -1);
 			assert.isTrue(spawnStub.firstCall.args[1].indexOf('bar@1.2.3') > -1);

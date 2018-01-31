@@ -3,8 +3,8 @@ export const name = 'test-eject';
 export const group = 'test-group';
 export function register() {
 	return 'registered';
-};
-export function	run() {
+}
+export function run() {
 	return new Promise((resolve) => 'ran');
 }
 export function eject(helper: any, npm: any, files: any) {
@@ -19,14 +19,8 @@ export function eject(helper: any, npm: any, files: any) {
 		},
 		copy: {
 			path: 'testPath',
-			files: [
-				'./file1',
-				'./file2'
-			]
+			files: ['./file1', './file2']
 		},
-		hints: [
-			'hint 1',
-			'hint 2'
-		]
+		hints: ['hint 1', 'hint 2']
 	};
 }

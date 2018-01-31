@@ -19,10 +19,8 @@ describe('eject command', () => {
 	let mockFsExtra: any;
 	let mockInquirer: any;
 	let mockNpmInstall: any;
-	let mockPackageJson: any;
 	let mockAllExternalCommands: any;
 	let consoleLogStub: sinon.SinonStub;
-	let consoleWarnStub: sinon.SinonStub;
 	let sandbox: sinon.SinonSandbox;
 
 	function loadCommand(command: string): any {
@@ -44,7 +42,16 @@ describe('eject command', () => {
 	beforeEach(() => {
 		sandbox = sinon.sandbox.create();
 		mockModule = new MockModule('../../../src/commands/eject', require);
-		mockModule.dependencies(['inquirer', 'fs', 'fs-extra', 'pkg-dir', '../allCommands', '../npmInstall', `${ejectPackagePath}/package.json`, '../configurationHelper']);
+		mockModule.dependencies([
+			'inquirer',
+			'fs',
+			'fs-extra',
+			'pkg-dir',
+			'../allCommands',
+			'../npmInstall',
+			`${ejectPackagePath}/package.json`,
+			'../configurationHelper'
+		]);
 		mockPkgDir = mockModule.getMock('pkg-dir');
 		mockPkgDir.ctor.sync = sandbox.stub().returns(ejectPackagePath);
 		mockFsExtra = mockModule.getMock('fs-extra');
@@ -53,9 +60,7 @@ describe('eject command', () => {
 		mockInquirer.prompt = sandbox.stub().resolves({ eject: true });
 		mockAllExternalCommands = mockModule.getMock('../allCommands');
 		mockNpmInstall = mockModule.getMock('../npmInstall');
-		mockPackageJson = mockModule.getMock(`${ejectPackagePath}/package.json`);
 		consoleLogStub = sandbox.stub(console, 'log');
-		consoleWarnStub = sandbox.stub(console, 'warn');
 		moduleUnderTest = mockModule.getModuleUnderTest().default;
 	});
 
@@ -70,12 +75,15 @@ describe('eject command', () => {
 
 		const helper = getHelper();
 		mockInquirer.prompt = sandbox.stub().resolves({ eject: false });
-		mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves({commandsMap: commandMap});
-		return moduleUnderTest.run(helper, {}).then(() => {
-			assert.fail('The promise should not have resolved');
-		}, (error: { message: string }) => {
-			assert.equal(error.message, abortOutput);
-		});
+		mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves({ commandsMap: commandMap });
+		return moduleUnderTest.run(helper, {}).then(
+			() => {
+				assert.fail('The promise should not have resolved');
+			},
+			(error: { message: string }) => {
+				assert.equal(error.message, abortOutput);
+			}
+		);
 	});
 
 	it(`should warn if all commands are skipped`, () => {
@@ -95,12 +103,15 @@ describe('eject command', () => {
 			['version', installedCommandWrapper2]
 		]);
 		const helper = getHelper();
-		mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves({commandsMap: commandMap});
-		return moduleUnderTest.run(helper, {}).then(() => {
-			assert.equal(consoleLogStub.args[0][0], runOutput);
-		}, () => {
-			assert.fail(null, null, 'moduleUnderTest.run should not have rejected promise');
-		});
+		mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves({ commandsMap: commandMap });
+		return moduleUnderTest.run(helper, {}).then(
+			() => {
+				assert.equal(consoleLogStub.args[0][0], runOutput);
+			},
+			() => {
+				assert.fail(null, null, 'moduleUnderTest.run should not have rejected promise');
+			}
+		);
 	});
 
 	describe('save ejected config', () => {
@@ -109,7 +120,7 @@ describe('eject command', () => {
 				['apple', loadCommand('command-with-full-eject')]
 			]);
 			const helper = getHelper();
-			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves({commandsMap: commandMap});
+			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves({ commandsMap: commandMap });
 
 			const configurationHelper = mockModule.getMock('../configurationHelper').default;
 
@@ -118,12 +129,15 @@ describe('eject command', () => {
 				set: setStub
 			});
 
-			return moduleUnderTest.run(helper, {}).then(() => {
-				assert.isTrue(setStub.calledOnce);
-				assert.isTrue(setStub.firstCall.calledWith({ ejected: true }));
-			}, () => {
-				assert.fail(null, null, 'moduleUnderTest.run should not have rejected promise');
-			});
+			return moduleUnderTest.run(helper, {}).then(
+				() => {
+					assert.isTrue(setStub.calledOnce);
+					assert.isTrue(setStub.firstCall.calledWith({ ejected: true }));
+				},
+				() => {
+					assert.fail(null, null, 'moduleUnderTest.run should not have rejected promise');
+				}
+			);
 		});
 	});
 
@@ -133,13 +147,16 @@ describe('eject command', () => {
 				['apple', loadCommand('command-with-full-eject')]
 			]);
 			const helper = getHelper();
-			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves({commandsMap: commandMap});
-			return moduleUnderTest.run(helper, {}).then(() => {
-				assert.isTrue(mockNpmInstall.installDependencies.calledOnce);
-				assert.isTrue(mockNpmInstall.installDevDependencies.calledOnce);
-			}, () => {
-				assert.fail(null, null, 'moduleUnderTest.run should not have rejected promise');
-			});
+			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves({ commandsMap: commandMap });
+			return moduleUnderTest.run(helper, {}).then(
+				() => {
+					assert.isTrue(mockNpmInstall.installDependencies.calledOnce);
+					assert.isTrue(mockNpmInstall.installDevDependencies.calledOnce);
+				},
+				() => {
+					assert.fail(null, null, 'moduleUnderTest.run should not have rejected promise');
+				}
+			);
 		});
 	});
 
@@ -149,15 +166,30 @@ describe('eject command', () => {
 				['apple', loadCommand('command-with-full-eject')]
 			]);
 			const helper = getHelper();
-			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves({commandsMap: commandMap});
-			return moduleUnderTest.run(helper, {}).then(() => {
-				assert.isTrue(consoleLogStub.secondCall.calledWith(` ${yellow('creating')} .${sep}config${sep}test-group-test-eject${sep}file1`));
-				assert.isTrue(consoleLogStub.thirdCall.calledWith(` ${yellow('creating')} .${sep}config${sep}test-group-test-eject${sep}file2`));
-				assert.isTrue(consoleLogStub.getCall(3).calledWith(` ${yellow('creating')} .${sep}config${sep}test-group-test-eject${sep}file3`));
-				assert.isTrue(mockFsExtra.copySync.calledThrice);
-			}, () => {
-				assert.fail(null, null, 'moduleUnderTest.run should not have rejected promise');
-			});
+			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves({ commandsMap: commandMap });
+			return moduleUnderTest.run(helper, {}).then(
+				() => {
+					assert.isTrue(
+						consoleLogStub.secondCall.calledWith(
+							` ${yellow('creating')} .${sep}config${sep}test-group-test-eject${sep}file1`
+						)
+					);
+					assert.isTrue(
+						consoleLogStub.thirdCall.calledWith(
+							` ${yellow('creating')} .${sep}config${sep}test-group-test-eject${sep}file2`
+						)
+					);
+					assert.isTrue(
+						consoleLogStub
+							.getCall(3)
+							.calledWith(` ${yellow('creating')} .${sep}config${sep}test-group-test-eject${sep}file3`)
+					);
+					assert.isTrue(mockFsExtra.copySync.calledThrice);
+				},
+				() => {
+					assert.fail(null, null, 'moduleUnderTest.run should not have rejected promise');
+				}
+			);
 		});
 
 		it('should not copy files if no files are specified', () => {
@@ -165,12 +197,15 @@ describe('eject command', () => {
 				['apple', loadCommand('command-with-nofile-eject')]
 			]);
 			const helper = getHelper();
-			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves({commandsMap: commandMap});
-			return moduleUnderTest.run(helper, {}).then(() => {
-				assert.isTrue(mockFsExtra.copySync.notCalled);
-			}, () => {
-				assert.fail(null, null, 'moduleUnderTest.run should not have rejected promise');
-			});
+			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves({ commandsMap: commandMap });
+			return moduleUnderTest.run(helper, {}).then(
+				() => {
+					assert.isTrue(mockFsExtra.copySync.notCalled);
+				},
+				() => {
+					assert.fail(null, null, 'moduleUnderTest.run should not have rejected promise');
+				}
+			);
 		});
 	});
 
@@ -180,17 +215,23 @@ describe('eject command', () => {
 				['apple', loadCommand('command-with-hints')]
 			]);
 			const helper = getHelper();
-			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves({commandsMap: commandMap});
-			return moduleUnderTest.run(helper, {}).then(() => {
-				const logCallCount = consoleLogStub.callCount;
-				assert.isTrue(consoleLogStub.callCount > 3, '1');
-				const hintsCall = logCallCount - 3;
-				assert.isTrue(consoleLogStub.getCall(hintsCall).calledWith(underline('\nhints')), 'should underline hints');
-				assert.isTrue(consoleLogStub.getCall(hintsCall + 1).calledWith(' hint 1'), 'should show hint1');
-				assert.isTrue(consoleLogStub.getCall(hintsCall + 2).calledWith(' hint 2'), 'should show hint2');
-			}, () => {
-				assert.fail(null, null, 'moduleUnderTest.run should not have rejected promise');
-			});
+			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves({ commandsMap: commandMap });
+			return moduleUnderTest.run(helper, {}).then(
+				() => {
+					const logCallCount = consoleLogStub.callCount;
+					assert.isTrue(consoleLogStub.callCount > 3, '1');
+					const hintsCall = logCallCount - 3;
+					assert.isTrue(
+						consoleLogStub.getCall(hintsCall).calledWith(underline('\nhints')),
+						'should underline hints'
+					);
+					assert.isTrue(consoleLogStub.getCall(hintsCall + 1).calledWith(' hint 1'), 'should show hint1');
+					assert.isTrue(consoleLogStub.getCall(hintsCall + 2).calledWith(' hint 2'), 'should show hint2');
+				},
+				() => {
+					assert.fail(null, null, 'moduleUnderTest.run should not have rejected promise');
+				}
+			);
 		});
 	});
 });

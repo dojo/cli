@@ -9,12 +9,17 @@ import { CommandHelper, Helper } from './interfaces';
  * other tasks.
  */
 export class HelperFactory {
-	constructor(commandHelper: CommandHelper, yargs: Argv, context: any, configurationFactory: ConfigurationHelperFactory) {
+	constructor(
+		commandHelper: CommandHelper,
+		yargs: Argv,
+		context: any,
+		configurationFactory: ConfigurationHelperFactory
+	) {
 		this.command = commandHelper;
 		this.yargs = yargs;
 		this.context = context;
 		this.configurationFactory = configurationFactory;
-	};
+	}
 	command: CommandHelper;
 	yargs: Argv;
 	context: any;

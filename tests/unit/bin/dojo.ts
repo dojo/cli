@@ -8,7 +8,6 @@ import { CommandsMap, CommandWrapper, LoadedCommands } from '../../../src/interf
 import { getCommandWrapperWithConfiguration } from '../../support/testHelper';
 
 describe('cli .bin', () => {
-	let moduleUnderTest: any;
 	let mockModule: MockModule;
 	let mockYargs: any;
 	let mockAllCommandsPromise: Promise<any>;
@@ -37,17 +36,16 @@ describe('cli .bin', () => {
 			group: 'eject',
 			name: ''
 		});
-		const commandMap: CommandsMap = new Map<string, CommandWrapper>([
-			['eject', installedCommandWrapper1]
-		]);
+		const commandMap: CommandsMap = new Map<string, CommandWrapper>([['eject', installedCommandWrapper1]]);
 		commands.commandsMap = commandMap;
-		mockAllCommandsPromise = new Promise((resolve) => setTimeout(() => {
-			resolve(commands);
-		}, 1000));
+		mockAllCommandsPromise = new Promise((resolve) =>
+			setTimeout(() => {
+				resolve(commands);
+			}, 1000)
+		);
 		mockAllCommands.default = sandbox.stub().resolves(mockAllCommandsPromise);
 		mockRegisterCommands = mockModule.getMock('./registerCommands');
 		mockRegisterCommands.default = sandbox.stub();
-		moduleUnderTest = mockModule.getModuleUnderTest();
 
 		// Give a stacktrace for the unhandled rejections should they occur
 		process.on('unhandledRejection', (reason: string, p: any) => {
@@ -61,13 +59,14 @@ describe('cli .bin', () => {
 	});
 
 	it('should call registerCommands', () => {
-		mockAllCommandsPromise.then(() => {
-			setTimeout(() => {
-				assert.isTrue(mockRegisterCommands.default.called);
-			}, 100);
-		})
-		.catch((error: Error) => {
-			assert.fail(null, null, error.message);
-		});
+		mockAllCommandsPromise
+			.then(() => {
+				setTimeout(() => {
+					assert.isTrue(mockRegisterCommands.default.called);
+				}, 100);
+			})
+			.catch((error: Error) => {
+				assert.fail(null, null, error.message);
+			});
 	});
 });

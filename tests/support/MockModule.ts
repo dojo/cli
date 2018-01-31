@@ -27,15 +27,14 @@ export default class MockModule {
 			let dependency;
 			try {
 				dependency = require(resolvePath(this.basePath, dependencyName));
-			}
-			catch (e) {
+			} catch (e) {
 				dependency = {};
 			}
 			const mock: any = {};
 
 			for (let prop in dependency) {
 				if (typeof dependency[prop] === 'function') {
-					mock[prop] = function () {};
+					mock[prop] = function() {};
 					this.sandbox.stub(mock, prop);
 				} else {
 					mock[prop] = dependency[prop];
@@ -46,8 +45,7 @@ export default class MockModule {
 				const ctor = this.sandbox.stub().returns(mock);
 				mockery.registerMock(dependencyName, ctor);
 				mock.ctor = ctor;
-			}
-			else {
+			} else {
 				mockery.registerMock(dependencyName, mock);
 			}
 			this.mocks[dependencyName] = mock;

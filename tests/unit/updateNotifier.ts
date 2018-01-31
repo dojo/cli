@@ -7,11 +7,11 @@ import { SinonStub, stub } from 'sinon';
 let updateNotifier: any;
 const notifyStub: SinonStub = stub();
 const updateNotifierStub: SinonStub = stub();
-const testPkg = { 'testKey': 'testValue' };
+const testPkg = { testKey: 'testValue' };
 const testInterval = 100;
 
 registerSuite('updateNotifier', {
-	'before'() {
+	before() {
 		mockery.enable({
 			warnOnUnregistered: false
 		});
@@ -20,12 +20,12 @@ registerSuite('updateNotifier', {
 
 		updateNotifier = require('../../src/updateNotifier').default;
 	},
-	'beforeEach'() {
+	beforeEach() {
 		notifyStub.reset();
 		updateNotifierStub.reset();
-		updateNotifierStub.returns({ 'notify': notifyStub });
+		updateNotifierStub.returns({ notify: notifyStub });
 	},
-	'after'() {
+	after() {
 		mockery.deregisterAll();
 		mockery.disable();
 	},
@@ -34,18 +34,22 @@ registerSuite('updateNotifier', {
 		'Should call update-notifier with the passed arguments'() {
 			updateNotifier(testPkg, testInterval);
 			assert.isTrue(updateNotifierStub.calledOnce);
-			assert.isTrue(updateNotifierStub.firstCall.calledWith({
-				'pkg': testPkg,
-				'updateCheckInterval': testInterval
-			}));
+			assert.isTrue(
+				updateNotifierStub.firstCall.calledWith({
+					pkg: testPkg,
+					updateCheckInterval: testInterval
+				})
+			);
 		},
 		'Should default interval to zero if none passed'() {
 			updateNotifier(testPkg);
 			assert.isTrue(updateNotifierStub.calledOnce);
-			assert.isTrue(updateNotifierStub.firstCall.calledWith({
-				'pkg': testPkg,
-				'updateCheckInterval': 0
-			}));
+			assert.isTrue(
+				updateNotifierStub.firstCall.calledWith({
+					pkg: testPkg,
+					updateCheckInterval: 0
+				})
+			);
 		},
 		'Should call notify function once notifier is set up'() {
 			updateNotifier(testPkg, testInterval);

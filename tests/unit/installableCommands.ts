@@ -8,7 +8,6 @@ import MockModule from '../support/MockModule';
 import * as sinon from 'sinon';
 
 describe('installableCommands', () => {
-
 	let moduleUnderTest: any;
 	let mockModule: MockModule;
 	let sandbox: sinon.SinonSandbox;
@@ -34,12 +33,7 @@ describe('installableCommands', () => {
 	beforeEach(() => {
 		sandbox = sinon.sandbox.create();
 		mockModule = new MockModule('../../src/installableCommands', require);
-		mockModule.dependencies([
-			'execa',
-			'cross-spawn',
-			'configstore',
-			'./configurationHelper'
-		]);
+		mockModule.dependencies(['execa', 'cross-spawn', 'configstore', './configurationHelper']);
 
 		mockConfigStore = mockModule.getMock('configstore');
 		mockConfigStoreGet = sinon.stub();
@@ -78,12 +72,15 @@ describe('installableCommands', () => {
 	it('should check for installable commands if the config store is empty', () => {
 		return moduleUnderTest.default('testName').then((commands: NpmPackageDetails[]) => {
 			assert.isTrue(mockConfigStoreGet.calledWith('commands'), 'checks for stored commands');
-			assert.isTrue(mockExeca.ctor.calledWithMatch('npm', [ 'search', '@dojo', 'cli-', '--json', '--searchstaleness', '0' ]), 'calls npm search');
+			assert.isTrue(
+				mockExeca.ctor.calledWithMatch('npm', ['search', '@dojo', 'cli-', '--json', '--searchstaleness', '0']),
+				'calls npm search'
+			);
 		});
 	});
 
 	it('does not await check for installable commands if config store contains commands', () => {
-		mockConfigStoreGet.withArgs('commands').returns([ testCommandDetails ]);
+		mockConfigStoreGet.withArgs('commands').returns([testCommandDetails]);
 		return moduleUnderTest.default('testName').then((commands: NpmPackageDetails[]) => {
 			assert.isTrue(mockConfigStoreGet.calledWith('commands'), 'checks for stored commands');
 			assert.isTrue(mockExeca.ctor.notCalled, 'does not call npm search');
@@ -99,7 +96,10 @@ describe('installableCommands', () => {
 	});
 
 	it('creates installable command prompts', () => {
-		const { commandsMap, yargsCommandNames } = moduleUnderTest.createInstallableCommandPrompts([ testCommandDetails, testCommandDetails2 ]);
+		const { commandsMap, yargsCommandNames } = moduleUnderTest.createInstallableCommandPrompts([
+			testCommandDetails,
+			testCommandDetails2
+		]);
 		assert.equal(commandsMap.size, 3);
 		assert.equal(commandsMap.get('test').name, 'command');
 		assert.equal(commandsMap.get('test').group, 'test');
@@ -111,23 +111,33 @@ describe('installableCommands', () => {
 	});
 
 	it('does not generate duplicate command promps', () => {
-		const { commandsMap, yargsCommandNames } = moduleUnderTest.createInstallableCommandPrompts([ testCommandDetails, testCommandDetails ]);
+		const { commandsMap, yargsCommandNames } = moduleUnderTest.createInstallableCommandPrompts([
+			testCommandDetails,
+			testCommandDetails
+		]);
 		assert.equal(commandsMap.size, 2);
 		assert.equal(yargsCommandNames.size, 1);
 	});
 
 	it('does not create command prompts for ejected commands', () => {
 		configHelperGetStub.returns({ ejected: true });
-		const { commandsMap, yargsCommandNames } = moduleUnderTest.createInstallableCommandPrompts([ testCommandDetails ]);
+		const { commandsMap, yargsCommandNames } = moduleUnderTest.createInstallableCommandPrompts([
+			testCommandDetails
+		]);
 		assert.equal(commandsMap.size, 0);
 		assert.equal(yargsCommandNames.size, 0);
 	});
 
 	it('shows installation instructions for installable commands', () => {
-		const { commandsMap } = moduleUnderTest.createInstallableCommandPrompts([ testCommandDetails ]);
-		return commandsMap.get('test').run().then(() => {
-			(console.log as sinon.SinonStub).calledWith(`\nTo install this command run ${chalk.green('npm i @dojo/cli-test-command')}\n`);
-		});
+		const { commandsMap } = moduleUnderTest.createInstallableCommandPrompts([testCommandDetails]);
+		return commandsMap
+			.get('test')
+			.run()
+			.then(() => {
+				(console.log as sinon.SinonStub).calledWith(
+					`\nTo install this command run ${chalk.green('npm i @dojo/cli-test-command')}\n`
+				);
+			});
 	});
 
 	it('can merge installed commands with available commands', () => {
@@ -139,7 +149,9 @@ describe('installableCommands', () => {
 			commandsMap,
 			yargsCommandNames
 		};
-		const mergedCommands = moduleUnderTest.mergeInstalledCommandsWithAvailableCommands(installedCommands, [ testCommandDetails ]);
+		const mergedCommands = moduleUnderTest.mergeInstalledCommandsWithAvailableCommands(installedCommands, [
+			testCommandDetails
+		]);
 
 		assert.equal(mergedCommands.commandsMap.size, 3);
 		assert.isTrue(mergedCommands.commandsMap.has('test'));

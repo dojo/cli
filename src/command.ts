@@ -9,7 +9,7 @@ const cliui = require('cliui');
  * 		- '@dojo/cli-serve-dist'
  */
 export function initCommandLoader(searchPrefixes: string[]): (path: string) => CommandWrapper {
-	const commandRegExp = new RegExp(`(?:${searchPrefixes.join('|').replace('\/', '\\/')})-([^-]+)-(.+)$`);
+	const commandRegExp = new RegExp(`(?:${searchPrefixes.join('|').replace('/', '\\/')})-([^-]+)-(.+)$`);
 
 	return function load(path: string): CommandWrapper {
 		let module = require(path);
@@ -18,7 +18,7 @@ export function initCommandLoader(searchPrefixes: string[]): (path: string) => C
 			const command = convertModuleToCommand(module);
 			const { description, register, run, alias, eject } = command;
 			//  derive the group and name from the module directory name, e.g. dojo-cli-group-name
-			const [ , group, name] = <string[]> commandRegExp.exec(path);
+			const [, group, name] = <string[]>commandRegExp.exec(path);
 
 			return {
 				name,
@@ -40,7 +40,6 @@ export function initCommandLoader(searchPrefixes: string[]): (path: string) => C
  * Creates a builtIn command loader function.
  */
 export function createBuiltInCommandLoader(): (path: string) => CommandWrapper {
-
 	return function load(path: string): CommandWrapper {
 		const module = require(path);
 
@@ -71,8 +70,7 @@ export function convertModuleToCommand(module: any): Command {
 
 	if (module.description && module.register && module.run) {
 		return module;
-	}
-	else {
+	} else {
 		throw new Error(`Module does not satisfy the Command interface`);
 	}
 }
@@ -81,16 +79,15 @@ export function getGroupDescription(commandNames: Set<string>, commands: Command
 	const numCommands = commandNames.size;
 	if (numCommands > 1) {
 		return getMultiCommandDescription(commandNames, commands);
-	}
-	else {
-		const { description } = <CommandWrapper> commands.get(Array.from(commandNames.keys())[0]);
+	} else {
+		const { description } = <CommandWrapper>commands.get(Array.from(commandNames.keys())[0]);
 		return description;
 	}
 }
 
 function getMultiCommandDescription(commandNames: Set<string>, commands: CommandsMap): string {
 	const descriptions = Array.from(commandNames.keys(), (commandName) => {
-		const { name, description } = (<CommandWrapper> commands.get(commandName));
+		const { name, description } = <CommandWrapper>commands.get(commandName);
 		return `${name}  \t${description}`;
 	});
 	const ui = cliui({

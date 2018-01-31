@@ -13,7 +13,7 @@ const { green, underline, yellow } = chalk;
 const copiedFilesDir = 'config';
 const ejectedKey = 'ejected';
 
-export interface EjectArgs extends Argv {};
+export interface EjectArgs extends Argv {}
 
 export interface EjectableCommandWrapper extends CommandWrapper {
 	eject(helper: Helper): EjectOutput;
@@ -40,23 +40,24 @@ function copyFiles(commandName: string, { path, files }: FileCopyConfig): void {
 }
 
 async function run(helper: Helper, args: EjectArgs): Promise<any> {
-	return inquirer.prompt({
-		type: 'confirm',
-		name: 'eject',
-		message: 'Are you sure you want to eject (this is a permanent operation)?',
-		default: false
-	}).then((answer) => {
-		if (!answer.eject) {
-			throw Error('Aborting eject');
-		}
-		return loadExternalCommands()
-			.then(async (commands) => {
+	return inquirer
+		.prompt({
+			type: 'confirm',
+			name: 'eject',
+			message: 'Are you sure you want to eject (this is a permanent operation)?',
+			default: false
+		})
+		.then((answer) => {
+			if (!answer.eject) {
+				throw Error('Aborting eject');
+			}
+			return loadExternalCommands().then(async (commands) => {
 				const npmPackages: NpmPackage = {
 					dependencies: {},
 					devDependencies: {}
 				};
 
-				const toEject = [ ...commands.commandsMap.values() ].reduce((toEject, command) => {
+				const toEject = [...commands.commandsMap.values()].reduce((toEject, command) => {
 					if (isEjectableCommandWrapper(command)) {
 						toEject.add(command);
 					}
@@ -93,8 +94,7 @@ async function run(helper: Helper, args: EjectArgs): Promise<any> {
 							console.log(' ' + hint);
 						});
 					}
-				}
-				else {
+				} else {
 					console.log('There are no commands that can be ejected');
 				}
 			});

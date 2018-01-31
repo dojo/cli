@@ -11,19 +11,19 @@ import expectedEsModuleCommand from '../support/esmodule-prefix-foo-bar';
 
 const testGroup = 'foo';
 const testName = 'bar';
-const testSearchPrefixes = [ 'test-prefix' ];
-const testEsModuleSearchPrefixes = [ 'esmodule-prefix' ];
-const testEsModuleFailSearchPrefixes = [ 'esmodule-fail' ];
-const testSearchPrefixesDashedNames = [ 'dash-names' ];
+const testSearchPrefixes = ['test-prefix'];
+const testEsModuleSearchPrefixes = ['esmodule-prefix'];
+const testEsModuleFailSearchPrefixes = ['esmodule-fail'];
+const testSearchPrefixesDashedNames = ['dash-names'];
 let commandWrapper: any;
 const groupDef: GroupDef = [
 	{
 		groupName: 'group1',
-		commands: [ { commandName: 'command1' } ]
+		commands: [{ commandName: 'command1' }]
 	},
 	{
 		groupName: 'group2',
-		commands: [ { commandName: 'command1' } ]
+		commands: [{ commandName: 'command1' }]
 	}
 ];
 const commandsMap = getCommandsMap(groupDef);
@@ -36,12 +36,14 @@ function getCommandPath(prefixes: string[]): string[] {
 }
 
 function getBuiltInCommandPath(invalid: boolean): string {
-	return invalid ? `../tests/support/commands/invalid-built-in-command` : `../tests/support/commands/test-prefix-foo-bar`;
+	return invalid
+		? `../tests/support/commands/invalid-built-in-command`
+		: `../tests/support/commands/test-prefix-foo-bar`;
 }
 
 registerSuite('command', {
-	'load': {
-		'beforeEach'() {
+	load: {
+		beforeEach() {
 			loader = command.initCommandLoader(testSearchPrefixes);
 			commandWrapper = loader(getCommandPath(testSearchPrefixes)[0]);
 		},
@@ -63,7 +65,7 @@ registerSuite('command', {
 		}
 	},
 	'load built in command': {
-		'beforeEach'() {
+		beforeEach() {
 			loader = command.createBuiltInCommandLoader();
 			commandWrapper = loader(getBuiltInCommandPath(false));
 		},
@@ -83,7 +85,7 @@ registerSuite('command', {
 		}
 	},
 	'load esmodule default': {
-		'beforeEach'() {
+		beforeEach() {
 			loader = command.initCommandLoader(testEsModuleSearchPrefixes);
 			commandWrapper = loader(getCommandPath(testEsModuleSearchPrefixes)[0]);
 		},
@@ -105,7 +107,7 @@ registerSuite('command', {
 		}
 	},
 	'load esmodule that does not meet Command interface': {
-		'before'() {
+		before() {
 			loader = command.initCommandLoader(testEsModuleFailSearchPrefixes);
 		},
 
@@ -114,16 +116,18 @@ registerSuite('command', {
 				try {
 					commandWrapper = loader(getCommandPath(testEsModuleFailSearchPrefixes)[0]);
 					assert.fail(null, null, 'Should not get here');
-				}
-				catch (error) {
+				} catch (error) {
 					assert.isTrue(error instanceof Error);
-					assert.equal(error.message, `Path: ../tests/support/esmodule-fail-foo-bar returned module that does not satisfy the Command interface. Error: Module does not satisfy the Command interface`);
+					assert.equal(
+						error.message,
+						`Path: ../tests/support/esmodule-fail-foo-bar returned module that does not satisfy the Command interface. Error: Module does not satisfy the Command interface`
+					);
 				}
 			}
 		}
 	},
 	'load builtin command that does not meet Command interface': {
-		'before'() {
+		before() {
 			loader = command.createBuiltInCommandLoader();
 		},
 
@@ -132,8 +136,7 @@ registerSuite('command', {
 				try {
 					commandWrapper = loader(getBuiltInCommandPath(true));
 					assert.fail(null, null, 'Should not get here');
-				}
-				catch (error) {
+				} catch (error) {
 					assert.isTrue(error instanceof Error);
 					assert.isTrue(error.message.indexOf('does not satisfy the Command interface') > -1);
 				}
@@ -141,7 +144,7 @@ registerSuite('command', {
 		}
 	},
 	'load of commands parsed correctly': {
-		'before'() {
+		before() {
 			loader = command.initCommandLoader(testSearchPrefixesDashedNames);
 			commandWrapper = loader('../tests/support/dash-names-foo-bar-baz');
 		},
@@ -153,8 +156,8 @@ registerSuite('command', {
 			}
 		}
 	},
-	'getGroupDescription': {
-		'before'() {
+	getGroupDescription: {
+		before() {
 			loader = command.initCommandLoader(testSearchPrefixes);
 		},
 
@@ -168,7 +171,9 @@ registerSuite('command', {
 				const key1 = 'group1-command1';
 				const key2 = 'group2-command1';
 				const description = command.getGroupDescription(new Set([key1, key2]), commandsMap);
-				const expected = `${commandsMap.get(key1).name}  ${commandsMap.get(key1).description}\n${commandsMap.get(key1).name}  ${commandsMap.get(key2).description}`;
+				const expected = `${commandsMap.get(key1).name}  ${commandsMap.get(key1).description}\n${
+					commandsMap.get(key1).name
+				}  ${commandsMap.get(key2).description}`;
 
 				assert.equal(expected, description);
 			}

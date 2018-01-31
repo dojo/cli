@@ -9,14 +9,11 @@ import configurationHelperFactory from '../../src/configurationHelper';
 const groupDef: GroupDef = [
 	{
 		groupName: 'group1',
-		commands: [ { commandName: 'command1' } ]
+		commands: [{ commandName: 'command1' }]
 	},
 	{
 		groupName: 'group2',
-		commands: [
-			{ commandName: 'command1' },
-			{ commandName: 'failcommand', fails: true }
-		]
+		commands: [{ commandName: 'command1' }, { commandName: 'failcommand', fails: true }]
 	}
 ];
 let commandsMap: any;
@@ -24,16 +21,16 @@ let commandHelper: any;
 const templateStub: SinonStub = stub();
 
 const context = {
-	'testKey': 'testValue'
+	testKey: 'testValue'
 };
 
 registerSuite('CommandHelper', {
-	'beforeEach'() {
+	beforeEach() {
 		templateStub.reset();
-		mockery.enable({warnOnUnregistered: false, useCleanCache: true});
+		mockery.enable({ warnOnUnregistered: false, useCleanCache: true });
 
 		mockery.registerMock('./template', {
-			'default': templateStub
+			default: templateStub
 		});
 
 		commandsMap = getCommandsMap(groupDef);
@@ -41,7 +38,7 @@ registerSuite('CommandHelper', {
 		commandHelper = new commandHelperCtor(commandsMap, context, configurationHelperFactory);
 	},
 
-	'afterEach'() {
+	afterEach() {
 		mockery.deregisterAll();
 		mockery.disable();
 	},
@@ -61,79 +58,81 @@ registerSuite('CommandHelper', {
 		},
 		'Should run a command that exists and return a promise that resolves'() {
 			const key = 'group1-command1';
-			return commandHelper.run(key).then((response: string) => {
-				assert.equal(key, response);
-			})
-			.catch(() => {
-				assert.fail(null, null, 'commandHelper.run should not have rejected promise');
-			});
+			return commandHelper
+				.run(key)
+				.then((response: string) => {
+					assert.equal(key, response);
+				})
+				.catch(() => {
+					assert.fail(null, null, 'commandHelper.run should not have rejected promise');
+				});
 		},
 		'Should run a command that exists with args and return a promise that resolves'() {
 			const key = 'group1-command1';
-			return commandHelper.run(key, undefined, 'args').then((response: string) => {
-				const mockCommand = commandsMap.get(key);
-				assert.isTrue(mockCommand.runSpy.called);
-				assert.equal(mockCommand.runSpy.getCall(0).args[1], 'args');
-				assert.equal(key, response);
-			})
-			.catch(() => {
-				assert.fail(null, null, 'commandHelper.run should not have rejected promise');
-			});
+			return commandHelper
+				.run(key, undefined, 'args')
+				.then((response: string) => {
+					const mockCommand = commandsMap.get(key);
+					assert.isTrue(mockCommand.runSpy.called);
+					assert.equal(mockCommand.runSpy.getCall(0).args[1], 'args');
+					assert.equal(key, response);
+				})
+				.catch(() => {
+					assert.fail(null, null, 'commandHelper.run should not have rejected promise');
+				});
 		},
 		'Should run a command that exists and return a rejected promise when it fails'() {
 			const key = 'group2-failcommand';
-			return commandHelper.run(key).then(
-				(response: string) => {
-					assert.fail(null, null, 'Should not have resolved');
-				},
-				(error: Error) => {
-					assert.equal(key, error.message);
-				}
-			)
-			.catch(() => {
-				assert.fail(null, null, 'commandHelper.run should not have rejected promise');
-			});
+			return commandHelper
+				.run(key)
+				.then(
+					(response: string) => {
+						assert.fail(null, null, 'Should not have resolved');
+					},
+					(error: Error) => {
+						assert.equal(key, error.message);
+					}
+				)
+				.catch(() => {
+					assert.fail(null, null, 'commandHelper.run should not have rejected promise');
+				});
 		},
 		'Should not run a command that does not exist and return a rejected promise'() {
 			const key = 'nogroup-nocommand';
 			const expectedErrorMsg = 'The command does not exist';
-			return commandHelper.run(key).then(
-				(response: string) => {
-					assert.fail(null, null, 'Should not have resolved');
-				},
-				(error: Error) => {
-					assert.equal(expectedErrorMsg, error.message);
-				}
-			)
-			.catch(() => {
-				assert.fail(null, null, 'commandHelper.run should not have rejected promise');
-			});
+			return commandHelper
+				.run(key)
+				.then(
+					(response: string) => {
+						assert.fail(null, null, 'Should not have resolved');
+					},
+					(error: Error) => {
+						assert.equal(expectedErrorMsg, error.message);
+					}
+				)
+				.catch(() => {
+					assert.fail(null, null, 'commandHelper.run should not have rejected promise');
+				});
 		},
 		'Should call template for each file in the config'() {
 			const testRenderData = {
-				'appName': 'testName'
+				appName: 'testName'
 			};
 
-			const testFilesConfig = [
-				{ src: 'test/a', dest: 'dest/a' },
-				{ src: 'test/b', dest: 'dest/b' }
-			];
+			const testFilesConfig = [{ src: 'test/a', dest: 'dest/a' }, { src: 'test/b', dest: 'dest/b' }];
 
 			commandHelper.renderFiles(testFilesConfig, testRenderData);
 			assert.equal(2, templateStub.callCount);
 		},
 		'Should call template with the src and dest from config'() {
 			const testRenderData = {
-				'appName': 'testName'
+				appName: 'testName'
 			};
 
-			const testFilesConfig = [
-				{ src: 'test/a', dest: 'dest/a' },
-				{ src: 'test/b', dest: 'dest/b' }
-			];
+			const testFilesConfig = [{ src: 'test/a', dest: 'dest/a' }, { src: 'test/b', dest: 'dest/b' }];
 
 			commandHelper.renderFiles(testFilesConfig, testRenderData);
-			const [ file1, file2 ] = testFilesConfig;
+			const [file1, file2] = testFilesConfig;
 			assert.isTrue(templateStub.firstCall.calledWithMatch(file1.src, file1.dest));
 			assert.isTrue(templateStub.secondCall.calledWithMatch(file2.src, file2.dest));
 		}

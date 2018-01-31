@@ -18,7 +18,7 @@ export function isEjected(groupName: string, command: string): boolean {
  * @param config
  * @returns {Promise<string []>} the paths of all installed commands
  */
-export async function enumerateInstalledCommands (config: CliConfig): Promise <string []> {
+export async function enumerateInstalledCommands(config: CliConfig): Promise<string[]> {
 	const { searchPrefixes } = config;
 	const globPaths = searchPrefixes.reduce((globPaths: string[], key) => {
 		return globPaths.concat(config.searchPaths.map((depPath) => pathResolve(depPath, `${key}-*`)));
@@ -31,7 +31,7 @@ export async function enumerateInstalledCommands (config: CliConfig): Promise <s
  * @param config
  * @returns {Promise<string []>} the paths of all builtIn commands
  */
-export async function enumerateBuiltInCommands (config: CliConfig): Promise <string []> {
+export async function enumerateBuiltInCommands(config: CliConfig): Promise<string[]> {
 	const builtInCommandParentDirGlob = join(config.builtInCommandLocation, '/*.js');
 	return globby(builtInCommandParentDirGlob, { ignore: '**/*.map' });
 }
@@ -49,15 +49,15 @@ export async function enumerateBuiltInCommands (config: CliConfig): Promise <str
  * @returns Promise This function is async and returns a promise once all
  * of the commands have been loaded.
  */
-export async function loadCommands(paths: string[], load: (path: string) => CommandWrapper ): Promise <LoadedCommands> {
-	return new Promise <LoadedCommands> ((resolve, reject) => {
+export async function loadCommands(paths: string[], load: (path: string) => CommandWrapper): Promise<LoadedCommands> {
+	return new Promise<LoadedCommands>((resolve, reject) => {
 		const commandsMap: CommandsMap = new Map();
 		const yargsCommandNames: YargsCommandNames = new Map();
 
 		paths.forEach((path) => {
 			try {
 				const commandWrapper = load(path);
-				const {group, name} = commandWrapper;
+				const { group, name } = commandWrapper;
 				let compositeKey = group;
 				if (name) {
 					compositeKey = `${group}-${name}`;
@@ -79,8 +79,7 @@ export async function loadCommands(paths: string[], load: (path: string) => Comm
 						groupCommandNames.add(compositeKey);
 					}
 				}
-			}
-			catch (error) {
+			} catch (error) {
 				error.message = `Failed to load module ${path}\nNested error: ${error.message}`;
 				reject(error);
 			}

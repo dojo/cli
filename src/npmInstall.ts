@@ -1,7 +1,7 @@
 import { NpmPackage } from './interfaces';
 const cs: any = require('cross-spawn');
 
-function convertToInlineDependencies(dependencies: {[key: string]: string}): string[] {
+function convertToInlineDependencies(dependencies: { [key: string]: string }): string[] {
 	return Object.keys(dependencies).reduce((inlineDependencies: string[], key: string) => {
 		inlineDependencies.push(`${key}@${dependencies[key]}`);
 		return inlineDependencies;
@@ -10,7 +10,8 @@ function convertToInlineDependencies(dependencies: {[key: string]: string}): str
 
 async function npmInstall(args: string[] = []) {
 	return new Promise((resolve, reject) => {
-		cs.spawn('npm', ['--silent', 'install', ...args], { stdio: 'inherit' })
+		cs
+			.spawn('npm', ['--silent', 'install', ...args], { stdio: 'inherit' })
 			.on('close', () => {
 				resolve();
 			})

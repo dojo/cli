@@ -16,7 +16,7 @@ export default async function(name: string): Promise<NpmPackageDetails[]> {
 	if (commands.length) {
 		const lastUpdated = conf.get('lastUpdated');
 		if (Date.now() - lastUpdated >= ONE_DAY) {
-			spawn(process.execPath, [join(__dirname, 'detachedCheckForNewCommands.js'), JSON.stringify({ name }) ], {
+			spawn(process.execPath, [join(__dirname, 'detachedCheckForNewCommands.js'), JSON.stringify({ name })], {
 				detached: true,
 				stdio: 'ignore'
 			}).unref();
@@ -39,29 +39,39 @@ export async function getLatestCommands(packageName: string, conf: Configstore):
 
 async function search(timeout: number = 0): Promise<NpmPackageDetails[] | undefined> {
 	try {
-		const { stdout } = await execa('npm', ['search', '@dojo', 'cli-', '--json', '--searchstaleness', '0'], { timeout });
+		const { stdout } = await execa('npm', ['search', '@dojo', 'cli-', '--json', '--searchstaleness', '0'], {
+			timeout
+		});
 		const commands = JSON.parse(stdout);
 		return commands.filter(({ name }: NpmPackageDetails) => {
 			return name !== '@dojo/cli';
 		});
-	}
-	catch (e) {
+	} catch (e) {
 		console.error('Invalid response from npm search');
 	}
 }
 
-export function mergeInstalledCommandsWithAvailableCommands(installedCommands: LoadedCommands, availableCommands: NpmPackageDetails[]) {
+export function mergeInstalledCommandsWithAvailableCommands(
+	installedCommands: LoadedCommands,
+	availableCommands: NpmPackageDetails[]
+) {
 	const installableCommandPrompts = createInstallableCommandPrompts(availableCommands);
 
-	const allGroups = new Set([...installableCommandPrompts.yargsCommandNames.keys(), ...installedCommands.yargsCommandNames.keys()]);
+	const allGroups = new Set([
+		...installableCommandPrompts.yargsCommandNames.keys(),
+		...installedCommands.yargsCommandNames.keys()
+	]);
 
-	const mergedYargsCommandNames = [...allGroups].reduce((mergedCommandNames: YargsCommandNames, groupName) => {
-		const installedGroup = installedCommands.yargsCommandNames.get(groupName) || [];
-		const installableGroup = installableCommandPrompts.yargsCommandNames.get(groupName) || [];
-		const mergedSets = new Set([...installableGroup, ...installedGroup]);
-		mergedCommandNames.set(groupName, mergedSets);
-		return mergedCommandNames;
-	}, new Map() as YargsCommandNames);
+	const mergedYargsCommandNames = [...allGroups].reduce(
+		(mergedCommandNames: YargsCommandNames, groupName) => {
+			const installedGroup = installedCommands.yargsCommandNames.get(groupName) || [];
+			const installableGroup = installableCommandPrompts.yargsCommandNames.get(groupName) || [];
+			const mergedSets = new Set([...installableGroup, ...installedGroup]);
+			mergedCommandNames.set(groupName, mergedSets);
+			return mergedCommandNames;
+		},
+		new Map() as YargsCommandNames
+	);
 
 	return {
 		commandsMap: new Map([...installableCommandPrompts.commandsMap, ...installedCommands.commandsMap]),
@@ -75,7 +85,7 @@ export function createInstallableCommandPrompts(availableCommands: NpmPackageDet
 	const regEx = /@dojo\/cli-([^-]+)-(.+)/;
 
 	availableCommands.forEach((command) => {
-		const [ , group, name ] = regEx.exec(command.name) as string[];
+		const [, group, name] = regEx.exec(command.name) as string[];
 		const compositeKey = `${group}-${name}`;
 		const installCommand = `npm i ${command.name}`;
 		const commandWrapper: CommandWrapper = {

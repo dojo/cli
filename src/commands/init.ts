@@ -22,7 +22,7 @@ async function run(helper: Helper, args: {}) {
 	const { commandsMap } = await loadExternalCommands();
 	const values = [];
 
-	for (let [ , value ] of commandsMap.entries()) {
+	for (let [, value] of commandsMap.entries()) {
 		const name = `${value.group}-${value.name}`;
 		if (values.indexOf(value) === -1 && json[name] === undefined) {
 			json[name] = {};
