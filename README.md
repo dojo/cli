@@ -5,8 +5,6 @@
 
 The CLI is the officially supported way to create and maintain Dojo 2 apps.
 
-**WARNING** This is _beta_ software. While we do not anticipate significant changes to the API at this stage, we may feel the need to do so. This is not yet production ready, so you should use at your own risk.
-
 - [Why use this cli?](#why-use-this-cli)
 - [Usage](#usage)
   - [Prerequisites](#prerequisites)
@@ -144,4 +142,4 @@ or
 
 ## Licensing information
 
-© 2004–2017 [JS Foundation](https://js.foundation/) & contributors. [New BSD](http://opensource.org/licenses/BSD-3-Clause) license.
+© 2018 [JS Foundation](https://js.foundation/) & contributors. [New BSD](http://opensource.org/licenses/BSD-3-Clause) license.
