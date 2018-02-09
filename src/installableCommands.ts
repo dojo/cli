@@ -22,13 +22,14 @@ export default async function(name: string): Promise<NpmPackageDetails[]> {
 			}).unref();
 		}
 	} else {
-		commands = await getLatestCommands(name, conf);
+		commands = await getLatestCommands(name);
 	}
 
 	return commands;
 }
 
-export async function getLatestCommands(packageName: string, conf: Configstore): Promise<NpmPackageDetails[]> {
+export async function getLatestCommands(name: string): Promise<NpmPackageDetails[]> {
+	const conf = new Configstore(name);
 	const commands = await search(INITIAL_TIMEOUT);
 	if (commands && commands.length) {
 		conf.set('commands', commands);

@@ -1,10 +1,8 @@
 import { getLatestCommands } from './installableCommands';
-import * as Configstore from 'configstore';
 
 const options = JSON.parse(process.argv[2]);
-const conf = new Configstore(options.name);
 
-getLatestCommands(options.name, conf)
+getLatestCommands(options.name)
 	.then(() => {
 		process.exit();
 	})
