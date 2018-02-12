@@ -70,7 +70,7 @@ async function areCommandsOutdated(moduleVersions: ModuleVersion[]): Promise<any
 		const canBeUpdated = version !== latestVersion;
 		const versionStr = canBeUpdated
 			? `${chalk.yellow(version)} ${chalk.red(`(latest is ${latestVersion})`)}`
-			: chalk.yellow(version);
+			: chalk.green(version);
 		return {
 			name: name,
 			version: versionStr,
@@ -199,7 +199,6 @@ function createVersionsString(commandsMap: CommandsMap, checkOutdated: boolean):
 	const packagePath = pkgDir.sync(__dirname);
 	const myPackageDetails = readPackageDetails(packagePath); // fetch the cli's package details
 	const versions: ModuleVersion[] = buildVersions(commandsMap);
-
 	if (checkOutdated) {
 		return areCommandsOutdated(versions).then(
 			(commandVersions: ModuleVersion[]) => createOutput(myPackageDetails, commandVersions),
@@ -217,7 +216,10 @@ function run(helper: Helper, args: VersionArgs): Promise<any> {
 		.then((commands) => {
 			return createVersionsString(commands.commandsMap, args.outdated);
 		})
-		.then(console.log);
+		.then((output: string) => {
+			console.info('**' + output + '**');
+			console.log(output);
+		});
 }
 
 export default {
