@@ -216,10 +216,7 @@ function run(helper: Helper, args: VersionArgs): Promise<any> {
 		.then((commands) => {
 			return createVersionsString(commands.commandsMap, args.outdated);
 		})
-		.then((output: string) => {
-			console.info('**' + output + '**');
-			console.log(output);
-		});
+		.then(console.log);
 }
 
 export default {

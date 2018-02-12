@@ -167,8 +167,13 @@ ${outputSuffix}`;
 	});
 
 	it('should run and return current versions and latest version on success', () => {
-		// const latestStableInfo: any = {};
-		// mockDavid.getUpdatedDependencies = sandbox.stub().yields(null, latestStableInfo);
+		mockInstallableCommands.getLatestCommands = sandbox.stub().resolves([
+			{
+				name: 'Test Package 1',
+				version: '1.0.0'
+			}
+		]);
+
 		const installedCommandWrapper = getCommandWrapperWithConfiguration({
 			group: 'apple',
 			name: 'test',
@@ -197,9 +202,12 @@ ${outputSuffix}`;
 	});
 
 	it('should run and return current versions and upgrade to latest version on success', () => {
-		const latestStableInfo: any = {};
-		latestStableInfo[validPackageInfo.name] = { latest: '1.2.3' };
-		// mockDavid.getUpdatedDependencies = sandbox.stub().yields(null, latestStableInfo);
+		mockInstallableCommands.getLatestCommands = sandbox.stub().resolves([
+			{
+				name: 'Test Package 1',
+				version: '1.2.3'
+			}
+		]);
 		const installedCommandWrapper = getCommandWrapperWithConfiguration({
 			group: 'apple',
 			name: 'test',
@@ -207,9 +215,7 @@ ${outputSuffix}`;
 		});
 
 		const expectedOutput = `${outputPrefix}
-${validPackageInfo.name}@${chalk.yellow(validPackageInfo.version)}  ${chalk.red(
-			`(latest is ${latestStableInfo[validPackageInfo.name].latest})`
-		)}
+${validPackageInfo.name}@${chalk.yellow(validPackageInfo.version)} ${chalk.red('(latest is 1.2.3)')}
 ${outputSuffix}`;
 
 		const commandMap: CommandsMap = new Map<string, CommandWrapper>([
@@ -230,14 +236,15 @@ ${outputSuffix}`;
 	});
 
 	it('should return an error if fetching latest versions fails', () => {
-		// mockDavid.getUpdatedDependencies = sandbox.stub().yields(davidError, null);
+		mockInstallableCommands.getLatestCommands = sandbox.stub().throws();
+
 		const installedCommandWrapper = getCommandWrapperWithConfiguration({
 			group: 'apple',
 			name: 'test',
 			path: join(pathResolve('.'), '_build/tests/support/valid-package')
 		});
 
-		const expectedOutput = 'Something went wrong trying to fetch command versions';
+		const expectedOutput = 'Something went wrong trying to fetch command versions: Error';
 
 		const commandMap: CommandsMap = new Map<string, CommandWrapper>([
 			['installedCommand1', installedCommandWrapper]
