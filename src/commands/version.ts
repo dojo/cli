@@ -14,7 +14,7 @@ export const versionNoRegisteredCommands = `
 There are no registered commands available.`;
 export const versionNoVersion = chalk.yellow('package.json missing');
 export const versionRegisteredCommands = `
-The currently installed groups are:
+The currently installed commands are:
 `;
 const INBUILT_COMMAND_VERSION = '__IN_BUILT_COMMAND__';
 
@@ -44,6 +44,8 @@ async function getLatestCommandVersions(): Promise<NpmPackageDetails[]> {
 	const packageJsonFilePath = join(packagePath, 'package.json');
 	const packageJson = <any>require(packageJsonFilePath);
 
+	console.log('Fetching latest version information...');
+
 	return await getLatestCommands(packageJson.name);
 }
 
@@ -58,21 +60,17 @@ async function areCommandsOutdated(moduleVersions: ModuleVersion[]): Promise<any
 	type VersionsMap = { [index: string]: string };
 
 	const latestCommands = await getLatestCommandVersions();
-	const regEx = /@dojo\/cli-([^-]+)-(.+)/;
-	const latestVersions: VersionsMap = latestCommands.reduce((versions: VersionsMap, command) => {
-		const [, group, name] = regEx.exec(command.name) as string[];
-		const compositeKey = `${group}-${name}`;
-		versions[compositeKey] = command.version;
+	const latestVersions: VersionsMap = latestCommands.reduce((versions: VersionsMap, { name, version }) => {
+		versions[name] = version;
 		return versions;
 	}, {});
 
-	return moduleVersions.map(({ group, name, version }) => {
-		const compositeKey = `${group}-${name}`;
-		const latestVersion = latestVersions[compositeKey];
+	return moduleVersions.map(({ name, version, group }) => {
+		const latestVersion = latestVersions[name];
 		const canBeUpdated = version !== latestVersion;
 		const versionStr = canBeUpdated
-			? `${version} ${chalk.yellow(`(can be updated to ${latestVersion})`)}.`
-			: `${version} (on latest stable version).`;
+			? `${chalk.yellow(version)} ${chalk.red(`(latest is ${latestVersion})`)}`
+			: chalk.yellow(version);
 		return {
 			name: name,
 			version: versionStr,
@@ -104,10 +102,7 @@ function createOutput(myPackageDetails: PackageDetails, commandVersions: ModuleV
 	let output = '';
 	if (commandVersions.length) {
 		output += versionRegisteredCommands;
-		output +=
-			'\n' +
-			commandVersions.map((command) => `${command.group} (${command.name}) ${command.version}`).join('\n') +
-			'\n';
+		output += '\n' + commandVersions.map((command) => `${command.name}@${command.version}`).join('\n') + '\n';
 	} else {
 		output += versionNoRegisteredCommands;
 	}
@@ -218,14 +213,9 @@ function createVersionsString(commandsMap: CommandsMap, checkOutdated: boolean):
 }
 
 function run(helper: Helper, args: VersionArgs): Promise<any> {
-	const checkOutdated = args.outdated;
-	if (checkOutdated) {
-		console.log('Fetching latest version information...');
-	}
-
 	return allCommands()
 		.then((commands) => {
-			return createVersionsString(commands.commandsMap, checkOutdated);
+			return createVersionsString(commands.commandsMap, args.outdated);
 		})
 		.then(console.log);
 }
