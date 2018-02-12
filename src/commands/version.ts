@@ -1,9 +1,9 @@
-import { Helper, OptionsHelper, CommandsMap } from '../interfaces';
+import { Helper, OptionsHelper, CommandsMap, NpmPackageDetails } from '../interfaces';
 import { join } from 'path';
 import { Argv } from 'yargs';
 import chalk from 'chalk';
 import allCommands from '../allCommands';
-const david = require('david');
+import { getLatestCommands } from '../installableCommands';
 const pkgDir = require('pkg-dir');
 
 // exported for tests
@@ -39,12 +39,13 @@ export interface VersionArgs extends Argv {
 	outdated: boolean;
 }
 
-type DavidDependencies = {
-	[dependencyName: string]: {
-		stable: string;
-		latest: string;
-	};
-};
+async function getLatestCommandVersions(): Promise<NpmPackageDetails[]> {
+	const packagePath = pkgDir.sync(__dirname);
+	const packageJsonFilePath = join(packagePath, 'package.json');
+	const packageJson = <any>require(packageJsonFilePath);
+
+	return await getLatestCommands(packageJson.name);
+}
 
 /**
  * Iterate through a ModuleVersions and output if the module can be updated to a later version.
@@ -53,38 +54,30 @@ type DavidDependencies = {
  * @param {ModuleVersion[]} moduleVersions
  * @returns {{name, version, group}[]}
  */
-function areCommandsOutdated(moduleVersions: ModuleVersion[]): Promise<any> {
-	const deps: { [index: string]: string } = {};
+async function areCommandsOutdated(moduleVersions: ModuleVersion[]): Promise<any> {
+	type VersionsMap = { [index: string]: string };
 
-	moduleVersions.forEach((command) => {
-		deps[command.name] = command.version;
-	});
+	const latestCommands = await getLatestCommandVersions();
+	const regEx = /@dojo\/cli-([^-]+)-(.+)/;
+	const latestVersions: VersionsMap = latestCommands.reduce((versions: VersionsMap, command) => {
+		const [, group, name] = regEx.exec(command.name) as string[];
+		const compositeKey = `${group}-${name}`;
+		versions[compositeKey] = command.version;
+		return versions;
+	}, {});
 
-	// create fake manifest (package.json) with just the dev-dependencies that we want to check
-	const manifest = {
-		devDependencies: deps
-	};
-
-	return new Promise((resolve, reject) => {
-		// we want to fetch the latest stable version for our devDependencies
-		david.getUpdatedDependencies(manifest, { dev: true }, function(err: any, deps: DavidDependencies) {
-			if (err) {
-				reject(err);
-			}
-			resolve(
-				moduleVersions.map((command) => {
-					const canBeUpdated = deps[command.name]; // david returns all deps that can be updated
-					const versionStr = canBeUpdated
-						? `${command.version} ${chalk.yellow(`(can be updated to ${deps[command.name].latest})`)}.`
-						: `${command.version} (on latest stable version).`;
-					return {
-						name: command.name,
-						version: versionStr,
-						group: command.group
-					};
-				})
-			);
-		});
+	return moduleVersions.map(({ group, name, version }) => {
+		const compositeKey = `${group}-${name}`;
+		const latestVersion = latestVersions[compositeKey];
+		const canBeUpdated = version !== latestVersion;
+		const versionStr = canBeUpdated
+			? `${version} ${chalk.yellow(`(can be updated to ${latestVersion})`)}.`
+			: `${version} (on latest stable version).`;
+		return {
+			name: name,
+			version: versionStr,
+			group: group
+		};
 	});
 }
 
