@@ -8,7 +8,7 @@ const pkgDir = require('pkg-dir');
 
 // exported for tests
 export const versionCurrentVersion = `
-You are currently running @dojo/cli {version}
+You are currently running @dojo/cli@{version}
 `;
 export const versionNoRegisteredCommands = `
 There are no registered commands available.`;
@@ -69,8 +69,8 @@ async function areCommandsOutdated(moduleVersions: ModuleVersion[]): Promise<any
 		const latestVersion = latestVersions[name];
 		const canBeUpdated = version !== latestVersion;
 		const versionStr = canBeUpdated
-			? `${chalk.yellow(version)} ${chalk.red(`(latest is ${latestVersion})`)}`
-			: chalk.green(version);
+			? `${chalk.blue(version)} ${chalk.green(`(latest is ${latestVersion})`)}`
+			: chalk.blue(version);
 		return {
 			name: name,
 			version: versionStr,
@@ -107,7 +107,7 @@ function createOutput(myPackageDetails: PackageDetails, commandVersions: ModuleV
 		output += versionNoRegisteredCommands;
 	}
 
-	output += versionCurrentVersion.replace('{version}', myPackageDetails.version);
+	output += versionCurrentVersion.replace('{version}', chalk.blue(myPackageDetails.version));
 	return output;
 }
 

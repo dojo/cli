@@ -14,7 +14,7 @@ const anotherValidPackageInfo: any = require('../../support/another-valid-packag
 
 const outputPrefix = 'The currently installed commands are:\n';
 const noCommandsPrefix = 'There are no registered commands available.';
-const outputSuffix = '\nYou are currently running @dojo/cli 1.0.0';
+const outputSuffix = '\nYou are currently running @dojo/cli@' + chalk.blue('1.0.0');
 
 describe('version command', () => {
 	let moduleUnderTest: any;
@@ -181,7 +181,7 @@ ${outputSuffix}`;
 		});
 
 		const expectedOutput = `${outputPrefix}
-${validPackageInfo.name}@${chalk.green(validPackageInfo.version)}
+${validPackageInfo.name}@${chalk.blue(validPackageInfo.version)}
 ${outputSuffix}`;
 
 		const commandMap: CommandsMap = new Map<string, CommandWrapper>([
@@ -215,7 +215,7 @@ ${outputSuffix}`;
 		});
 
 		const expectedOutput = `${outputPrefix}
-${validPackageInfo.name}@${chalk.yellow(validPackageInfo.version)} ${chalk.red('(latest is 1.2.3)')}
+${validPackageInfo.name}@${chalk.blue(validPackageInfo.version)} ${chalk.green('(latest is 1.2.3)')}
 ${outputSuffix}`;
 
 		const commandMap: CommandsMap = new Map<string, CommandWrapper>([
