@@ -1,20 +1,20 @@
-import { Helper, OptionsHelper, CommandsMap } from '../interfaces';
+import { Helper, OptionsHelper, CommandsMap, NpmPackageDetails } from '../interfaces';
 import { join } from 'path';
 import { Argv } from 'yargs';
 import chalk from 'chalk';
 import allCommands from '../allCommands';
-const david = require('david');
+import { getLatestCommands } from '../installableCommands';
 const pkgDir = require('pkg-dir');
 
 // exported for tests
 export const versionCurrentVersion = `
-You are currently running @dojo/cli {version}
+You are currently running @dojo/cli@{version}
 `;
 export const versionNoRegisteredCommands = `
 There are no registered commands available.`;
 export const versionNoVersion = chalk.yellow('package.json missing');
 export const versionRegisteredCommands = `
-The currently installed groups are:
+The currently installed commands are:
 `;
 const INBUILT_COMMAND_VERSION = '__IN_BUILT_COMMAND__';
 
@@ -39,12 +39,15 @@ export interface VersionArgs extends Argv {
 	outdated: boolean;
 }
 
-type DavidDependencies = {
-	[dependencyName: string]: {
-		stable: string;
-		latest: string;
-	};
-};
+async function getLatestCommandVersions(): Promise<NpmPackageDetails[]> {
+	const packagePath = pkgDir.sync(__dirname);
+	const packageJsonFilePath = join(packagePath, 'package.json');
+	const packageJson: PackageDetails = require(packageJsonFilePath);
+
+	console.log('Fetching latest version information...');
+
+	return await getLatestCommands(packageJson.name);
+}
 
 /**
  * Iterate through a ModuleVersions and output if the module can be updated to a later version.
@@ -53,38 +56,26 @@ type DavidDependencies = {
  * @param {ModuleVersion[]} moduleVersions
  * @returns {{name, version, group}[]}
  */
-function areCommandsOutdated(moduleVersions: ModuleVersion[]): Promise<any> {
-	const deps: { [index: string]: string } = {};
+async function areCommandsOutdated(moduleVersions: ModuleVersion[]): Promise<any> {
+	type VersionsMap = { [index: string]: string };
 
-	moduleVersions.forEach((command) => {
-		deps[command.name] = command.version;
-	});
+	const latestCommands = await getLatestCommandVersions();
+	const latestVersions: VersionsMap = latestCommands.reduce((versions: VersionsMap, { name, version }) => {
+		versions[name] = version;
+		return versions;
+	}, {});
 
-	// create fake manifest (package.json) with just the dev-dependencies that we want to check
-	const manifest = {
-		devDependencies: deps
-	};
-
-	return new Promise((resolve, reject) => {
-		// we want to fetch the latest stable version for our devDependencies
-		david.getUpdatedDependencies(manifest, { dev: true }, function(err: any, deps: DavidDependencies) {
-			if (err) {
-				reject(err);
-			}
-			resolve(
-				moduleVersions.map((command) => {
-					const canBeUpdated = deps[command.name]; // david returns all deps that can be updated
-					const versionStr = canBeUpdated
-						? `${command.version} ${chalk.yellow(`(can be updated to ${deps[command.name].latest})`)}.`
-						: `${command.version} (on latest stable version).`;
-					return {
-						name: command.name,
-						version: versionStr,
-						group: command.group
-					};
-				})
-			);
-		});
+	return moduleVersions.map(({ name, version, group }) => {
+		const latestVersion = latestVersions[name];
+		const canBeUpdated = version !== latestVersion;
+		const versionStr = canBeUpdated
+			? `${chalk.blue(version)} ${chalk.green(`(latest is ${latestVersion})`)}`
+			: chalk.blue(version);
+		return {
+			name: name,
+			version: versionStr,
+			group: group
+		};
 	});
 }
 
@@ -111,15 +102,12 @@ function createOutput(myPackageDetails: PackageDetails, commandVersions: ModuleV
 	let output = '';
 	if (commandVersions.length) {
 		output += versionRegisteredCommands;
-		output +=
-			'\n' +
-			commandVersions.map((command) => `${command.group} (${command.name}) ${command.version}`).join('\n') +
-			'\n';
+		output += '\n' + commandVersions.map((command) => `${command.name}@${command.version}`).join('\n') + '\n';
 	} else {
 		output += versionNoRegisteredCommands;
 	}
 
-	output += versionCurrentVersion.replace('{version}', myPackageDetails.version);
+	output += versionCurrentVersion.replace('{version}', chalk.blue(myPackageDetails.version));
 	return output;
 }
 
@@ -211,7 +199,6 @@ function createVersionsString(commandsMap: CommandsMap, checkOutdated: boolean):
 	const packagePath = pkgDir.sync(__dirname);
 	const myPackageDetails = readPackageDetails(packagePath); // fetch the cli's package details
 	const versions: ModuleVersion[] = buildVersions(commandsMap);
-
 	if (checkOutdated) {
 		return areCommandsOutdated(versions).then(
 			(commandVersions: ModuleVersion[]) => createOutput(myPackageDetails, commandVersions),
@@ -225,14 +212,9 @@ function createVersionsString(commandsMap: CommandsMap, checkOutdated: boolean):
 }
 
 function run(helper: Helper, args: VersionArgs): Promise<any> {
-	const checkOutdated = args.outdated;
-	if (checkOutdated) {
-		console.log('Fetching latest version information...');
-	}
-
 	return allCommands()
 		.then((commands) => {
-			return createVersionsString(commands.commandsMap, checkOutdated);
+			return createVersionsString(commands.commandsMap, args.outdated);
 		})
 		.then(console.log);
 }
