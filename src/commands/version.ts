@@ -42,7 +42,7 @@ export interface VersionArgs extends Argv {
 async function getLatestCommandVersions(): Promise<NpmPackageDetails[]> {
 	const packagePath = pkgDir.sync(__dirname);
 	const packageJsonFilePath = join(packagePath, 'package.json');
-	const packageJson = <any>require(packageJsonFilePath);
+	const packageJson: PackageDetails = require(packageJsonFilePath);
 
 	console.log('Fetching latest version information...');
 
