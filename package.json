@@ -47,6 +47,7 @@
     "globby": "^6.0.0",
     "inquirer": "^4.0.2",
     "pkg-dir": "^2.0.0",
+    "tslib": "~1.8.1",
     "typings-core": "^2.3.3",
     "update-notifier": "^2.3.0",
     "yargs": "^10.0.3"
