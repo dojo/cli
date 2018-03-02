@@ -14,11 +14,11 @@ The CLI is the officially supported way to create and maintain Dojo 2 apps.
 
 
 ## Why use this cli?
-It is designed to save you time, by promoting a standardised workflow, and automating away more mundane boilerplate tasks.
+It is designed to save you time, by promoting a standardized workflow and automating away more mundane boilerplate tasks.
 
-*Single dependency* - instead of having to download and configure multiple tools such as `Webpack`, `Intern` and `tslint`, you can just install the `cli` and know that all of these tools will work together.
+*Single dependency* - instead of having to download and configure multiple tools such as `Webpack`, `Intern`, and `tslint`, you can just install the `cli` and know that all of these tools will work together.
 
-*Make the common tasks simple* - because you don't need to install and configure the individual tools yourself, you can be sure that the versions being used all work together and they they are running with sensible defaults.
+*Make the common tasks simple* - because you don't need to install and configure the individual tools yourself, you can be sure that the versions being used all work together and they are running with sensible defaults.
 
 *Make the advanced tasks possible* - you can `eject` to a custom setup at any time. When you `eject`, all the configuration and build dependencies of the included tools will be moved into your project. If you are adept at configuring these tools, then you can now do so without the `cli` using its defaults.
 
@@ -77,11 +77,11 @@ e.g. (group specified, command specified)
 
 where `help` is the group and `create` is the command, will run the `create` command in the `help` group (in this case, it will output help for the `create` command).
 
-The CLI has the following in-built options:
+The CLI has the following built-in options:
 
 `dojo -h, --help` - provides a list of help as detailed above.
 
-The CLI has the following in-built groups:
+The CLI has the following built-in groups:
 
 `dojo create` - provides scaffolding for new Dojo 2 projects.
 `dojo eject` - allows users to configure and run command instead of the cli.
@@ -104,7 +104,7 @@ Contributing Guidelines.
 
 ### Code Style
 
-This repository uses [`prettier`](https://prettier.io/) for code styling rules and formatting. A pre-commit hook is installed automatically and configured to run `prettier` against all staged files as per the configuration in the projects `package.json`.
+This repository uses [`prettier`](https://prettier.io/) for code styling rules and formatting. A pre-commit hook is installed automatically and configured to run `prettier` against all staged files as per the configuration in the project's `package.json`.
 
 An additional npm script to run `prettier` (with write set to `true`) against all `src` and `test` project files is available by running:
 
