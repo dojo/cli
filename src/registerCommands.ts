@@ -14,18 +14,13 @@ import { helpUsage, helpEpilog } from './text';
  * @param error
  */
 function reportError(error: CommandError) {
-	let exitCode = 0;
-
+	let exitCode = 1;
 	if (error.exitCode !== undefined) {
 		exitCode = error.exitCode;
 	}
 
 	console.error(chalk.red.bold(error.message));
-
-	// only process.exit if we need to explicitly set the exit code
-	if (exitCode !== 0) {
-		process.exit(exitCode);
-	}
+	process.exit(exitCode);
 }
 
 /**

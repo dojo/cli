@@ -22,6 +22,7 @@ let yargsStub: any;
 let defaultRegisterStub: SinonStub;
 let defaultRunStub: SinonStub;
 let consoleErrorStub: SinonStub;
+let processExitStub: SinonStub;
 const errorMessage = 'test error message';
 
 function createYargsCommandNames(obj: any): Map<string, Set<any>> {
@@ -36,6 +37,11 @@ registerSuite('registerCommands', {
 	beforeEach() {
 		yargsStub = getYargsStub();
 		commandsMap = getCommandsMap(groupDef);
+		processExitStub = stub(process, 'exit');
+	},
+
+	afterEach() {
+		processExitStub.restore();
 	},
 
 	tests: {
@@ -203,26 +209,18 @@ registerSuite('registerCommands', {
 							await yargsStub.command.firstCall.args[3]({ _: ['group'] });
 							assert.isTrue(consoleErrorStub.calledOnce);
 							assert.isTrue(consoleErrorStub.firstCall.calledWithMatch(errorMessage));
+							assert.isTrue(processExitStub.called);
 						}
 					}
 				},
 				'status codes call process exit': (function() {
-					let processExitStub: SinonStub;
-
 					return {
-						beforeEach() {
-							processExitStub = stub(process, 'exit');
-						},
-						afterEach() {
-							processExitStub.restore();
-						},
-
 						tests: {
 							async 'Should not exit process if no status code is returned'() {
 								defaultRunStub.returns(Promise.reject(new Error(errorMessage)));
 
 								await yargsStub.command.firstCall.args[3]({ _: ['group'] });
-								assert.isFalse(processExitStub.called);
+								assert.isTrue(processExitStub.called);
 							},
 							async 'Should exit process if status code is returned'() {
 								defaultRunStub.returns(
