@@ -216,11 +216,12 @@ registerSuite('registerCommands', {
 				'status codes call process exit': (function() {
 					return {
 						tests: {
-							async 'Should not exit process if no status code is returned'() {
+							async 'Should exit process with exitCode of 1 when no exitCode is returned'() {
 								defaultRunStub.returns(Promise.reject(new Error(errorMessage)));
 
 								await yargsStub.command.firstCall.args[3]({ _: ['group'] });
-								assert.isTrue(processExitStub.called);
+								assert.isTrue(processExitStub.calledOnce);
+								assert.isTrue(processExitStub.calledWith(1));
 							},
 							async 'Should exit process if status code is returned'() {
 								defaultRunStub.returns(
