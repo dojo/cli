@@ -92,6 +92,35 @@ The CLI has the following built-in groups:
 `npm i @dojo/cli-build-webpack` and `npm i @dojo/cli-test-intern`
 These two groups are not included by default to allow different versions of these groups to be installed per project.
 
+## dojorc
+
+Dojo CLI commands support a JSON configuration file at the root of the project called `.dojorc` . Each command has a dedicated section in the `.dojorc` keyed by the command name minus the `cli-` prefix. For example the command `@dojo/cli-build-app` has the following section in the `.dojorc`:
+
+```json
+{
+	"build-app": {
+
+	}
+}
+```
+
+Each command supports different `.dojorc` configuration but every command supports storing command options in the `.dojorc` that can be overridden by explicitly passing options on the command line:
+
+
+```json
+{
+	"build-app": {
+		"build-app-option": "foo"
+	}
+}
+```
+
+This configuration would automatically pass the `build-app-option: foo` to the command but can be overridden by passing the option on the command line:
+
+```shell
+$ dojo build app --build-app-option bar
+```
+
 ## A warning on ejecting
 
 Once you run `dojo eject`, the configuration and dependencies for the bundled tools are now part of your project.
