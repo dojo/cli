@@ -88,7 +88,9 @@ describe('installableCommands', () => {
 	});
 
 	it('filters out @dojo/cli from search results', () => {
-		mockExeca.ctor.resolves({ stdout: `[{"name": "@dojo/cli"}, {"name": "@dojo/cli-test"}]` });
+		mockExeca.ctor.resolves({
+			stdout: `[{"name": "dojo-cli-helper"}, {"name": "@dojo/cli"}, {"name": "@dojo/cli-test"}]`
+		});
 		return moduleUnderTest.default('testName').then((commands: NpmPackageDetails[]) => {
 			assert.equal(commands.length, 1);
 			assert.equal(commands[0].name, '@dojo/cli-test');
