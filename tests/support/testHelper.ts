@@ -49,8 +49,12 @@ export function getCommandsMap(groupDef: GroupDef) {
 }
 
 const yargsFunctions = ['demand', 'usage', 'epilog', 'help', 'alias', 'strict', 'option'];
-export function getYargsStub() {
-	const yargsStub: any = {};
+export function getYargsStub(aliases: any = {}) {
+	const yargsStub: any = {
+		parsed: {
+			aliases
+		}
+	};
 	yargsFunctions.forEach((fnc) => {
 		yargsStub[fnc] = stub().returns(yargsStub);
 	});

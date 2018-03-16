@@ -23,6 +23,64 @@ function reportError(error: CommandError) {
 	process.exit(exitCode);
 }
 
+function userSetOption(option: string, parsed: any) {
+	function searchForOption(option: string) {
+		if (process.argv.indexOf(option) > -1) {
+			return true;
+		}
+		return false;
+	}
+
+	if (searchForOption(`-${option}`) || searchForOption(`--${option}`)) {
+		return true;
+	}
+
+	// Handle aliases for same option
+	for (let aliasIndex in parsed.aliases[option]) {
+		let alias = parsed.aliases[option][aliasIndex];
+		if (searchForOption(`-${alias}`) || searchForOption(`--${alias}`)) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+function getRcOption(rcConfig: any, option: string, parsed: any) {
+	if (rcConfig[option] !== undefined) {
+		return option;
+	}
+
+	for (let aliasIndex in parsed.aliases[option]) {
+		let alias = parsed.aliases[option][aliasIndex];
+		if (rcConfig[alias] !== undefined) {
+			return alias;
+		}
+	}
+	return undefined;
+}
+
+function getOptions(yargs: Argv, rcOptions: any, commandLineArgs: any = {}) {
+	const result = Object.keys(commandLineArgs).reduce(
+		(config, key) => {
+			if (userSetOption(key, (yargs as any).parsed)) {
+				config[key] = commandLineArgs[key];
+				return config;
+			}
+
+			const rcOption = getRcOption(rcOptions, key, (yargs as any).parsed);
+			if (rcOption) {
+				config[key] = rcOptions[rcOption];
+			} else {
+				config[key] = commandLineArgs[key];
+			}
+			return config;
+		},
+		{} as any
+	);
+	return { ...rcOptions, ...result };
+}
+
 /**
  * Registers groups and initiates registration of commands
  *
@@ -65,7 +123,8 @@ function registerGroups(
 			// so we call default command, else, the subcommand will
 			// have been ran and we don't want to run the default.
 			if (defaultCommandAvailable && argv._.length === 1) {
-				return defaultCommand.run(helper.sandbox(groupName, defaultCommandName), argv).catch(reportError);
+				const args = getOptions(yargs, helper.sandbox(groupName, defaultCommandName).configuration.get(), argv);
+				return defaultCommand.run(helper.sandbox(groupName, defaultCommandName), args).catch(reportError);
 			}
 		}
 	);
@@ -104,7 +163,8 @@ function registerCommands(
 						return optionsYargs;
 					},
 					(argv: any) => {
-						return run(helper.sandbox(groupName, name), argv).catch(reportError);
+						const args = getOptions(yargs, helper.sandbox(groupName, name).configuration.get(), argv);
+						return run(helper.sandbox(groupName, name), args).catch(reportError);
 					}
 				)
 				.strict();
@@ -150,7 +210,8 @@ function registerAliases(
 								};
 							}, argv);
 						}
-						return run(helper.sandbox(group, name), argv).catch(reportError);
+						const args = getOptions(yargs, helper.sandbox(group, name).configuration.get(), argv);
+						return run(helper.sandbox(group, name), args).catch(reportError);
 					}
 				);
 			});
