@@ -45,7 +45,7 @@ async function search(timeout: number = 0): Promise<NpmPackageDetails[] | undefi
 		});
 		const commands = JSON.parse(stdout);
 		return commands.filter(({ name }: NpmPackageDetails) => {
-			return name !== '@dojo/cli';
+			return /^@dojo\/cli-/.test(name);
 		});
 	} catch (e) {
 		console.error('Invalid response from npm search');
