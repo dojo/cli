@@ -115,7 +115,7 @@ Each command supports different `.dojorc` configuration but every command suppor
 }
 ```
 
-This configuration would automatically pass the `build-app-option: foo` to the command but can be overridden by passing the option on the command line:
+This configuration would automatically pass the `build-app-option: foo` to the command but is overridden by passing the option on the command line:
 
 ```shell
 $ dojo build app --build-app-option bar
