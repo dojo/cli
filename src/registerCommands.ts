@@ -27,22 +27,19 @@ function reportError(error: CommandError) {
 	process.exit(exitCode);
 }
 
-function userSetOption(option: string, aliases: Aliases) {
-	function searchForOption(option: string) {
-		if (process.argv.indexOf(option) > -1) {
-			return true;
-		}
-		return false;
-	}
+function searchForOption(option: string) {
+	return process.argv.indexOf(`-${option}`) > -1 || process.argv.indexOf(`--${option}`) > -1;
+}
 
-	if (searchForOption(`-${option}`) || searchForOption(`--${option}`)) {
+function userSetOption(option: string, aliases: Aliases) {
+	if (searchForOption(option)) {
 		return true;
 	}
 
 	// Handle aliases for same option
 	for (let aliasIndex in aliases[option]) {
 		let alias = aliases[option][aliasIndex];
-		if (searchForOption(`-${alias}`) || searchForOption(`--${alias}`)) {
+		if (searchForOption(alias)) {
 			return true;
 		}
 	}
@@ -66,6 +63,23 @@ function getRcOption(rcConfig: any, option: string, aliases: Aliases) {
 		}
 	}
 	return undefined;
+}
+
+function saveCommandLineOptions(configuration: any, args: any) {
+	const configToSave = Object.keys(args).reduce(
+		(config, key) => {
+			if (searchForOption(key)) {
+				try {
+					config[key] = JSON.parse(args[key]);
+				} catch {
+					config[key] = args[key];
+				}
+			}
+			return config;
+		},
+		{} as any
+	);
+	configuration.set(configToSave);
 }
 
 function getOptions(aliases: Aliases, rcOptions: any, commandLineArgs: any = {}) {
@@ -138,8 +152,14 @@ function registerGroups(yargs: Argv, helper: HelperFactory, groupName: string, c
 					console.log(formatHelp(argv, groupMap));
 					return Promise.resolve({});
 				}
-				const config = helper.sandbox(groupName, defaultCommand.name).configuration.get();
-				const args = getOptions(aliases, config, argv);
+
+				const configurationHelper = helper.sandbox(groupName, defaultCommand.name).configuration;
+				const config = configurationHelper.get();
+				const combinedArgs = getOptions(aliases, config, argv);
+
+				if (argv.save) {
+					saveCommandLineOptions(configurationHelper, combinedArgs);
+				}
 
 				if (typeof defaultCommand.validate === 'function') {
 					const valid = await defaultCommand.validate(helper.sandbox(groupName, defaultCommand.name));
@@ -147,7 +167,9 @@ function registerGroups(yargs: Argv, helper: HelperFactory, groupName: string, c
 						return;
 					}
 				}
-				return defaultCommand.run(helper.sandbox(groupName, defaultCommand.name), args).catch(reportError);
+				return defaultCommand
+					.run(helper.sandbox(groupName, defaultCommand.name), combinedArgs)
+					.catch(reportError);
 			}
 		}
 	);
@@ -178,8 +200,13 @@ function registerCommands(yargs: Argv, helper: HelperFactory, groupName: string,
 					return Promise.resolve({});
 				}
 
-				const config = helper.sandbox(groupName, name).configuration.get();
-				const args = getOptions(aliases, config, argv);
+				const configurationHelper = helper.sandbox(groupName, name).configuration;
+				const config = configurationHelper.get();
+				const combinedArgs = getOptions(aliases, config, argv);
+
+				if (argv.save) {
+					saveCommandLineOptions(configurationHelper, combinedArgs);
+				}
 
 				if (typeof command.validate === 'function') {
 					const valid = await command.validate(helper.sandbox(groupName, command.name));
@@ -187,7 +214,7 @@ function registerCommands(yargs: Argv, helper: HelperFactory, groupName: string,
 						return;
 					}
 				}
-				return run(helper.sandbox(groupName, name), args).catch(reportError);
+				return run(helper.sandbox(groupName, name), combinedArgs).catch(reportError);
 			}
 		);
 	});
@@ -207,6 +234,11 @@ export default function(yargs: Argv, groupMap: GroupMap): void {
 
 	groupMap.forEach((commandMap, group) => {
 		registerGroups(yargs, helperFactory, group, commandMap);
+	});
+
+	yargs.option('save', {
+		describe: 'Save arguments to .dojorc',
+		type: 'boolean'
 	});
 
 	yargs

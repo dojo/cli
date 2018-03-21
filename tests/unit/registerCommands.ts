@@ -16,6 +16,7 @@ const groupDef: GroupDef = [
 	}
 ];
 
+let setStub = stub();
 let sandbox: any;
 let mockModule: MockModule;
 let groupMap: any;
@@ -247,8 +248,15 @@ registerSuite('registerCommands', {
 				assert.deepEqual(run.firstCall.args[1], { foo: 'foo', f: 'foo' });
 			}
 		},
-		'default command': {
+		'save configuration': {
 			beforeEach() {
+				const configurationHelper = mockModule.getMock('./configurationHelper');
+				configurationHelper.default = {
+					sandbox: stub().returns({
+						get: stub(),
+						set: setStub
+					})
+				};
 				groupMap = getGroupMap(groupDef);
 				registerCommands(yargsStub, groupMap);
 				consoleErrorStub = stub(console, 'error');
@@ -256,6 +264,38 @@ registerSuite('registerCommands', {
 
 			afterEach() {
 				consoleErrorStub.restore();
+				setStub.reset();
+			},
+			tests: {
+				'should write arguments to dojorc when save is passed'() {
+					process.argv = ['-foo'];
+					const { run } = groupMap.get('group1').get('command1');
+					registerCommands(yargsStub, groupMap);
+					yargsStub.command.secondCall.args[3]({ bar: 'bar', foo: 'foo', save: true });
+					assert.isTrue(run.calledOnce);
+					assert.deepEqual(run.firstCall.args[1], { bar: 'bar', foo: 'foo' });
+					assert.isTrue(setStub.calledOnce);
+					assert.deepEqual(setStub.firstCall.args[0], { foo: 'foo' });
+				}
+			}
+		},
+		'default command': {
+			beforeEach() {
+				const configurationHelper = mockModule.getMock('./configurationHelper');
+				configurationHelper.default = {
+					sandbox: stub().returns({
+						get: stub(),
+						set: setStub
+					})
+				};
+				groupMap = getGroupMap(groupDef);
+				registerCommands(yargsStub, groupMap);
+				consoleErrorStub = stub(console, 'error');
+			},
+
+			afterEach() {
+				consoleErrorStub.restore();
+				setStub.reset();
 			},
 
 			tests: {
@@ -286,6 +326,14 @@ registerSuite('registerCommands', {
 					await yargsStub.command.firstCall.args[3]({ _: ['group'] });
 					assert.isTrue(command.validate.calledOnce);
 					assert.isFalse(command.run.called);
+				},
+				'should write arguments to dojorc when save is passed'() {
+					process.argv = ['-foo'];
+					const { run } = groupMap.get('group1').get('command1');
+					yargsStub.command.firstCall.args[3]({ _: ['group'], bar: 'bar', foo: 'foo', save: true });
+					assert.isTrue(run.calledOnce);
+					assert.isTrue(setStub.calledOnce);
+					assert.deepEqual(setStub.firstCall.args[0], { foo: 'foo' });
 				}
 			}
 		},
