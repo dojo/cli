@@ -26,6 +26,7 @@ let defaultRunStub: SinonStub;
 let consoleErrorStub: SinonStub;
 let consoleWarnStub: SinonStub;
 let processExitStub: SinonStub;
+let configurationSetStub: SinonStub;
 const errorMessage = 'test error message';
 let registerCommands: any;
 
@@ -45,6 +46,7 @@ registerSuite('registerCommands', {
 		yargsStub = getYargsStub();
 		commandsMap = getCommandsMap(groupDef);
 		processExitStub = stub(process, 'exit');
+		configurationSetStub = stub();
 	},
 
 	afterEach() {
@@ -98,7 +100,6 @@ registerSuite('registerCommands', {
 			'pass dojo rc config as run arguments'() {
 				const key = 'group1-command1';
 				const { run } = commandsMap.get(key);
-				const registerCommands = mockModule.getModuleUnderTest().default;
 				const configurationHelper = mockModule.getMock('./configurationHelper');
 				configurationHelper.default = {
 					sandbox() {
@@ -120,7 +121,6 @@ registerSuite('registerCommands', {
 				const key = 'group1-command1';
 				process.argv = ['-foo'];
 				const { run } = commandsMap.get(key);
-				const registerCommands = mockModule.getModuleUnderTest().default;
 				const configurationHelper = mockModule.getMock('./configurationHelper');
 				configurationHelper.default = {
 					sandbox() {
@@ -141,7 +141,6 @@ registerSuite('registerCommands', {
 			'default command line args should not override dojo rc config'() {
 				const key = 'group1-command1';
 				const { run } = commandsMap.get(key);
-				const registerCommands = mockModule.getModuleUnderTest().default;
 				const configurationHelper = mockModule.getMock('./configurationHelper');
 				configurationHelper.default = {
 					sandbox() {
@@ -164,7 +163,6 @@ registerSuite('registerCommands', {
 				process.argv = ['-f'];
 				yargsStub = getYargsStub({ foo: ['f'], f: ['foo'] });
 				const { run } = commandsMap.get(key);
-				const registerCommands = mockModule.getModuleUnderTest().default;
 				const configurationHelper = mockModule.getMock('./configurationHelper');
 				configurationHelper.default = {
 					sandbox() {
@@ -186,7 +184,6 @@ registerSuite('registerCommands', {
 				const key = 'group1-command1';
 				yargsStub = getYargsStub({ foo: ['f'], f: ['foo'] });
 				const { run } = commandsMap.get(key);
-				const registerCommands = mockModule.getModuleUnderTest().default;
 				const configurationHelper = mockModule.getMock('./configurationHelper');
 				configurationHelper.default = {
 					sandbox() {
@@ -208,7 +205,6 @@ registerSuite('registerCommands', {
 				const key = 'group1-command1';
 				yargsStub = getYargsStub({ foo: ['f'], f: ['foo'] });
 				const { run } = commandsMap.get(key);
-				const registerCommands = mockModule.getModuleUnderTest().default;
 				const configurationHelper = mockModule.getMock('./configurationHelper');
 				configurationHelper.default = {
 					sandbox() {
@@ -232,16 +228,14 @@ registerSuite('registerCommands', {
 				const key = 'group1-command1';
 				process.argv = ['-foo'];
 				const { run } = commandsMap.get(key);
-				const registerCommands = mockModule.getModuleUnderTest().default;
 				const configurationHelper = mockModule.getMock('./configurationHelper');
-				const setStub = stub();
 				configurationHelper.default = {
 					sandbox() {
 						return {
 							get() {
 								return { foo: 'bar' };
 							},
-							set: setStub
+							set: configurationSetStub
 						};
 					}
 				};
@@ -250,7 +244,7 @@ registerSuite('registerCommands', {
 				yargsStub.command.secondCall.args[3]({ bar: 'bar', foo: 'foo', save: true });
 				assert.isTrue(run.calledOnce);
 				assert.deepEqual(run.firstCall.args[1], { bar: 'bar', foo: 'foo' });
-				assert.isTrue(setStub.calledWith({ foo: 'foo' }));
+				assert.isTrue(configurationSetStub.calledWith({ foo: 'foo' }));
 			}
 		},
 		alias: {
@@ -358,6 +352,17 @@ registerSuite('registerCommands', {
 					.returns(key);
 				defaultRunStub = stub(defaultCommandWrapper, 'run').returns(Promise.resolve());
 				commandsMap.set('group1', defaultCommandWrapper);
+				const configurationHelper = mockModule.getMock('./configurationHelper');
+				configurationHelper.default = {
+					sandbox() {
+						return {
+							get() {
+								return { foo: 'bar' };
+							},
+							set: configurationSetStub
+						};
+					}
+				};
 				registerCommands(yargsStub, commandsMap, createYargsCommandNames({ group1: new Set([key]) }));
 			},
 			afterEach() {
@@ -375,25 +380,9 @@ registerSuite('registerCommands', {
 				},
 				'should write arguments to dojorc when save is passed'() {
 					process.argv = ['-foo'];
-					const configurationHelper = mockModule.getMock('./configurationHelper');
-					const setStub = stub();
-					configurationHelper.default = {
-						sandbox() {
-							return {
-								get() {
-									return { foo: 'bar' };
-								},
-								set: setStub
-							};
-						}
-					};
-					registerCommands(
-						yargsStub,
-						commandsMap,
-						createYargsCommandNames({ group1: new Set(['group1-command1']) })
-					);
 					yargsStub.command.firstCall.args[3]({ _: ['group'], bar: 'bar', foo: 'foo', save: true });
 					assert.isTrue(defaultRunStub.calledOnce);
+					assert.isTrue(configurationSetStub.calledWith({ foo: 'foo' }));
 				},
 				'Should not run default command when yargs called with group name and command'() {
 					yargsStub.command.firstCall.args[3]({ _: ['group', 'command'] });
