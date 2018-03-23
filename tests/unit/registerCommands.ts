@@ -24,7 +24,9 @@ let yargsStub: any;
 let defaultRegisterStub: SinonStub;
 let defaultRunStub: SinonStub;
 let consoleErrorStub: SinonStub;
+let consoleWarnStub: SinonStub;
 let processExitStub: SinonStub;
+let configurationSetStub: SinonStub;
 const errorMessage = 'test error message';
 let registerCommands: any;
 
@@ -44,6 +46,7 @@ registerSuite('registerCommands', {
 		yargsStub = getYargsStub();
 		commandsMap = getCommandsMap(groupDef);
 		processExitStub = stub(process, 'exit');
+		configurationSetStub = stub();
 	},
 
 	afterEach() {
@@ -84,7 +87,7 @@ registerSuite('registerCommands', {
 			const key = 'group1-command1';
 			const { run } = commandsMap.get(key);
 			registerCommands(yargsStub, commandsMap, createYargsCommandNames({ group1: new Set([key]) }));
-			yargsStub.command.secondCall.args[3]();
+			yargsStub.command.secondCall.args[3]({});
 			assert.isTrue(run.calledOnce);
 		},
 		'Should call into register method'() {
@@ -97,7 +100,6 @@ registerSuite('registerCommands', {
 			'pass dojo rc config as run arguments'() {
 				const key = 'group1-command1';
 				const { run } = commandsMap.get(key);
-				const registerCommands = mockModule.getModuleUnderTest().default;
 				const configurationHelper = mockModule.getMock('./configurationHelper');
 				configurationHelper.default = {
 					sandbox() {
@@ -110,7 +112,7 @@ registerSuite('registerCommands', {
 				};
 
 				registerCommands(yargsStub, commandsMap, createYargsCommandNames({ group1: new Set([key]) }));
-				yargsStub.command.secondCall.args[3]();
+				yargsStub.command.secondCall.args[3]({});
 				assert.isTrue(run.calledOnce);
 				assert.deepEqual(run.firstCall.args[1], { foo: 'bar' });
 			},
@@ -119,7 +121,6 @@ registerSuite('registerCommands', {
 				const key = 'group1-command1';
 				process.argv = ['-foo'];
 				const { run } = commandsMap.get(key);
-				const registerCommands = mockModule.getModuleUnderTest().default;
 				const configurationHelper = mockModule.getMock('./configurationHelper');
 				configurationHelper.default = {
 					sandbox() {
@@ -140,7 +141,6 @@ registerSuite('registerCommands', {
 			'default command line args should not override dojo rc config'() {
 				const key = 'group1-command1';
 				const { run } = commandsMap.get(key);
-				const registerCommands = mockModule.getModuleUnderTest().default;
 				const configurationHelper = mockModule.getMock('./configurationHelper');
 				configurationHelper.default = {
 					sandbox() {
@@ -163,7 +163,6 @@ registerSuite('registerCommands', {
 				process.argv = ['-f'];
 				yargsStub = getYargsStub({ foo: ['f'], f: ['foo'] });
 				const { run } = commandsMap.get(key);
-				const registerCommands = mockModule.getModuleUnderTest().default;
 				const configurationHelper = mockModule.getMock('./configurationHelper');
 				configurationHelper.default = {
 					sandbox() {
@@ -185,7 +184,6 @@ registerSuite('registerCommands', {
 				const key = 'group1-command1';
 				yargsStub = getYargsStub({ foo: ['f'], f: ['foo'] });
 				const { run } = commandsMap.get(key);
-				const registerCommands = mockModule.getModuleUnderTest().default;
 				const configurationHelper = mockModule.getMock('./configurationHelper');
 				configurationHelper.default = {
 					sandbox() {
@@ -207,7 +205,6 @@ registerSuite('registerCommands', {
 				const key = 'group1-command1';
 				yargsStub = getYargsStub({ foo: ['f'], f: ['foo'] });
 				const { run } = commandsMap.get(key);
-				const registerCommands = mockModule.getModuleUnderTest().default;
 				const configurationHelper = mockModule.getMock('./configurationHelper');
 				configurationHelper.default = {
 					sandbox() {
@@ -225,6 +222,31 @@ registerSuite('registerCommands', {
 				assert.deepEqual(run.firstCall.args[1], { foo: 'foo', f: 'foo' });
 			}
 		},
+
+		'save configuration': {
+			'should write arguments to dojorc when save is passed'() {
+				const key = 'group1-command1';
+				process.argv = ['-foo'];
+				const { run } = commandsMap.get(key);
+				const configurationHelper = mockModule.getMock('./configurationHelper');
+				configurationHelper.default = {
+					sandbox() {
+						return {
+							get() {
+								return { foo: 'bar' };
+							},
+							set: configurationSetStub
+						};
+					}
+				};
+
+				registerCommands(yargsStub, commandsMap, createYargsCommandNames({ group1: new Set([key]) }));
+				yargsStub.command.secondCall.args[3]({ bar: 'bar', foo: 'foo', save: true });
+				assert.isTrue(run.calledOnce);
+				assert.deepEqual(run.firstCall.args[1], { bar: 'bar', foo: 'foo' });
+				assert.isTrue(configurationSetStub.calledWith({ foo: 'foo' }));
+			}
+		},
 		alias: {
 			beforeEach() {
 				const command = commandsMap.get('group1-command1');
@@ -238,6 +260,11 @@ registerSuite('registerCommands', {
 						}
 					]
 				};
+				consoleWarnStub = stub(console, 'warn');
+			},
+
+			afterEach() {
+				consoleWarnStub.restore();
 			},
 
 			tests: {
@@ -256,7 +283,7 @@ registerSuite('registerCommands', {
 						commandsMap,
 						createYargsCommandNames({ group1: new Set(['group1-command1']) })
 					);
-					assert.isTrue(yargsStub.option.calledTwice);
+					assert.isTrue(yargsStub.option.calledThrice);
 				},
 				'should not register provided options'() {
 					const key = 'group1-command1';
@@ -265,7 +292,7 @@ registerSuite('registerCommands', {
 						.callsArgWith(0, 'w', {})
 						.returns(key)),
 						registerCommands(yargsStub, commandsMap, createYargsCommandNames({ group1: new Set([key]) }));
-					assert.isTrue(yargsStub.option.calledOnce);
+					assert.isTrue(yargsStub.option.calledTwice);
 				},
 				'should register when alias is an array'() {
 					const key = 'group1-command1';
@@ -282,7 +309,7 @@ registerSuite('registerCommands', {
 						}
 					];
 					registerCommands(yargsStub, commandsMap, createYargsCommandNames({ group1: new Set([key]) }));
-					assert.isTrue(yargsStub.option.calledTwice);
+					assert.isTrue(yargsStub.option.calledThrice);
 				},
 				'should augment argv when run'() {
 					const key = 'group1-command1';
@@ -290,6 +317,14 @@ registerSuite('registerCommands', {
 					registerCommands(yargsStub, commandsMap, createYargsCommandNames({ group1: new Set([key]) }));
 					yargsStub.command.thirdCall.args[3]({ _: ['group', 'command'] });
 					assert.equal(command.run.firstCall.args[1].w, 10);
+				},
+				'should warn that command line options cannot be saved for aliases'() {
+					const key = 'group1-command1';
+					const command = commandsMap.get(key);
+					registerCommands(yargsStub, commandsMap, createYargsCommandNames({ group1: new Set([key]) }));
+					yargsStub.command.thirdCall.args[3]({ _: ['group', 'command'], save: true });
+					assert.isTrue(command.run.calledOnce);
+					assert.isTrue(consoleWarnStub.calledWith('Save is not supported with for command aliases'));
 				},
 				'should run without options'() {
 					const key = 'group1-command1';
@@ -317,6 +352,17 @@ registerSuite('registerCommands', {
 					.returns(key);
 				defaultRunStub = stub(defaultCommandWrapper, 'run').returns(Promise.resolve());
 				commandsMap.set('group1', defaultCommandWrapper);
+				const configurationHelper = mockModule.getMock('./configurationHelper');
+				configurationHelper.default = {
+					sandbox() {
+						return {
+							get() {
+								return { foo: 'bar' };
+							},
+							set: configurationSetStub
+						};
+					}
+				};
 				registerCommands(yargsStub, commandsMap, createYargsCommandNames({ group1: new Set([key]) }));
 			},
 			afterEach() {
@@ -331,6 +377,12 @@ registerSuite('registerCommands', {
 				'Should run default command when yargs called with only group name'() {
 					yargsStub.command.firstCall.args[3]({ _: ['group'] });
 					assert.isTrue(defaultRunStub.calledOnce);
+				},
+				'should write arguments to dojorc when save is passed'() {
+					process.argv = ['-foo'];
+					yargsStub.command.firstCall.args[3]({ _: ['group'], bar: 'bar', foo: 'foo', save: true });
+					assert.isTrue(defaultRunStub.calledOnce);
+					assert.isTrue(configurationSetStub.calledWith({ foo: 'foo' }));
 				},
 				'Should not run default command when yargs called with group name and command'() {
 					yargsStub.command.firstCall.args[3]({ _: ['group', 'command'] });

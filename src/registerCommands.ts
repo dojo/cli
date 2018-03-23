@@ -23,22 +23,19 @@ function reportError(error: CommandError) {
 	process.exit(exitCode);
 }
 
-function userSetOption(option: string, parsed: any) {
-	function searchForOption(option: string) {
-		if (process.argv.indexOf(option) > -1) {
-			return true;
-		}
-		return false;
-	}
+function searchForOption(option: string) {
+	return process.argv.indexOf(`-${option}`) > -1 || process.argv.indexOf(`--${option}`) > -1;
+}
 
-	if (searchForOption(`-${option}`) || searchForOption(`--${option}`)) {
+function userSetOption(option: string, parsed: any) {
+	if (searchForOption(option)) {
 		return true;
 	}
 
 	// Handle aliases for same option
 	for (let aliasIndex in parsed.aliases[option]) {
 		let alias = parsed.aliases[option][aliasIndex];
-		if (searchForOption(`-${alias}`) || searchForOption(`--${alias}`)) {
+		if (searchForOption(alias)) {
 			return true;
 		}
 	}
@@ -58,6 +55,23 @@ function getRcOption(rcConfig: any, option: string, parsed: any) {
 		}
 	}
 	return undefined;
+}
+
+function saveCommandLineOptions(yargs: Argv, configuration: any, args: any) {
+	const configToSave = Object.keys(args).reduce(
+		(config, key) => {
+			if (searchForOption(key)) {
+				try {
+					config[key] = JSON.parse(args[key]);
+				} catch {
+					config[key] = args[key];
+				}
+			}
+			return config;
+		},
+		{} as any
+	);
+	configuration.set(configToSave);
 }
 
 function getOptions(yargs: Argv, rcOptions: any, commandLineArgs: any = {}) {
@@ -123,8 +137,15 @@ function registerGroups(
 			// so we call default command, else, the subcommand will
 			// have been ran and we don't want to run the default.
 			if (defaultCommandAvailable && argv._.length === 1) {
-				const args = getOptions(yargs, helper.sandbox(groupName, defaultCommandName).configuration.get(), argv);
-				return defaultCommand.run(helper.sandbox(groupName, defaultCommandName), args).catch(reportError);
+				let { save, ...args } = argv;
+				const configuration = helper.sandbox(groupName, defaultCommandName).configuration;
+				const combinedArgs = getOptions(yargs, configuration.get(), args);
+				if (save) {
+					saveCommandLineOptions(yargs, configuration, combinedArgs);
+				}
+				return defaultCommand
+					.run(helper.sandbox(groupName, defaultCommandName), combinedArgs)
+					.catch(reportError);
 			}
 		}
 	);
@@ -163,8 +184,13 @@ function registerCommands(
 						return optionsYargs;
 					},
 					(argv: any) => {
-						const args = getOptions(yargs, helper.sandbox(groupName, name).configuration.get(), argv);
-						return run(helper.sandbox(groupName, name), args).catch(reportError);
+						const configuration = helper.sandbox(groupName, name).configuration;
+						let { save, ...args } = argv;
+						const combinedArgs = getOptions(yargs, configuration.get(), args);
+						if (save) {
+							saveCommandLineOptions(yargs, configuration, combinedArgs);
+						}
+						return run(helper.sandbox(groupName, name), combinedArgs).catch(reportError);
 					}
 				)
 				.strict();
@@ -202,6 +228,7 @@ function registerAliases(
 						return aliasYargs;
 					},
 					(argv: any) => {
+						const configuration = helper.sandbox(group, name).configuration;
 						if (aliasOpts) {
 							argv = aliasOpts.reduce((accumulator, option) => {
 								return {
@@ -210,8 +237,12 @@ function registerAliases(
 								};
 							}, argv);
 						}
-						const args = getOptions(yargs, helper.sandbox(group, name).configuration.get(), argv);
-						return run(helper.sandbox(group, name), args).catch(reportError);
+						let { save, ...args } = argv;
+						const combinedArgs = getOptions(yargs, configuration.get(), args);
+						if (save) {
+							console.warn('Save is not supported with for command aliases');
+						}
+						return run(helper.sandbox(group, name), combinedArgs).catch(reportError);
 					}
 				);
 			});
@@ -237,6 +268,11 @@ export default function(yargs: Argv, commandsMap: CommandsMap, yargsCommandNames
 	yargsCommandNames.forEach((commandOptions, commandName) => {
 		registerGroups(yargs, helperFactory, commandName, commandOptions, commandsMap);
 		registerAliases(yargs, helperFactory, commandOptions, commandsMap);
+	});
+
+	yargs.option('save', {
+		describe: 'Save arguments to .dojorc',
+		type: 'boolean'
 	});
 
 	yargs
