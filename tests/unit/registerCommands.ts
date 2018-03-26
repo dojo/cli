@@ -94,8 +94,14 @@ registerSuite('registerCommands', {
 		},
 
 		'command arguments': {
-			'pass dojo rc config as run arguments'() {
+			'pass dojo rc config as run arguments and expand to all aliases'() {
 				const key = 'group1-command1';
+				commandsMap = getCommandsMap(groupDef, (compositeKey: string) => {
+					return (func: Function) => {
+						func('foo', { alias: ['f', 'fo'] });
+						return compositeKey;
+					};
+				});
 				const { run } = commandsMap.get(key);
 				const registerCommands = mockModule.getModuleUnderTest().default;
 				const configurationHelper = mockModule.getMock('./configurationHelper');
@@ -103,16 +109,16 @@ registerSuite('registerCommands', {
 					sandbox() {
 						return {
 							get() {
-								return { foo: 'bar' };
+								return { f: 'bar' };
 							}
 						};
 					}
 				};
 
 				registerCommands(yargsStub, commandsMap, createYargsCommandNames({ group1: new Set([key]) }));
-				yargsStub.command.secondCall.args[3]();
+				yargsStub.command.secondCall.args[3]({ f: undefined });
 				assert.isTrue(run.calledOnce);
-				assert.deepEqual(run.firstCall.args[1], { foo: 'bar' });
+				assert.deepEqual(run.firstCall.args[1], { foo: 'bar', f: 'bar', fo: 'bar' });
 			},
 
 			'command line args should override dojo rc config'() {
@@ -139,6 +145,12 @@ registerSuite('registerCommands', {
 
 			'default command line args should not override dojo rc config'() {
 				const key = 'group1-command1';
+				commandsMap = getCommandsMap(groupDef, (compositeKey: string) => {
+					return (func: Function) => {
+						func('foo', { alias: ['f', 'fo'] });
+						return compositeKey;
+					};
+				});
 				const { run } = commandsMap.get(key);
 				const registerCommands = mockModule.getModuleUnderTest().default;
 				const configurationHelper = mockModule.getMock('./configurationHelper');
@@ -153,15 +165,21 @@ registerSuite('registerCommands', {
 				};
 
 				registerCommands(yargsStub, commandsMap, createYargsCommandNames({ group1: new Set([key]) }));
-				yargsStub.command.secondCall.args[3]({ foo: 'foo' });
+				yargsStub.command.secondCall.args[3]({ foo: 'foo', fo: 'foo', f: 'foo' });
 				assert.isTrue(run.calledOnce);
-				assert.deepEqual(run.firstCall.args[1], { foo: 'bar' });
+				assert.deepEqual(run.firstCall.args[1], { foo: 'bar', fo: 'bar', f: 'bar' });
 			},
 
 			'command line options aliases should override dojo rc config'() {
 				const key = 'group1-command1';
 				process.argv = ['-f'];
-				yargsStub = getYargsStub({ foo: ['f'], f: ['foo'] });
+				yargsStub = getYargsStub();
+				commandsMap = getCommandsMap(groupDef, (compositeKey: string) => {
+					return (func: Function) => {
+						func('foo', { alias: ['f'] });
+						return compositeKey;
+					};
+				});
 				const { run } = commandsMap.get(key);
 				const registerCommands = mockModule.getModuleUnderTest().default;
 				const configurationHelper = mockModule.getMock('./configurationHelper');
@@ -184,6 +202,12 @@ registerSuite('registerCommands', {
 			'should use rc config value for option aliases'() {
 				const key = 'group1-command1';
 				yargsStub = getYargsStub({ foo: ['f'], f: ['foo'] });
+				commandsMap = getCommandsMap(groupDef, (compositeKey: string) => {
+					return (func: Function) => {
+						func('foo', { alias: 'f' });
+						return compositeKey;
+					};
+				});
 				const { run } = commandsMap.get(key);
 				const registerCommands = mockModule.getModuleUnderTest().default;
 				const configurationHelper = mockModule.getMock('./configurationHelper');
