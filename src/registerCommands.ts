@@ -23,7 +23,7 @@ function reportError(error: CommandError) {
 	process.exit(exitCode);
 }
 
-function userSetOption(option: string, parsed: any) {
+function userSetOption(option: string, aliases: Aliases) {
 	function searchForOption(option: string) {
 		if (process.argv.indexOf(option) > -1) {
 			return true;
@@ -36,8 +36,8 @@ function userSetOption(option: string, parsed: any) {
 	}
 
 	// Handle aliases for same option
-	for (let aliasIndex in parsed.aliases[option]) {
-		let alias = parsed.aliases[option][aliasIndex];
+	for (let aliasIndex in aliases[option]) {
+		let alias = aliases[option][aliasIndex];
 		if (searchForOption(`-${alias}`) || searchForOption(`--${alias}`)) {
 			return true;
 		}
@@ -46,13 +46,13 @@ function userSetOption(option: string, parsed: any) {
 	return false;
 }
 
-function getRcOption(rcConfig: any, option: string, parsed: any) {
+function getRcOption(rcConfig: any, option: string, aliases: Aliases) {
 	if (rcConfig[option] !== undefined) {
 		return option;
 	}
 
-	for (let aliasIndex in parsed.aliases[option]) {
-		let alias = parsed.aliases[option][aliasIndex];
+	for (let aliasIndex in aliases[option]) {
+		let alias = aliases[option][aliasIndex];
 		if (rcConfig[alias] !== undefined) {
 			return alias;
 		}
@@ -60,25 +60,46 @@ function getRcOption(rcConfig: any, option: string, parsed: any) {
 	return undefined;
 }
 
-function getOptions(yargs: Argv, rcOptions: any, commandLineArgs: any = {}) {
+function getOptions(aliases: Aliases, rcOptions: any, commandLineArgs: any = {}) {
 	const result = Object.keys(commandLineArgs).reduce(
 		(config, key) => {
-			if (userSetOption(key, (yargs as any).parsed)) {
+			if (userSetOption(key, aliases)) {
 				config[key] = commandLineArgs[key];
 				return config;
 			}
 
-			const rcOption = getRcOption(rcOptions, key, (yargs as any).parsed);
+			const rcOption = getRcOption(rcOptions, key, aliases);
 			if (rcOption) {
 				config[key] = rcOptions[rcOption];
+				aliases[key].forEach((alias) => {
+					config[alias] = rcOptions[rcOption];
+				});
 			} else {
 				config[key] = commandLineArgs[key];
 			}
+
 			return config;
 		},
 		{} as any
 	);
 	return { ...rcOptions, ...result };
+}
+
+type Aliases = { [index: string]: string[] };
+
+function parseAliases(aliases: Aliases, key: string, optionAlias: string | string[] = []) {
+	if (typeof optionAlias === 'string') {
+		aliases[key] = [optionAlias];
+		aliases[optionAlias] = [key];
+	} else {
+		aliases[key] = optionAlias;
+		optionAlias.forEach((option, index) => {
+			const optionsCopy = [...optionAlias];
+			optionsCopy.splice(index, 1);
+			aliases[option] = [key, ...optionsCopy];
+		});
+	}
+	return aliases;
 }
 
 /**
@@ -101,6 +122,7 @@ function registerGroups(
 	const defaultCommand = <CommandWrapper>commandsMap.get(groupName);
 	const defaultCommandAvailable = !!(defaultCommand && defaultCommand.register && defaultCommand.run);
 	const defaultCommandName = defaultCommand && defaultCommand.name;
+	let aliases: Aliases = {};
 
 	yargs.command(
 		groupName,
@@ -108,6 +130,7 @@ function registerGroups(
 		(subYargs: Argv) => {
 			if (defaultCommandAvailable) {
 				defaultCommand.register((key: string, options: Options) => {
+					aliases = parseAliases(aliases, key, options.alias);
 					subYargs.option(key, {
 						group: `Default Command Options ('${defaultCommand.name}')`,
 						...options
@@ -123,7 +146,11 @@ function registerGroups(
 			// so we call default command, else, the subcommand will
 			// have been ran and we don't want to run the default.
 			if (defaultCommandAvailable && argv._.length === 1) {
-				const args = getOptions(yargs, helper.sandbox(groupName, defaultCommandName).configuration.get(), argv);
+				const args = getOptions(
+					aliases,
+					helper.sandbox(groupName, defaultCommandName).configuration.get(),
+					argv
+				);
 				return defaultCommand.run(helper.sandbox(groupName, defaultCommandName), args).catch(reportError);
 			}
 		}
@@ -152,18 +179,20 @@ function registerCommands(
 		})
 		.forEach((command: string) => {
 			const { name, description, register, run } = <CommandWrapper>commandsMap.get(command);
+			let aliases: Aliases = {};
 			yargs
 				.command(
 					name,
 					description,
 					(optionsYargs: Argv) => {
 						register((key: string, options: Options) => {
+							aliases = parseAliases(aliases, key, options.alias);
 							optionsYargs.option(key, options);
 						}, helper.sandbox(groupName, name));
 						return optionsYargs;
 					},
 					(argv: any) => {
-						const args = getOptions(yargs, helper.sandbox(groupName, name).configuration.get(), argv);
+						const args = getOptions(aliases, helper.sandbox(groupName, name).configuration.get(), argv);
 						return run(helper.sandbox(groupName, name), args).catch(reportError);
 					}
 				)
@@ -190,12 +219,14 @@ function registerAliases(
 		if (aliases) {
 			(Array.isArray(aliases) ? aliases : [aliases]).forEach((alias) => {
 				const { name, description, options: aliasOpts } = alias;
+				let aliases: Aliases = {};
 				yargs.command(
 					name,
 					description || '',
 					(aliasYargs: Argv) => {
 						register((key: string, options: Options) => {
 							if (!aliasOpts || !aliasOpts.some((option) => option.option === key)) {
+								aliases = parseAliases(aliases, key, options.alias);
 								aliasYargs.option(key, options);
 							}
 						}, helper.sandbox(group, name));
@@ -210,7 +241,7 @@ function registerAliases(
 								};
 							}, argv);
 						}
-						const args = getOptions(yargs, helper.sandbox(group, name).configuration.get(), argv);
+						const args = getOptions(aliases, helper.sandbox(group, name).configuration.get(), argv);
 						return run(helper.sandbox(group, name), args).catch(reportError);
 					}
 				);

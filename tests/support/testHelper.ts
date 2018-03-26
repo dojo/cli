@@ -22,8 +22,16 @@ export interface CommandWrapperConfig {
 	eject?: boolean;
 }
 
-export function getCommandsMap(groupDef: GroupDef) {
+export function getCommandsMap(groupDef: GroupDef, registerMock?: Function) {
 	const commands = new Map();
+	if (registerMock === undefined) {
+		registerMock = (compositeKey: string) => {
+			return (func: Function) => {
+				func('key', {});
+				return compositeKey;
+			};
+		};
+	}
 
 	groupDef.forEach((group) => {
 		group.commands.forEach((command) => {
@@ -35,9 +43,7 @@ export function getCommandsMap(groupDef: GroupDef) {
 				name: command.commandName,
 				group: group.groupName,
 				description: compositeKey,
-				register: stub()
-					.callsArgWith(0, 'key', {})
-					.returns(compositeKey),
+				register: registerMock!(compositeKey),
 				runSpy,
 				run: runSpy
 			};
