@@ -87,6 +87,7 @@ export interface Command<T = any> {
 	name?: string;
 	group?: string;
 	alias?: Alias[] | Alias;
+	global?: boolean;
 }
 
 export interface CommandError {
@@ -94,17 +95,15 @@ export interface CommandError {
 	message: string;
 }
 
-export type YargsCommandNames = Map<string, Set<string>>;
-
-export type LoadedCommands = {
-	commandsMap: CommandsMap;
-	yargsCommandNames: YargsCommandNames;
-};
-
 export interface CommandWrapper extends Command {
 	name: string;
 	group: string;
 	path: string;
+	global: boolean;
+	installed: boolean;
+	default?: boolean;
 }
 
-export type CommandsMap = Map<string, CommandWrapper>;
+export type CommandMap = Map<string, CommandWrapper>;
+
+export type GroupMap = Map<string, CommandMap>;

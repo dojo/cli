@@ -1,17 +1,15 @@
 import { CommandWrapper } from '../../src/interfaces';
 import { stub, spy } from 'sinon';
 
-export type GroupDef = [
-	{
-		groupName: string;
-		commands: [
-			{
-				commandName: string;
-				fails?: boolean;
-			}
-		];
-	}
-];
+export type GroupDef = {
+	groupName: string;
+	commands: [
+		{
+			commandName: string;
+			fails?: boolean;
+		}
+	];
+}[];
 
 export interface CommandWrapperConfig {
 	group?: string;
@@ -20,24 +18,31 @@ export interface CommandWrapperConfig {
 	path?: string;
 	runs?: boolean;
 	eject?: boolean;
+	installed?: boolean;
+	global?: boolean;
 }
 
-export function getCommandsMap(groupDef: GroupDef, registerMock?: Function) {
-	const commands = new Map();
+export function getGroupMap(groupDef: GroupDef, registerMock?: Function) {
+	const groupMap = new Map();
 	if (registerMock === undefined) {
 		registerMock = (compositeKey: string) => {
-			return (func: Function) => {
-				func('key', {});
-				return compositeKey;
-			};
+			const registerStub = stub();
+			registerStub.yields('key', {}).returns(compositeKey);
+			return registerStub;
 		};
 	}
-
+	let isDefault = false;
 	groupDef.forEach((group) => {
+		let commandMap = groupMap.get(group.groupName);
+		if (!commandMap) {
+			commandMap = new Map();
+			groupMap.set(group.groupName, commandMap);
+			isDefault = true;
+		}
 		group.commands.forEach((command) => {
 			const compositeKey = `${group.groupName}-${command.commandName}`;
 			const runSpy = spy(
-				() => (command.fails ? Promise.reject(new Error(compositeKey)) : Promise.resolve(compositeKey))
+				() => (command.fails ? Promise.reject(new Error('test error message')) : Promise.resolve(compositeKey))
 			);
 			const commandWrapper = {
 				name: command.commandName,
@@ -45,16 +50,18 @@ export function getCommandsMap(groupDef: GroupDef, registerMock?: Function) {
 				description: compositeKey,
 				register: registerMock!(compositeKey),
 				runSpy,
+				default: isDefault,
 				run: runSpy
 			};
-			commands.set(compositeKey, commandWrapper);
+			isDefault = false;
+			commandMap.set(command.commandName, commandWrapper);
 		});
 	});
 
-	return commands;
+	return groupMap;
 }
 
-const yargsFunctions = ['demand', 'usage', 'epilog', 'help', 'alias', 'strict', 'option'];
+const yargsFunctions = ['demand', 'usage', 'epilog', 'help', 'alias', 'strict', 'option', 'check', 'showHelpOnFail'];
 export function getYargsStub(aliases: any = {}) {
 	const yargsStub: any = {
 		parsed: {
@@ -80,13 +87,24 @@ export function getCommandWrapper(name: string, runs: boolean = true) {
 }
 
 export function getCommandWrapperWithConfiguration(config: CommandWrapperConfig): CommandWrapper {
-	const { group = '', name = '', description = '', path = '', runs = false, eject = false } = config;
+	const {
+		group = '',
+		name = '',
+		description = '',
+		path = '',
+		runs = false,
+		eject = false,
+		global = false,
+		installed = false
+	} = config;
 
 	const commandWrapper: CommandWrapper = {
 		group,
 		name,
 		description,
 		path,
+		global,
+		installed,
 		register: stub().returns('registered'),
 		run: stub().returns(runs ? 'success' : 'error')
 	};

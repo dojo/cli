@@ -5,7 +5,7 @@ import chalk from 'chalk';
 import { join, resolve as pathResolve, sep } from 'path';
 import * as sinon from 'sinon';
 
-import { CommandsMap, CommandWrapper } from '../../../src/interfaces';
+import { CommandMap, CommandWrapper } from '../../../src/interfaces';
 import MockModule from '../../support/MockModule';
 import { getCommandWrapperWithConfiguration } from '../../support/testHelper';
 
@@ -71,7 +71,7 @@ describe('eject command', () => {
 
 	it(`should abort eject when 'N' selected`, () => {
 		const abortOutput = 'Aborting eject';
-		const commandMap: CommandsMap = new Map<string, CommandWrapper>();
+		const commandMap: CommandMap = new Map<string, CommandWrapper>();
 
 		const helper = getHelper();
 		mockInquirer.prompt = sandbox.stub().resolves({ eject: false });
@@ -98,12 +98,13 @@ describe('eject command', () => {
 			name: ''
 		});
 
-		const commandMap: CommandsMap = new Map<string, CommandWrapper>([
+		const commandMap: CommandMap = new Map<string, CommandWrapper>([
 			['command', installedCommandWrapper1],
 			['version', installedCommandWrapper2]
 		]);
+		const groupMap = new Map([['test', commandMap]]);
 		const helper = getHelper();
-		mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves({ commandsMap: commandMap });
+		mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves(groupMap);
 		return moduleUnderTest.run(helper, {}).then(
 			() => {
 				assert.equal(consoleLogStub.args[0][0], runOutput);
@@ -116,11 +117,12 @@ describe('eject command', () => {
 
 	describe('save ejected config', () => {
 		it('should save config', () => {
-			const commandMap: CommandsMap = new Map<string, CommandWrapper>([
+			const commandMap: CommandMap = new Map<string, CommandWrapper>([
 				['apple', loadCommand('command-with-full-eject')]
 			]);
+			const groupMap = new Map([['test', commandMap]]);
 			const helper = getHelper();
-			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves({ commandsMap: commandMap });
+			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves(groupMap);
 
 			const configurationHelper = mockModule.getMock('../configurationHelper').default;
 
@@ -143,11 +145,12 @@ describe('eject command', () => {
 
 	describe('eject npm config', () => {
 		it('should run npm install', () => {
-			const commandMap: CommandsMap = new Map<string, CommandWrapper>([
+			const commandMap: CommandMap = new Map<string, CommandWrapper>([
 				['apple', loadCommand('command-with-full-eject')]
 			]);
+			const groupMap = new Map([['test', commandMap]]);
 			const helper = getHelper();
-			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves({ commandsMap: commandMap });
+			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves(groupMap);
 			return moduleUnderTest.run(helper, {}).then(
 				() => {
 					assert.isTrue(mockNpmInstall.installDependencies.calledOnce);
@@ -162,11 +165,12 @@ describe('eject command', () => {
 
 	describe('eject copy config', () => {
 		it('should run copy files', () => {
-			const commandMap: CommandsMap = new Map<string, CommandWrapper>([
+			const commandMap: CommandMap = new Map<string, CommandWrapper>([
 				['apple', loadCommand('command-with-full-eject')]
 			]);
+			const groupMap = new Map([['test', commandMap]]);
 			const helper = getHelper();
-			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves({ commandsMap: commandMap });
+			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves(groupMap);
 			return moduleUnderTest.run(helper, {}).then(
 				() => {
 					assert.isTrue(
@@ -193,11 +197,12 @@ describe('eject command', () => {
 		});
 
 		it('should not copy files if no files are specified', () => {
-			const commandMap: CommandsMap = new Map<string, CommandWrapper>([
+			const commandMap: CommandMap = new Map<string, CommandWrapper>([
 				['apple', loadCommand('command-with-nofile-eject')]
 			]);
+			const groupMap = new Map([['test', commandMap]]);
 			const helper = getHelper();
-			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves({ commandsMap: commandMap });
+			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves(groupMap);
 			return moduleUnderTest.run(helper, {}).then(
 				() => {
 					assert.isTrue(mockFsExtra.copySync.notCalled);
@@ -211,11 +216,12 @@ describe('eject command', () => {
 
 	describe('eject hints', () => {
 		it('should show hints when supplied', () => {
-			const commandMap: CommandsMap = new Map<string, CommandWrapper>([
+			const commandMap: CommandMap = new Map<string, CommandWrapper>([
 				['apple', loadCommand('command-with-hints')]
 			]);
+			const groupMap = new Map([['test', commandMap]]);
 			const helper = getHelper();
-			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves({ commandsMap: commandMap });
+			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves(groupMap);
 			return moduleUnderTest.run(helper, {}).then(
 				() => {
 					const logCallCount = consoleLogStub.callCount;

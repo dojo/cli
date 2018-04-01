@@ -1,9 +1,9 @@
 import * as execa from 'execa';
 import { join } from 'path';
 const spawn: any = require('cross-spawn');
-import { NpmPackageDetails, LoadedCommands, YargsCommandNames, CommandsMap, CommandWrapper } from './interfaces';
+import { NpmPackageDetails, CommandWrapper, GroupMap } from './interfaces';
 import * as Configstore from 'configstore';
-import { isEjected, setDefaultGroup } from './loadCommands';
+import { isEjected } from './loadCommands';
 import chalk from 'chalk';
 
 const INITIAL_TIMEOUT = 3000;
@@ -53,47 +53,22 @@ async function search(timeout: number = 0): Promise<NpmPackageDetails[] | undefi
 }
 
 export function mergeInstalledCommandsWithAvailableCommands(
-	installedCommands: LoadedCommands,
+	groupMap: GroupMap,
 	availableCommands: NpmPackageDetails[]
-) {
-	const installableCommandPrompts = createInstallableCommandPrompts(availableCommands);
-
-	const allGroups = new Set([
-		...installableCommandPrompts.yargsCommandNames.keys(),
-		...installedCommands.yargsCommandNames.keys()
-	]);
-
-	const mergedYargsCommandNames = [...allGroups].reduce(
-		(mergedCommandNames: YargsCommandNames, groupName) => {
-			const installedGroup = installedCommands.yargsCommandNames.get(groupName) || [];
-			const installableGroup = installableCommandPrompts.yargsCommandNames.get(groupName) || [];
-			const mergedSets = new Set([...installableGroup, ...installedGroup]);
-			mergedCommandNames.set(groupName, mergedSets);
-			return mergedCommandNames;
-		},
-		new Map() as YargsCommandNames
-	);
-
-	return {
-		commandsMap: new Map([...installableCommandPrompts.commandsMap, ...installedCommands.commandsMap]),
-		yargsCommandNames: mergedYargsCommandNames
-	};
-}
-
-export function createInstallableCommandPrompts(availableCommands: NpmPackageDetails[]): LoadedCommands {
-	const commandsMap: CommandsMap = new Map();
-	const yargsCommandNames: YargsCommandNames = new Map();
+): GroupMap {
 	const regEx = /@dojo\/cli-([^-]+)-(.+)/;
 
 	availableCommands.forEach((command) => {
 		const [, group, name] = regEx.exec(command.name) as string[];
-		const compositeKey = `${group}-${name}`;
 		const installCommand = `npm i ${command.name}`;
+
 		const commandWrapper: CommandWrapper = {
 			name,
 			group,
 			path: installCommand,
 			description: command.description,
+			global: false,
+			installed: false,
 			register: () => {},
 			run: () => {
 				console.log(`\nTo install this command run ${chalk.green(installCommand)}\n`);
@@ -102,24 +77,17 @@ export function createInstallableCommandPrompts(availableCommands: NpmPackageDet
 		};
 
 		if (!isEjected(group, name)) {
-			if (!commandsMap.has(group)) {
-				setDefaultGroup(commandsMap, group, commandWrapper);
-				yargsCommandNames.set(group, new Set());
+			if (!groupMap.has(group)) {
+				commandWrapper.default = true;
+				groupMap.set(group, new Map());
 			}
 
-			if (!commandsMap.has(compositeKey)) {
-				commandsMap.set(compositeKey, commandWrapper);
-			}
-
-			const groupCommandNames = yargsCommandNames.get(group);
-			if (groupCommandNames) {
-				groupCommandNames.add(compositeKey);
+			const subCommandsMap = groupMap.get(group)!;
+			if (!subCommandsMap.has(name)) {
+				subCommandsMap.set(name, commandWrapper);
 			}
 		}
 	});
 
-	return {
-		commandsMap,
-		yargsCommandNames
-	};
+	return groupMap;
 }

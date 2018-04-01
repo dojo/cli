@@ -25,7 +25,7 @@ describe('installableCommands', () => {
 		version: 'testVersion'
 	};
 	const testCommandDetails2 = {
-		name: '@dojo/cli-test-foo',
+		name: '@dojo/cli-other-foo',
 		description: 'testDescription2',
 		version: 'testVersion2'
 	};
@@ -98,42 +98,36 @@ describe('installableCommands', () => {
 	});
 
 	it('creates installable command prompts', () => {
-		const { commandsMap, yargsCommandNames } = moduleUnderTest.createInstallableCommandPrompts([
+		const groupMap = moduleUnderTest.mergeInstalledCommandsWithAvailableCommands(new Map(), [
 			testCommandDetails,
 			testCommandDetails2
 		]);
-		assert.equal(commandsMap.size, 3);
-		assert.equal(commandsMap.get('test').name, 'command');
-		assert.equal(commandsMap.get('test').group, 'test');
+		assert.equal(groupMap.size, 2);
 
-		assert.equal(yargsCommandNames.size, 1);
-		assert.isTrue(yargsCommandNames.has('test'));
-		assert.isTrue(yargsCommandNames.get('test').has('test-command'));
-		assert.isTrue(yargsCommandNames.get('test').has('test-foo'));
+		assert.equal(groupMap.get('test').get('command').name, 'command');
+		assert.equal(groupMap.get('other').get('foo').name, 'foo');
 	});
 
-	it('does not generate duplicate command promps', () => {
-		const { commandsMap, yargsCommandNames } = moduleUnderTest.createInstallableCommandPrompts([
+	it('does not generate duplicate command prompts', () => {
+		const groupMap = moduleUnderTest.mergeInstalledCommandsWithAvailableCommands(new Map(), [
 			testCommandDetails,
 			testCommandDetails
 		]);
-		assert.equal(commandsMap.size, 2);
-		assert.equal(yargsCommandNames.size, 1);
+		assert.equal(groupMap.size, 1);
+		assert.equal(groupMap.get('test').size, 1);
 	});
 
 	it('does not create command prompts for ejected commands', () => {
 		configHelperGetStub.returns({ ejected: true });
-		const { commandsMap, yargsCommandNames } = moduleUnderTest.createInstallableCommandPrompts([
-			testCommandDetails
-		]);
-		assert.equal(commandsMap.size, 0);
-		assert.equal(yargsCommandNames.size, 0);
+		const groupMap = moduleUnderTest.mergeInstalledCommandsWithAvailableCommands(new Map(), [testCommandDetails]);
+		assert.equal(groupMap.size, 0);
 	});
 
 	it('shows installation instructions for installable commands', () => {
-		const { commandsMap } = moduleUnderTest.createInstallableCommandPrompts([testCommandDetails]);
-		return commandsMap
+		const groupMap = moduleUnderTest.mergeInstalledCommandsWithAvailableCommands(new Map(), [testCommandDetails]);
+		return groupMap
 			.get('test')
+			.get('command')
 			.run()
 			.then(() => {
 				(console.log as sinon.SinonStub).calledWith(
@@ -143,24 +137,15 @@ describe('installableCommands', () => {
 	});
 
 	it('can merge installed commands with available commands', () => {
-		const commandsMap = new Map();
-		const yargsCommandNames = new Map();
-		commandsMap.set('installed', { name: 'installed-command' });
-		yargsCommandNames.set('installed', new Set());
-		const installedCommands = {
-			commandsMap,
-			yargsCommandNames
-		};
-		const mergedCommands = moduleUnderTest.mergeInstalledCommandsWithAvailableCommands(installedCommands, [
-			testCommandDetails
-		]);
+		const groupMap = new Map();
+		const commandMap = new Map();
+		groupMap.set('test', commandMap);
+		commandMap.set('installed', {});
+		moduleUnderTest.mergeInstalledCommandsWithAvailableCommands(groupMap, [testCommandDetails]);
 
-		assert.equal(mergedCommands.commandsMap.size, 3);
-		assert.isTrue(mergedCommands.commandsMap.has('test'));
-		assert.isTrue(mergedCommands.commandsMap.has('test-command'));
-		assert.isTrue(mergedCommands.commandsMap.has('installed'));
-		assert.equal(mergedCommands.yargsCommandNames.size, 2);
-		assert.isTrue(mergedCommands.yargsCommandNames.has('test'));
-		assert.isTrue(mergedCommands.yargsCommandNames.has('installed'));
+		assert.equal(groupMap.size, 1);
+		assert.equal(groupMap.get('test').size, 2);
+		assert.isTrue(groupMap.get('test').has('command'));
+		assert.isTrue(groupMap.get('test').has('installed'));
 	});
 });

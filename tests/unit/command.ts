@@ -1,7 +1,6 @@
 const { registerSuite } = intern.getInterface('object');
 const { assert } = intern.getPlugin('chai');
 
-import { getCommandsMap, GroupDef } from '../support/testHelper';
 import * as command from '../../src/command';
 
 import * as expectedCommand from '../support/test-prefix-foo-bar';
@@ -16,17 +15,6 @@ const testEsModuleSearchPrefixes = ['esmodule-prefix'];
 const testEsModuleFailSearchPrefixes = ['esmodule-fail'];
 const testSearchPrefixesDashedNames = ['dash-names'];
 let commandWrapper: any;
-const groupDef: GroupDef = [
-	{
-		groupName: 'group1',
-		commands: [{ commandName: 'command1' }]
-	},
-	{
-		groupName: 'group2',
-		commands: [{ commandName: 'command1' }]
-	}
-];
-const commandsMap = getCommandsMap(groupDef);
 let loader: any;
 
 function getCommandPath(prefixes: string[]): string[] {
@@ -153,29 +141,6 @@ registerSuite('command', {
 			'Should parse group names correctly'() {
 				assert.equal('foo', commandWrapper.group);
 				assert.equal('bar-baz', commandWrapper.name);
-			}
-		}
-	},
-	getGroupDescription: {
-		before() {
-			loader = command.initCommandLoader(testSearchPrefixes);
-		},
-
-		tests: {
-			'Should return simple command description when only one command name passed'() {
-				const key = 'group1-command1';
-				const description = command.getGroupDescription(new Set([key]), commandsMap);
-				assert.equal(commandsMap.get(key).description, description);
-			},
-			'Should return composite description of sub commands when multiple command names passed'() {
-				const key1 = 'group1-command1';
-				const key2 = 'group2-command1';
-				const description = command.getGroupDescription(new Set([key1, key2]), commandsMap);
-				const expected = `${commandsMap.get(key1).name}  ${commandsMap.get(key1).description}\n${
-					commandsMap.get(key1).name
-				}  ${commandsMap.get(key2).description}`;
-
-				assert.equal(expected, description);
 			}
 		}
 	}

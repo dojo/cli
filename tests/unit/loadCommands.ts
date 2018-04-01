@@ -91,12 +91,13 @@ registerSuite('loadCommands', {
 			tests: {
 				async 'Should set first loaded command of each group to be the default'() {
 					const installedPaths = await enumInstalledCommands(goodConfig);
-					const { commandsMap } = await loadCommands(installedPaths, loadStub);
+					const groupMap = await loadCommands(installedPaths, loadStub);
 
 					assert.isTrue(loadStub.calledTwice);
-					assert.equal(3, commandsMap.size);
-					assert.equal(commandWrapper1, commandsMap.get(commandWrapper1.group));
-					assert.equal(commandWrapper1, commandsMap.get(`${commandWrapper1.group}-${commandWrapper1.name}`));
+					assert.equal(groupMap.size, 1);
+					assert.equal(groupMap.get(commandWrapper1.group)!.size, 2);
+					const command = groupMap.get(commandWrapper1.group)!.get(commandWrapper1.name)!;
+					assert.isTrue(command.default);
 				},
 				async 'should apply loading precedence to duplicate commands'() {
 					const duplicateCommandName = 'command1';
@@ -106,13 +107,13 @@ registerSuite('loadCommands', {
 					loadStub.onSecondCall().returns(commandWrapperDuplicate);
 
 					const installedPaths = await enumInstalledCommands(goodConfig);
-					const { yargsCommandNames } = await loadCommands(installedPaths, loadStub);
+					const groupMap = await loadCommands(installedPaths, loadStub);
 
 					assert.isTrue(loadStub.calledTwice);
-					const groupCommandSet = yargsCommandNames.get(duplicateGroupName);
+					const groupCommandSet = groupMap.get(duplicateGroupName);
 
 					assert.equal(1, groupCommandSet!.size);
-					assert.isTrue(groupCommandSet!.has(`${duplicateGroupName}-${duplicateCommandName}`));
+					assert.isTrue(groupCommandSet!.has(duplicateCommandName));
 				}
 			}
 		},
@@ -156,9 +157,9 @@ registerSuite('loadCommands', {
 					goodConfig = config();
 
 					const installedPaths = await enumInstalledCommands(goodConfig);
-					const { commandsMap } = await mockedLoadCommands(installedPaths, loadStub);
+					const groupMap = await mockedLoadCommands(installedPaths, loadStub);
 
-					assert.equal(commandsMap.size, 0);
+					assert.equal(groupMap.size, 0);
 				}
 			}
 		}

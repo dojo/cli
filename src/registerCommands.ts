@@ -1,18 +1,21 @@
 import chalk from 'chalk';
 import { Argv, Options } from 'yargs';
-import { getGroupDescription } from './command';
 import CommandHelper from './CommandHelper';
 import configurationHelperFactory from './configurationHelper';
 import HelperFactory from './Helper';
-import { CommandError, CommandsMap, CommandWrapper, YargsCommandNames } from './interfaces';
-import { helpUsage, helpEpilog } from './text';
+import { CommandError, CommandWrapper, GroupMap, CommandMap } from './interfaces';
+import { formatHelp } from './help';
+import { optionValidator } from './validation';
+import { getCommand } from './command';
 
-/**
- * General purpose error handler for commands. If the command has an exit code, it is considered
- * critical and we exit immediately. Otherwise we just let things run their course.
- *
- * @param error
- */
+const requireOptions = {
+	demand: false,
+	demandOption: false,
+	requiresArg: false,
+	require: false,
+	required: false
+};
+
 function reportError(error: CommandError) {
 	let exitCode = 1;
 	if (error.exitCode !== undefined) {
@@ -102,179 +105,103 @@ function parseAliases(aliases: Aliases, key: string, optionAlias: string | strin
 	return aliases;
 }
 
-/**
- * Registers groups and initiates registration of commands
- *
- * @param yargs Yargs instance
- * @param helper Helper instance
- * @param groupName the name of the group
- * @param commandOptions The set of commandOption keys
- * @param commandsMap The map of composite keys to commands
- */
-function registerGroups(
-	yargs: Argv,
-	helper: HelperFactory,
-	groupName: string,
-	commandOptions: Set<string>,
-	commandsMap: CommandsMap
-): void {
-	const groupDescription = getGroupDescription(commandOptions, commandsMap);
-	const defaultCommand = <CommandWrapper>commandsMap.get(groupName);
-	const defaultCommandAvailable = !!(defaultCommand && defaultCommand.register && defaultCommand.run);
-	const defaultCommandName = defaultCommand && defaultCommand.name;
+function registerGroups(yargs: Argv, helper: HelperFactory, groupName: string, commandMap: CommandMap): void {
+	const groupMap = new Map().set(groupName, commandMap);
+	const defaultCommand = getCommand(groupMap, groupName);
 	let aliases: Aliases = {};
-
 	yargs.command(
 		groupName,
-		groupDescription,
+		false,
 		(subYargs: Argv) => {
-			if (defaultCommandAvailable) {
+			if (defaultCommand) {
 				defaultCommand.register((key: string, options: Options) => {
 					aliases = parseAliases(aliases, key, options.alias);
-					subYargs.option(key, {
-						group: `Default Command Options ('${defaultCommand.name}')`,
-						...options
-					});
-				}, helper.sandbox(groupName, defaultCommandName));
+					subYargs.option(key, { ...options, ...requireOptions });
+				}, helper.sandbox(groupName, defaultCommand.name));
 			}
-			registerCommands(subYargs, helper, groupName, commandOptions, commandsMap);
-			return subYargs;
+
+			registerCommands(subYargs, helper, groupName, commandMap);
+			return subYargs
+				.option('h', {
+					alias: 'help'
+				})
+				.showHelpOnFail(false, formatHelp({ _: [groupName], h: true }, groupMap))
+				.strict();
 		},
 		(argv: any) => {
-			// argv._ is an array of commands.
-			// if `dojo example` was called, it will only be size one,
-			// so we call default command, else, the subcommand will
-			// have been ran and we don't want to run the default.
-			if (defaultCommandAvailable && argv._.length === 1) {
+			if (defaultCommand && argv._.length === 1) {
+				if (argv.h || argv.help) {
+					console.log(formatHelp(argv, groupMap));
+					return Promise.resolve({});
+				}
+
 				const args = getOptions(
 					aliases,
-					helper.sandbox(groupName, defaultCommandName).configuration.get(),
+					helper.sandbox(groupName, defaultCommand.name).configuration.get(),
 					argv
 				);
-				return defaultCommand.run(helper.sandbox(groupName, defaultCommandName), args).catch(reportError);
+				return defaultCommand.run(helper.sandbox(groupName, defaultCommand.name), args).catch(reportError);
 			}
 		}
 	);
 }
 
-/**
- * Register commands
- *
- * @param yargs Yargs instance
- * @param helper Helper instance
- * @param groupName the name of the group
- * @param commandOptions The set of commandOption keys
- * @param commandsMap The map of composite keys to commands
- */
-function registerCommands(
-	yargs: Argv,
-	helper: HelperFactory,
-	groupName: string,
-	commandOptions: Set<string>,
-	commandsMap: CommandsMap
-): void {
-	[...commandOptions]
-		.filter((command: string) => {
-			return `${groupName}-` !== command;
-		})
-		.forEach((command: string) => {
-			const { name, description, register, run } = <CommandWrapper>commandsMap.get(command);
-			let aliases: Aliases = {};
-			yargs
-				.command(
-					name,
-					description,
-					(optionsYargs: Argv) => {
-						register((key: string, options: Options) => {
-							aliases = parseAliases(aliases, key, options.alias);
-							optionsYargs.option(key, options);
-						}, helper.sandbox(groupName, name));
-						return optionsYargs;
-					},
-					(argv: any) => {
-						const args = getOptions(aliases, helper.sandbox(groupName, name).configuration.get(), argv);
-						return run(helper.sandbox(groupName, name), args).catch(reportError);
-					}
-				)
-				.strict();
-		});
-}
+function registerCommands(yargs: Argv, helper: HelperFactory, groupName: string, commandMap: CommandMap): void {
+	[...commandMap.values()].forEach((command: CommandWrapper) => {
+		const { name, register, run } = command;
+		let aliases: Aliases = {};
+		const groupMap = new Map().set(groupName, commandMap);
+		yargs.command(
+			name,
+			false,
+			(optionsYargs: Argv) => {
+				register((key: string, options: Options) => {
+					aliases = parseAliases(aliases, key, options.alias);
+					optionsYargs.option(key, { ...options, ...requireOptions });
+				}, helper.sandbox(groupName, name));
 
-/**
- * Registers command aliases as new groups
- *
- * @param yargs Yargs instance
- * @param helper Helper instance
- * @param commandOptions The set of commandOption keys
- * @param commandsMap The map of composite keys to commands
- */
-function registerAliases(
-	yargs: Argv,
-	helper: HelperFactory,
-	commandOptions: Set<string>,
-	commandsMap: CommandsMap
-): void {
-	[...commandOptions].forEach((command: string) => {
-		const { run, register, alias: aliases, group } = <CommandWrapper>commandsMap.get(command);
-		if (aliases) {
-			(Array.isArray(aliases) ? aliases : [aliases]).forEach((alias) => {
-				const { name, description, options: aliasOpts } = alias;
-				let aliases: Aliases = {};
-				yargs.command(
-					name,
-					description || '',
-					(aliasYargs: Argv) => {
-						register((key: string, options: Options) => {
-							if (!aliasOpts || !aliasOpts.some((option) => option.option === key)) {
-								aliases = parseAliases(aliases, key, options.alias);
-								aliasYargs.option(key, options);
-							}
-						}, helper.sandbox(group, name));
-						return aliasYargs;
-					},
-					(argv: any) => {
-						if (aliasOpts) {
-							argv = aliasOpts.reduce((accumulator, option) => {
-								return {
-									...accumulator,
-									[option.option]: option.value
-								};
-							}, argv);
-						}
-						const args = getOptions(aliases, helper.sandbox(group, name).configuration.get(), argv);
-						return run(helper.sandbox(group, name), args).catch(reportError);
-					}
-				);
-			});
-		}
+				return optionsYargs
+					.showHelpOnFail(false, formatHelp({ _: [groupName, name], h: true }, groupMap))
+					.strict();
+			},
+			(argv: any) => {
+				if (argv.h || argv.help) {
+					console.log(formatHelp(argv, groupMap));
+					return Promise.resolve({});
+				}
+				const args = getOptions(aliases, helper.sandbox(groupName, name).configuration.get(), argv);
+				return run(helper.sandbox(groupName, name), args).catch(reportError);
+			}
+		);
 	});
 }
 
-/**
- * Registers commands and subcommands using yargs. Receives a CommandsMap of commands and
- * a map of YargsCommandNames which links composite keys to groups.
- * Subcommands have to be registered when a group is registered, this is a restriction of
- * yargs.
- * @param yargs Yargs instance
- * @param commandsMap The map of composite keys to commands
- * @param yargsCommandNames Map of groups and names to composite keys
- */
-export default function(yargs: Argv, commandsMap: CommandsMap, yargsCommandNames: YargsCommandNames): void {
+export default function(yargs: Argv, groupMap: GroupMap): void {
 	const helperContext = {};
-
-	const commandHelper = new CommandHelper(commandsMap, helperContext, configurationHelperFactory);
+	const commandHelper = new CommandHelper(groupMap, helperContext, configurationHelperFactory);
 	const helperFactory = new HelperFactory(commandHelper, yargs, helperContext, configurationHelperFactory);
 
-	yargsCommandNames.forEach((commandOptions, commandName) => {
-		registerGroups(yargs, helperFactory, commandName, commandOptions, commandsMap);
-		registerAliases(yargs, helperFactory, commandOptions, commandsMap);
+	groupMap.forEach((commandMap, group) => {
+		registerGroups(yargs, helperFactory, group, commandMap);
 	});
 
 	yargs
 		.demand(1, '')
-		.usage(helpUsage)
-		.epilog(helpEpilog)
-		.help('h')
-		.alias('h', 'help')
+		.command(
+			'$0',
+			false,
+			(dojoYargs: Argv) => {
+				dojoYargs.option('h', {
+					alias: 'help'
+				});
+				return dojoYargs;
+			},
+			(argv: any) => {
+				console.log(formatHelp(argv, groupMap));
+			}
+		)
+		.check(optionValidator(groupMap), true)
+		.help(false)
+		.showHelpOnFail(false)
 		.strict().argv;
 }

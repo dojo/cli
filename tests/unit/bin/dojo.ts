@@ -4,7 +4,7 @@ const { assert } = intern.getPlugin('chai');
 import MockModule from '../../support/MockModule';
 import * as sinon from 'sinon';
 
-import { CommandsMap, CommandWrapper, LoadedCommands } from '../../../src/interfaces';
+import { CommandMap, CommandWrapper, GroupMap } from '../../../src/interfaces';
 import { getCommandWrapperWithConfiguration } from '../../support/testHelper';
 
 describe('cli .bin', () => {
@@ -28,19 +28,15 @@ describe('cli .bin', () => {
 		mockYargs.ctor.alias = sandbox.stub().returns(mockYargs.ctor);
 		mockYargs.ctor.strict = sandbox.stub().returns(mockYargs.ctor);
 		mockAllCommands = mockModule.getMock('./allCommands');
-		const commands: LoadedCommands = {
-			commandsMap: new Map(),
-			yargsCommandNames: new Map()
-		};
 		const installedCommandWrapper1 = getCommandWrapperWithConfiguration({
 			group: 'eject',
 			name: ''
 		});
-		const commandMap: CommandsMap = new Map<string, CommandWrapper>([['eject', installedCommandWrapper1]]);
-		commands.commandsMap = commandMap;
+		const commandMap: CommandMap = new Map<string, CommandWrapper>([['eject', installedCommandWrapper1]]);
+		const groupMap: GroupMap = new Map<string, CommandMap>([['eject', commandMap]]);
 		mockAllCommandsPromise = new Promise((resolve) =>
 			setTimeout(() => {
-				resolve(commands);
+				resolve(groupMap);
 			}, 1000)
 		);
 		mockAllCommands.default = sandbox.stub().resolves(mockAllCommandsPromise);

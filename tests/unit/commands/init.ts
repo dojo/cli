@@ -23,7 +23,8 @@ describe('init command', () => {
 		fs.existsSync = sandbox.stub().returns(true);
 		fs.writeFileSync = sandbox.stub();
 
-		const commandsMap = new Map();
+		const buildCommandMap = new Map();
+		const testCommandMap = new Map();
 		const build = {
 			name: 'webpack',
 			group: 'build'
@@ -33,13 +34,12 @@ describe('init command', () => {
 			group: 'test'
 		};
 
-		commandsMap.set('build', build);
-		commandsMap.set('build-webpack', build);
-		commandsMap.set('test', test);
-		commandsMap.set('test-intern', test);
+		buildCommandMap.set('webpack', build);
+		testCommandMap.set('test', test);
+		const groupMap = new Map([['build', buildCommandMap], ['test', testCommandMap]]);
 
 		const allCommands = mockModule.getMock('../allCommands');
-		allCommands.loadExternalCommands.returns({ commandsMap });
+		allCommands.loadExternalCommands.returns(groupMap);
 	});
 
 	afterEach(() => {
