@@ -1,13 +1,34 @@
 import { GroupMap, CommandWrapper } from './interfaces';
 import chalk from 'chalk';
 import { isRequiredOption } from './validation';
+import { Options } from 'yargs';
 
 const stringWidth = require('string-width');
 const sliceAnsi = require('slice-ansi');
 const figlet = require('figlet');
 
-function fillPlaceholder(char: string = ' ', length: number = 10) {
-	return char.repeat(length);
+function addOptionPrefix(optionKey: string): string {
+	return stringWidth(optionKey) === 1 ? `-${optionKey}` : `--${optionKey}`;
+}
+
+function getOptionDescription(options: Options): string | undefined {
+	if (options.describe) {
+		return options.describe;
+	}
+	if (options.description) {
+		return options.description;
+	}
+	if (options.desc) {
+		return options.desc;
+	}
+	if (options.defaultDescription) {
+		return options.defaultDescription;
+	}
+	return undefined;
+}
+
+function createPadding(text: string, paddingLength: number, paddingChar = ' '): string {
+	return sliceAnsi(paddingChar.repeat(paddingLength), 0, paddingLength - stringWidth(text));
 }
 
 function formatHeader(group: string = '<group>', command: string = '[<command>]') {
@@ -52,9 +73,7 @@ function formatHelpOutput(
 	let hasGroup = false;
 	let commandOptionHelp = '';
 	groupMap.forEach((commandMap, group) => {
-		let groupOutput = `  ${chalk.green(group)} ${chalk.dim.gray(
-			sliceAnsi(fillPlaceholder(' ', 8), 0, 8 - stringWidth(group))
-		)}`;
+		let groupOutput = `  ${chalk.green(group)} ${createPadding(group, 8)}`;
 		if (hasGroup) {
 			groupOutput = `\n${groupOutput}`;
 		}
@@ -62,20 +81,18 @@ function formatHelpOutput(
 		let hasCommand = false;
 		const filteredCommandMap = [...commandMap.values()].filter(commandPredicate);
 		filteredCommandMap.forEach((commandWrapper) => {
+			const { name, description, default: isDefault } = commandWrapper;
 			if (hasCommand) {
 				groupOutput = `${groupOutput}\n${' '.repeat(11)}`;
 			}
-			groupOutput = `${groupOutput}  ${chalk.dim.green(commandWrapper.name)}`;
-			groupOutput = `${groupOutput}${chalk.dim.gray(
-				sliceAnsi(fillPlaceholder(), 0, 10 - stringWidth(commandWrapper.name))
-			)}`;
-			groupOutput = `${groupOutput}  ${capitalize(commandWrapper.description)}`;
-			if (commandWrapper.default && showDefault && filteredCommandMap.length > 1) {
+			groupOutput = `${groupOutput}  ${chalk.dim.green(name)}`;
+			groupOutput = `${groupOutput}${createPadding(name, 10)}`;
+			groupOutput = `${groupOutput}  ${capitalize(description)}`;
+			if (isDefault && showDefault && filteredCommandMap.length > 1) {
 				groupOutput = `${groupOutput} (Default)`;
 			}
-			groupOutput = `${groupOutput}`;
 			hasCommand = true;
-			if (commandWrapper.default && showDefault) {
+			if (isDefault && showDefault) {
 				commandOptionHelp = `\n${formatCommandOptions(commandWrapper)}`;
 			}
 		});
@@ -98,24 +115,27 @@ function formatCommandOptions(commandWrapper: CommandWrapper, isDefaultCommand =
 		commandOptionHelp = `${chalk.bold('Default Command Options')}\n`;
 	}
 
+	if (!commandWrapper.installed) {
+		return `${commandOptionHelp}\n  To install this command run ${chalk.green(`npm i ${commandWrapper.path}`)}`;
+	}
+
 	register(
 		(key, options) => {
-			let optionKeys;
+			let optionKeys = `${addOptionPrefix(chalk.green(key))}`;
 			if (options.alias) {
-				if (options.alias.length < key.length) {
-					optionKeys = `  -${options.alias}, --${chalk.green(key)}`;
-				} else {
-					optionKeys = `  -${chalk.green(key)}, --${options.alias}`;
-				}
-			} else {
-				optionKeys = `  --${key}`;
+				const aliases = Array.isArray(options.alias) ? options.alias : [options.alias];
+				optionKeys = aliases.reduce((result, alias) => {
+					if (alias.length === 1) {
+						return `${addOptionPrefix(chalk.green(alias))}, ${result}`;
+					}
+					return `${result}, ${addOptionPrefix(chalk.green(alias))}`;
+				}, optionKeys);
 			}
-			commandOptionHelp = `${commandOptionHelp}\n${optionKeys}`;
-			commandOptionHelp = `${commandOptionHelp} ${chalk.dim.gray(
-				sliceAnsi(fillPlaceholder(' ', 20), 0, 20 - stringWidth(optionKeys))
-			)}`;
-			if (options.describe) {
-				commandOptionHelp = `${commandOptionHelp}${capitalize(options.describe)}`;
+			commandOptionHelp = `${commandOptionHelp}\n  ${optionKeys}`;
+			commandOptionHelp = `${commandOptionHelp} ${createPadding(optionKeys, 20)}`;
+			const description = getOptionDescription(options);
+			if (description) {
+				commandOptionHelp = `${commandOptionHelp}${capitalize(description)}`;
 			}
 			if (options.choices) {
 				commandOptionHelp = `${commandOptionHelp} [choices: "${options.choices.join('", "')}"]`;
@@ -167,18 +187,11 @@ ${formatCommandOptions(commandWrapper, false)}
 `;
 }
 
-function unknownGroupHelp() {
-	return `${formatHeader()}`;
-}
-
 export function formatHelp(argv: any, groupMap: GroupMap): string {
 	if (!argv._ || argv._.length === 0) {
 		return formatMainHelp(groupMap);
 	} else if (argv._.length === 1) {
-		if (groupMap.has(argv._[0])) {
-			return formatGroupHelp(groupMap, argv._[0]);
-		}
-		return unknownGroupHelp();
+		return formatGroupHelp(groupMap, argv._[0]);
 	}
 	return formatCommandHelp(groupMap, argv._[0], argv._[1]);
 }
