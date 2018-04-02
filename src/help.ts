@@ -35,7 +35,7 @@ function formatHeader(group: string = '<group>', command: string = '[<command>]'
 	return `${figlet.textSync('DOJO')}
 ${chalk.bold('Usage:')}
 
-  ${chalk.dim.gray('$')} ${chalk.green('dojo')} ${chalk.green(group)} ${chalk.dim.green(command)} [<options>] [--help]`;
+  $ ${chalk.green('dojo')} ${chalk.green(group)} ${chalk.dim.green(command)} [<options>] [--help]`;
 }
 
 function capitalize(value: string) {
