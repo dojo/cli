@@ -79,7 +79,7 @@ barCommandMap.set('non-default', {
 barCommandMap.set('installable', {
 	name: 'installable',
 	group: 'bar',
-	path: '@dojo/cli-bar-installable',
+	path: 'npm i @dojo/cli-bar-installable',
 	global: true,
 	installed: false,
 	description: 'An installable command for bar',

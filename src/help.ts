@@ -116,7 +116,7 @@ function formatCommandOptions(commandWrapper: CommandWrapper, isDefaultCommand =
 	}
 
 	if (!commandWrapper.installed) {
-		return `${commandOptionHelp}\n  To install this command run ${chalk.green(`npm i ${commandWrapper.path}`)}`;
+		return `${commandOptionHelp}\n  To install this command run ${chalk.green(`${commandWrapper.path}`)}`;
 	}
 
 	register(
