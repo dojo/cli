@@ -96,6 +96,22 @@ registerSuite('CommandHelper', {
 					assert.fail(null, null, 'commandHelper.run should not have rejected promise');
 				});
 		},
+		'Should not run a group that does not exist and return a rejected promise'() {
+			const expectedErrorMsg = 'The command does not exist';
+			return commandHelper
+				.run('nogroup')
+				.then(
+					(response: string) => {
+						assert.fail(null, null, 'Should not have resolved');
+					},
+					(error: Error) => {
+						assert.equal(expectedErrorMsg, error.message);
+					}
+				)
+				.catch(() => {
+					assert.fail(null, null, 'commandHelper.run should not have rejected promise');
+				});
+		},
 		'Should not run a command that does not exist and return a rejected promise'() {
 			const expectedErrorMsg = 'The command does not exist';
 			return commandHelper
