@@ -3,7 +3,7 @@ import { Options } from 'yargs';
 import { GroupMap } from './interfaces';
 import { getCommand } from './command';
 
-function isRequired(options: Options) {
+export function isRequiredOption(options: Options) {
 	return options.demand || options.demandOption || options.require || options.requiresArg || options.required;
 }
 
@@ -20,11 +20,11 @@ export function optionValidator(groupMap: GroupMap) {
 
 		command.register(
 			(key, options) => {
-				if (argv[key] === undefined && isRequired(options)) {
-					if (validationError) {
-						validationError = `\n${validationError}`;
+				if (argv[key] === undefined && isRequiredOption(options)) {
+					if (!validationError) {
+						validationError = `\n${chalk.bold.red('Error(s):')}`;
 					}
-					validationError = `${validationError}Required key '${chalk.redBright(key)}' not provided`;
+					validationError = `${validationError}\n  Required option '${chalk.redBright(key)}' not provided`;
 				}
 			},
 			null as any

@@ -1,19 +1,20 @@
 import { GroupMap, CommandWrapper } from './interfaces';
 import chalk from 'chalk';
+import { isRequiredOption } from './validation';
 
 const stringWidth = require('string-width');
 const sliceAnsi = require('slice-ansi');
+const figlet = require('figlet');
 
 function fillPlaceholder(char: string = ' ', length: number = 10) {
 	return char.repeat(length);
 }
 
-function formatHeader(group: string = '<group>', command: string = '<command>') {
-	return `${chalk.bold('dojo help')}
-
+function formatHeader(group: string = '<group>', command: string = '[<command>]') {
+	return `${figlet.textSync('DOJO')}
 ${chalk.bold('Usage:')}
 
-  ${chalk.dim.gray('$')} ${chalk.green('dojo')} ${chalk.green(group)} ${chalk.dim.green(command)} [options]`;
+  ${chalk.dim.gray('$')} ${chalk.green('dojo')} ${chalk.green(group)} ${chalk.dim.green(command)} [<options>] [--help]`;
 }
 
 function capitalize(value: string) {
@@ -42,14 +43,10 @@ function isNpmCommand(commandWrapper: CommandWrapper): boolean {
 	return !commandWrapper.installed;
 }
 
-function isDefaultCommand(commandWrapper: CommandWrapper): boolean {
-	return !!commandWrapper.default;
-}
-
 function formatHelpOutput(
 	groupMap: GroupMap,
 	commandPredicate: (commandWrapper: CommandWrapper) => boolean,
-	commandOptionsPredicate: (commandWrapper: CommandWrapper) => boolean = () => false
+	showDefault = false
 ) {
 	let output = '';
 	let hasGroup = false;
@@ -63,21 +60,23 @@ function formatHelpOutput(
 		}
 
 		let hasCommand = false;
-		commandMap.forEach((commandWrapper) => {
-			if (commandPredicate(commandWrapper)) {
-				if (hasCommand) {
-					groupOutput = `${groupOutput}\n${' '.repeat(11)}`;
-				}
-				groupOutput = `${groupOutput}  ${chalk.dim.green(commandWrapper.name)}`;
-				groupOutput = `${groupOutput}${chalk.dim.gray(
-					sliceAnsi(fillPlaceholder(), 0, 10 - stringWidth(commandWrapper.name))
-				)}`;
-				groupOutput = `${groupOutput}  ${capitalize(commandWrapper.description)}`;
-				groupOutput = `${groupOutput}`;
-				hasCommand = true;
-				if (commandOptionsPredicate(commandWrapper)) {
-					commandOptionHelp = `\n${formatCommandOptions(commandWrapper)}`;
-				}
+		const filteredCommandMap = [...commandMap.values()].filter(commandPredicate);
+		filteredCommandMap.forEach((commandWrapper) => {
+			if (hasCommand) {
+				groupOutput = `${groupOutput}\n${' '.repeat(11)}`;
+			}
+			groupOutput = `${groupOutput}  ${chalk.dim.green(commandWrapper.name)}`;
+			groupOutput = `${groupOutput}${chalk.dim.gray(
+				sliceAnsi(fillPlaceholder(), 0, 10 - stringWidth(commandWrapper.name))
+			)}`;
+			groupOutput = `${groupOutput}  ${capitalize(commandWrapper.description)}`;
+			if (commandWrapper.default && showDefault && filteredCommandMap.length > 1) {
+				groupOutput = `${groupOutput} (Default)`;
+			}
+			groupOutput = `${groupOutput}`;
+			hasCommand = true;
+			if (commandWrapper.default && showDefault) {
+				commandOptionHelp = `\n${formatCommandOptions(commandWrapper)}`;
 			}
 		});
 		if (hasCommand) {
@@ -92,9 +91,13 @@ function formatHelpOutput(
 	return output;
 }
 
-function formatCommandOptions(commandWrapper: CommandWrapper) {
-	const { register, name } = commandWrapper;
-	let commandOptionHelp = `Command Options (${name}):\n`;
+function formatCommandOptions(commandWrapper: CommandWrapper, isDefaultCommand = true) {
+	const { register } = commandWrapper;
+	let commandOptionHelp = `${chalk.bold(`Command Options:`)}\n`;
+	if (isDefaultCommand) {
+		commandOptionHelp = `${chalk.bold('Default Command Options')}\n`;
+	}
+
 	register(
 		(key, options) => {
 			let optionKeys;
@@ -111,9 +114,14 @@ function formatCommandOptions(commandWrapper: CommandWrapper) {
 			commandOptionHelp = `${commandOptionHelp} ${chalk.dim.gray(
 				sliceAnsi(fillPlaceholder(' ', 20), 0, 20 - stringWidth(optionKeys))
 			)}`;
-			commandOptionHelp = `${commandOptionHelp}${options.describe}`;
+			if (options.describe) {
+				commandOptionHelp = `${commandOptionHelp}${capitalize(options.describe)}`;
+			}
 			if (options.choices) {
-				commandOptionHelp = `${commandOptionHelp} [choices: ${options.choices.join(',')}]`;
+				commandOptionHelp = `${commandOptionHelp} [choices: "${options.choices.join('", "')}"]`;
+			}
+			if (isRequiredOption(options)) {
+				commandOptionHelp = `${commandOptionHelp} [Required]`;
 			}
 		},
 		null as any
@@ -132,7 +140,7 @@ ${chalk.bold('Project Commands:')}
 
 ${formatHelpOutput(groupMap, isProjectCommand)}
 
-${chalk.bold('Available Commands (not installed):')}
+${chalk.bold('Installable Commands:')}
 
 ${formatHelpOutput(groupMap, isNpmCommand)}
 `;
@@ -143,7 +151,7 @@ function formatGroupHelp(groupMap: GroupMap, group: string) {
 
 ${chalk.bold('Commands:')}
 
-${formatHelpOutput(groupMap, isInstalledCommandForGroup(group), isDefaultCommand)}
+${formatHelpOutput(groupMap, isInstalledCommandForGroup(group), true)}
 `;
 }
 
@@ -153,9 +161,9 @@ function formatCommandHelp(groupMap: GroupMap, group: string, command: string) {
 
 ${chalk.bold('Description:')}
 
-  ${capitalize(commandWrapper.description)}
+${'  '}${capitalize(commandWrapper.description)}
 
-${formatCommandOptions(commandWrapper)}
+${formatCommandOptions(commandWrapper, false)}
 `;
 }
 
