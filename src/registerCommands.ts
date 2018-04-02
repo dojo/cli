@@ -5,7 +5,7 @@ import configurationHelperFactory from './configurationHelper';
 import HelperFactory from './Helper';
 import { CommandError, CommandWrapper, GroupMap, CommandMap } from './interfaces';
 import { formatHelp } from './help';
-import { optionValidator } from './validation';
+import { createOptionValidator } from './validation';
 import { getCommand } from './command';
 
 const requireOptions = {
@@ -200,7 +200,7 @@ export default function(yargs: Argv, groupMap: GroupMap): void {
 				console.log(formatHelp(argv, groupMap));
 			}
 		)
-		.check(optionValidator(groupMap), true)
+		.check(createOptionValidator(groupMap), true)
 		.help(false)
 		.showHelpOnFail(false)
 		.strict().argv;

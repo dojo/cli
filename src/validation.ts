@@ -3,12 +3,12 @@ import { Options } from 'yargs';
 import { GroupMap } from './interfaces';
 import { getCommand } from './command';
 
-export function isRequiredOption(options: Options) {
-	return options.demand || options.demandOption || options.require || options.requiresArg || options.required;
+export function isRequiredOption(options: Options): boolean {
+	return !!(options.demand || options.demandOption || options.require || options.requiresArg || options.required);
 }
 
-export function optionValidator(groupMap: GroupMap) {
-	return (argv: any, aliases: any) => {
+export function createOptionValidator(groupMap: GroupMap) {
+	return (argv: any) => {
 		if (argv.h || argv.help || argv._.length === 0) {
 			return true;
 		}

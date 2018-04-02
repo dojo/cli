@@ -10,6 +10,7 @@ import './loadCommands';
 import './npmInstall';
 import './registerCommands';
 import './template';
+import './validation';
 import './updateNotifier';
 import './commands/eject';
 import './commands/init';
