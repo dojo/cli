@@ -21,6 +21,7 @@ let yargsStub: {
 	[index: string]: SinonStub;
 };
 let consoleErrorStub: SinonStub;
+let consoleLogStub: SinonStub;
 let processExitStub: SinonStub;
 const errorMessage = 'test error message';
 let registerCommands: any;
@@ -70,6 +71,37 @@ registerSuite('registerCommands', {
 		'Should call into register method'() {
 			registerCommands(yargsStub, groupMap);
 			assert.isTrue(yargsStub.option.called);
+		},
+
+		help: {
+			beforeEach() {
+				registerCommands(yargsStub, groupMap);
+				consoleLogStub = stub(console, 'log');
+			},
+
+			afterEach() {
+				consoleLogStub.restore();
+			},
+			tests: {
+				'main help called'() {
+					const help = mockModule.getMock('./help').formatHelp;
+					help.reset();
+					yargsStub.command.lastCall.args[3]({ _: [], h: true });
+					assert.isTrue(help.calledOnce);
+				},
+				'group help called'() {
+					const help = mockModule.getMock('./help').formatHelp;
+					help.reset();
+					yargsStub.command.firstCall.args[3]({ _: ['group'], h: true });
+					assert.isTrue(help.calledOnce);
+				},
+				'command help called'() {
+					const help = mockModule.getMock('./help').formatHelp;
+					help.reset();
+					yargsStub.command.secondCall.args[3]({ _: ['group', 'command'], h: true });
+					assert.isTrue(help.calledOnce);
+				}
+			}
 		},
 
 		'command arguments': {
