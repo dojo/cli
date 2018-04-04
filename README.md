@@ -55,7 +55,7 @@ If you don't see the message above, then check that you have installed the CLI w
 
 You can list all your global npm dependencies by running:
 
-`npm list -g –depth=0`
+`npm list -g --depth=0`
 
 If you don't see `@dojo/cli` in the list of global dependencies, then please re-install and make sure the installation runs without errors.
 
