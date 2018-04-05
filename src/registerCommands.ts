@@ -125,7 +125,7 @@ function registerGroups(yargs: Argv, helper: HelperFactory, groupName: string, c
 				.option('h', {
 					alias: 'help'
 				})
-				.showHelpOnFail(false, formatHelp({ _: [groupName], h: true }, groupMap))
+				.showHelpOnFail(false, formatHelp({ _: [groupName] }, groupMap))
 				.strict();
 		},
 		(argv: any) => {
@@ -160,9 +160,7 @@ function registerCommands(yargs: Argv, helper: HelperFactory, groupName: string,
 					optionsYargs.option(key, { ...options, ...requireOptions });
 				}, helper.sandbox(groupName, name));
 
-				return optionsYargs
-					.showHelpOnFail(false, formatHelp({ _: [groupName, name], h: true }, groupMap))
-					.strict();
+				return optionsYargs.showHelpOnFail(false, formatHelp({ _: [groupName, name] }, groupMap)).strict();
 			},
 			(argv: any) => {
 				if (argv.h || argv.help) {

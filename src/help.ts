@@ -39,7 +39,7 @@ ${chalk.bold('Usage:')}
 }
 
 function capitalize(value: string) {
-	return value.charAt(0).toUpperCase() + value.slice(1);
+	return `${value.charAt(0).toUpperCase()}${value.slice(1)}`;
 }
 
 function isGlobalCommand(commandWrapper: CommandWrapper): boolean {
@@ -50,13 +50,9 @@ function isProjectCommand(commandWrapper: CommandWrapper): boolean {
 	return commandWrapper.installed && !commandWrapper.global;
 }
 
-function isInstalledCommand(commandWrapper: CommandWrapper): boolean {
-	return commandWrapper.installed;
-}
-
-function isInstalledCommandForGroup(group: string) {
+function isCommandForGroup(group: string) {
 	return (commandWrapper: CommandWrapper) => {
-		return isInstalledCommand(commandWrapper) && commandWrapper.group === group;
+		return commandWrapper.group === group;
 	};
 }
 
@@ -138,10 +134,18 @@ function formatCommandOptions(commandWrapper: CommandWrapper, isDefaultCommand =
 				commandOptionHelp = `${commandOptionHelp}${capitalize(description)}`;
 			}
 			if (options.choices) {
-				commandOptionHelp = `${commandOptionHelp} [choices: "${options.choices.join('", "')}"]`;
+				commandOptionHelp = `${commandOptionHelp} [choices: "${options.choices
+					.map((choice: any) => chalk.yellow(choice))
+					.join('", "')}"]`;
+			}
+			if (options.default) {
+				commandOptionHelp = `${commandOptionHelp} [default: "${chalk.yellow(options.default)}"]`;
+			}
+			if (options.type) {
+				commandOptionHelp = `${commandOptionHelp} [type: "${chalk.yellow(options.type)}"]`;
 			}
 			if (isRequiredOption(options)) {
-				commandOptionHelp = `${commandOptionHelp} [Required]`;
+				commandOptionHelp = `${commandOptionHelp} [${chalk.yellow('required')}]`;
 			}
 		},
 		null as any
@@ -171,7 +175,7 @@ function formatGroupHelp(groupMap: GroupMap, group: string) {
 
 ${chalk.bold('Commands:')}
 
-${formatHelpOutput(groupMap, isInstalledCommandForGroup(group), true)}
+${formatHelpOutput(groupMap, isCommandForGroup(group), true)}
 `;
 }
 
