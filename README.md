@@ -61,7 +61,7 @@ You can list all your global npm dependencies by running:
 
 `npm list -g --depth=0`
 
-If you don't see `@dojo/cli` in the list of global dependencies, verify that the installation runs with out errors.
+If you don't see `@dojo/cli` in the list of global dependencies, verify that the installation runs without errors.
 
 ## Features
 
@@ -75,8 +75,8 @@ In addition to the built-in commands, additional commands are available and will
 * `dojo create` - provides scaffolding for new Dojo 2 projects.
 
 
-* `dojo build` - for building Dojo2 applications and custom elements
-* `dojo test` - for testing Dojo2 applications
+* `dojo build` - for building Dojo 2 applications and custom elements
+* `dojo test` - for testing Dojo 2 applications
 
 If you try to use a command that is not installed, the CLI will give you instructions on how to install the command.
 
@@ -152,7 +152,7 @@ In order to build the project run `grunt dev` or `grunt dist`.
 
 ### Testing
 
-Test cases MUST be written using [Intern](https://theintern.github.io) using the "object" test interface and "assert" assertion interface.
+Test cases MUST be written using [Intern](https://theintern.github.io) using the `object` test interface and `assert` assertion interface.
 
 90% branch coverage MUST be provided for all code submitted to this repository, as reported by istanbul’s combined coverage results for all supported platforms.
 
