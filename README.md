@@ -10,7 +10,13 @@ The CLI is the officially supported way to create and maintain Dojo 2 apps.
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
 - [Features](#features)
+- [dojorc](#dojorc)
 - [A warning on ejecting](#a-warning-on-ejecting)
+- [How can I contribute?](#how-can-i-contribute)
+  - [Code Style](#code-style)
+  - [Installation of source](#installation-of-source)
+  - [Testing](#testing)
+- [Licensing Information](#licensing-information)
 
 
 ## Why use the CLI?
@@ -61,18 +67,20 @@ If you don't see `@dojo/cli` in the list of global dependencies, verify that the
 
 The CLI has the following built-in commands:
 
-* `dojo create` - provides scaffolding for new Dojo 2 projects.
 * `dojo eject` - allows users to configure and run command instead of the cli.
 * `dojo version` - provides information on the versions of installed commands and the cli itself.
 
 In addition to the built-in commands, additional commands are available and will show up in your command list even if they have not been installed.
+
+* `dojo create` - provides scaffolding for new Dojo 2 projects.
+
 
 * `dojo build` - for building Dojo2 applications and custom elements
 * `dojo test` - for testing Dojo2 applications
 
 If you try to use a command that is not installed, the CLI will give you instructions on how to install the command.
 
-If you need help with a command, you can use the `-h` option.
+If you need help, you can use the `-h` option.
 
 ```shell
 # print help for the CLI, listing all available commands
@@ -118,7 +126,7 @@ $ dojo build app --build-app-option bar
 
 ## A warning on ejecting
 
-Once you run `dojo eject`, the configuration and dependencies for the bundled tools are now part of your project.
+Once you run `dojo eject`, the dependencies required by the bundled tools (`webpack`, `intern`, etc.) are included into your project's `package.json` and the configuration is added to a `config` directory in your project root.
 
 This action is one-way and you cannot go back to having the tools managed by the CLI.
 
