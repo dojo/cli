@@ -43,7 +43,6 @@
     "detect-indent": "^5.0.0",
     "ejs": "^2.5.7",
     "execa": "^0.8.0",
-    "figlet": "^1.2.0",
     "fs-extra": "^5.0.0",
     "globby": "^6.0.0",
     "inquirer": "^4.0.2",

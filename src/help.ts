@@ -5,7 +5,22 @@ import { Options } from 'yargs';
 
 const stringWidth = require('string-width');
 const sliceAnsi = require('slice-ansi');
-const figlet = require('figlet');
+
+const dojoArt = `
+            ..
+          ';,,'..
+          .colllc,.                         .''''''...           .,,,.        ..         .,,,.
+        ...',:loooc.       ...''''''..      ;x'      ;;'      ':;,'.'',:;.    :o.    .:;,'..',;:.
+      .'''.     ....     .',;'..   ..'.     'l'       .c:    :c.        ,l'   ,l.   ,l'        'l;
+     .,,,.            ..;::,'..      ';.    'l'        .l,  ,l.          :c.  ,l.  .l,          'l.
+  .'..;;,.          .,:cc;'...       ,:'    'l'        .l;  :l.          ,l.  ,l.  'l.          .l,
+   ...;;;.       .':clc;.           .;:.    'l'        ,l.  'l'          c:   ,l.  .l;          ;l.
+      .:c:,..',:coooc,.           .';;'     'l'      .;c'    'c,.      .c:.   ,l.   .c:.      .;c.
+       .:okOOkkxo:,..   ........',,,'.      ,o:,,,,,,;'.        ;;,,,,;;      ,l.     ';;,,,,;;'
+       .''',;;,..  ....   ........                                            ,l.
+                   ',    .''.                                                .c:
+                   .'.. .;c;.                                                ..
+                     ..   .`;
 
 function addOptionPrefix(optionKey: string): string {
 	return stringWidth(optionKey) === 1 ? `-${optionKey}` : `--${optionKey}`;
@@ -32,7 +47,7 @@ function createPadding(text: string, paddingLength: number, paddingChar = ' '): 
 }
 
 function formatHeader(group: string = '<group>', command: string = '[<command>]') {
-	return `${figlet.textSync('DOJO')}
+	return `${dojoArt}
 ${chalk.bold('Usage:')}
 
   $ ${chalk.green('dojo')} ${chalk.green(group)} ${chalk.dim.green(command)} [<options>] [--help]`;
