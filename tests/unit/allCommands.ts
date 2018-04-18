@@ -18,13 +18,11 @@ describe('AllCommands', () => {
 		mockCommand = mockModule.getMock('./command');
 		mockLoadCommands = mockModule.getMock('./loadCommands');
 
-		mockLoadCommands.loadCommands = sandbox.stub().resolves({
-			commandsMap: new Map([
-				['key1', { name: 'a', group: 'c', path: 'as' }],
-				['key2', { name: 'b', group: 'd', path: 'asas' }]
-			]),
-			yargsCommandNames: new Map([['key3', new Set(['a', 'b'])], ['key4', new Set(['d', 'e'])]])
-		});
+		const groupCCommandMap = new Map().set('a', { name: 'a', group: 'c', path: 'as' });
+		const groupDCommandMap = new Map().set('b', { name: 'b', group: 'd', path: 'asas' });
+		const groupMap = new Map().set('c', groupCCommandMap).set('d', groupDCommandMap);
+
+		mockLoadCommands.loadCommands = sandbox.stub().resolves(groupMap);
 		moduleUnderTest = mockModule.getModuleUnderTest();
 	});
 
@@ -55,111 +53,6 @@ describe('AllCommands', () => {
 					mockLoadCommands.loadCommands.calledAfter(mockLoadCommands.enumerateInstalledCommands),
 					'should call loadcommands after both enumerations'
 				);
-			})
-			.catch(() => {
-				assert.fail(null, null, 'moduleUnderTest.run should not have rejected promise');
-			});
-	});
-
-	it('should perform initialsation only once', () => {
-		return moduleUnderTest
-			.default()
-			.then(function() {
-				assert.isTrue(
-					mockCommand.createBuiltInCommandLoader.calledOnce,
-					'should call builtin command loader once'
-				);
-				assert.isTrue(mockCommand.initCommandLoader.calledOnce, 'should call installed command loader once');
-				assert.isTrue(
-					mockLoadCommands.enumerateBuiltInCommands.calledOnce,
-					'should call builtin command enumerator once'
-				);
-				assert.isTrue(
-					mockLoadCommands.enumerateInstalledCommands.calledOnce,
-					'should call installed command enumerator once'
-				);
-				assert.isTrue(mockLoadCommands.loadCommands.calledTwice, 'should call load commands twice');
-
-				moduleUnderTest
-					.default()
-					.then(function() {
-						assert.isTrue(
-							mockCommand.createBuiltInCommandLoader.calledOnce,
-							'should call builtin command loader once only'
-						);
-						assert.isTrue(
-							mockCommand.initCommandLoader.calledOnce,
-							'should call installed command loader once only'
-						);
-						assert.isTrue(
-							mockLoadCommands.enumerateBuiltInCommands.calledOnce,
-							'should call builtin command enumerator once only'
-						);
-						assert.isTrue(
-							mockLoadCommands.enumerateInstalledCommands.calledOnce,
-							'should call installed command enumerator once only'
-						);
-						assert.isTrue(
-							mockLoadCommands.loadCommands.calledTwice,
-							'should call load commands twice only'
-						);
-					})
-					.catch(() => {
-						assert.fail(null, null, 'moduleUnderTest.run should not have rejected promise');
-					});
-			})
-			.catch(() => {
-				assert.fail(null, null, 'moduleUnderTest.run should not have rejected promise');
-			});
-	});
-	it('should reset the command cache', () => {
-		return moduleUnderTest
-			.default()
-			.then(function() {
-				assert.isTrue(
-					mockCommand.createBuiltInCommandLoader.calledOnce,
-					'should call builtin command loader once'
-				);
-				assert.isTrue(mockCommand.initCommandLoader.calledOnce, 'should call installed command loader once');
-				assert.isTrue(
-					mockLoadCommands.enumerateBuiltInCommands.calledOnce,
-					'should call builtin command enumerator once'
-				);
-				assert.isTrue(
-					mockLoadCommands.enumerateInstalledCommands.calledOnce,
-					'should call installed command enumerator once'
-				);
-				assert.isTrue(mockLoadCommands.loadCommands.calledTwice, 'should call load commands twice only');
-
-				moduleUnderTest.reset();
-				moduleUnderTest
-					.default()
-					.then(function() {
-						assert.isTrue(
-							mockCommand.createBuiltInCommandLoader.calledTwice,
-							'should call builtin command loader once'
-						);
-						assert.isTrue(
-							mockCommand.initCommandLoader.calledTwice,
-							'should call installed command loader once'
-						);
-						assert.isTrue(
-							mockLoadCommands.enumerateBuiltInCommands.calledTwice,
-							'should call builtin command enumerator once'
-						);
-						assert.isTrue(
-							mockLoadCommands.enumerateInstalledCommands.calledTwice,
-							'should call installed command enumerator once'
-						);
-						assert.equal(
-							mockLoadCommands.loadCommands.callCount,
-							4,
-							'should call load commands twice only'
-						);
-					})
-					.catch(() => {
-						assert.fail(null, null, 'moduleUnderTest.run should not have rejected promise');
-					});
 			})
 			.catch(() => {
 				assert.fail(null, null, 'moduleUnderTest.run should not have rejected promise');

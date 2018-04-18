@@ -19,14 +19,16 @@ async function run(helper: Helper, args: {}) {
 		json = JSON.parse(file);
 	}
 
-	const { commandsMap } = await loadExternalCommands();
+	const groupMap = await loadExternalCommands();
 	const values = [];
 
-	for (let [, value] of commandsMap.entries()) {
-		const name = `${value.group}-${value.name}`;
-		if (values.indexOf(value) === -1 && json[name] === undefined) {
-			json[name] = {};
-			values.push(value);
+	for (let [, commandMap] of groupMap.entries()) {
+		for (let [, value] of commandMap.entries()) {
+			const name = `${value.group}-${value.name}`;
+			if (values.indexOf(name) === -1 && json[name] === undefined) {
+				json[name] = {};
+				values.push(name);
+			}
 		}
 	}
 
@@ -39,5 +41,6 @@ export default {
 	group: 'init',
 	description: 'create a .dojorc file',
 	run,
+	global: false,
 	register: () => {}
 };

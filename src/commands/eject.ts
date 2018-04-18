@@ -52,17 +52,19 @@ async function run(helper: Helper, args: EjectArgs): Promise<any> {
 				throw Error('Aborting eject');
 			}
 			return loadExternalCommands().then(async (commands) => {
+				let toEject = new Set<EjectableCommandWrapper>();
+				commands.forEach((commandMap, group) => {
+					toEject = [...commandMap.values()].reduce((toEject, command) => {
+						if (isEjectableCommandWrapper(command)) {
+							toEject.add(command);
+						}
+						return toEject;
+					}, new Set<EjectableCommandWrapper>());
+				});
 				const npmPackages: NpmPackage = {
 					dependencies: {},
 					devDependencies: {}
 				};
-
-				const toEject = [...commands.commandsMap.values()].reduce((toEject, command) => {
-					if (isEjectableCommandWrapper(command)) {
-						toEject.add(command);
-					}
-					return toEject;
-				}, new Set<EjectableCommandWrapper>());
 
 				if (toEject.size) {
 					const allHints: string[] = [];
@@ -106,5 +108,6 @@ export default {
 	group: 'eject',
 	description: 'disconnect your project from dojo cli commands',
 	register,
+	global: false,
 	run
 };

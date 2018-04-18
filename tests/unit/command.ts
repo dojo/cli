@@ -1,13 +1,14 @@
 const { registerSuite } = intern.getInterface('object');
 const { assert } = intern.getPlugin('chai');
 
-import { getCommandsMap, GroupDef } from '../support/testHelper';
 import * as command from '../../src/command';
 
 import * as expectedCommand from '../support/test-prefix-foo-bar';
 
 import * as expectedBuiltInCommand from '../support/commands/test-prefix-foo-bar';
 import expectedEsModuleCommand from '../support/esmodule-prefix-foo-bar';
+import { CommandWrapper } from '../../src/interfaces';
+import { getCommand } from '../../src/command';
 
 const testGroup = 'foo';
 const testName = 'bar';
@@ -16,18 +17,35 @@ const testEsModuleSearchPrefixes = ['esmodule-prefix'];
 const testEsModuleFailSearchPrefixes = ['esmodule-fail'];
 const testSearchPrefixesDashedNames = ['dash-names'];
 let commandWrapper: any;
-const groupDef: GroupDef = [
-	{
-		groupName: 'group1',
-		commands: [{ commandName: 'command1' }]
-	},
-	{
-		groupName: 'group2',
-		commands: [{ commandName: 'command1' }]
-	}
-];
-const commandsMap = getCommandsMap(groupDef);
 let loader: any;
+
+const groupMap = new Map();
+const fooCommandMap = new Map<string, CommandWrapper>();
+const defaultFooCommand = {
+	name: 'global',
+	group: 'foo',
+	path: 'path/to/command',
+	global: true,
+	installed: true,
+	description: 'a global command',
+	default: true,
+	register: () => {},
+	run: () => Promise.resolve()
+};
+const nonDefaultFooCommand = {
+	name: 'project',
+	group: 'foo',
+	path: 'path/to/command',
+	global: false,
+	installed: true,
+	description: 'a project command',
+	default: false,
+	register: () => {},
+	run: () => Promise.resolve()
+};
+fooCommandMap.set('global', defaultFooCommand);
+fooCommandMap.set('project', nonDefaultFooCommand);
+groupMap.set('foo', fooCommandMap);
 
 function getCommandPath(prefixes: string[]): string[] {
 	return prefixes.map((prefix) => {
@@ -156,27 +174,20 @@ registerSuite('command', {
 			}
 		}
 	},
-	getGroupDescription: {
-		before() {
-			loader = command.initCommandLoader(testSearchPrefixes);
+	getCommand: {
+		'should return command'() {
+			const command = getCommand(groupMap, 'foo', 'project');
+			assert.strictEqual(command, nonDefaultFooCommand);
 		},
-
-		tests: {
-			'Should return simple command description when only one command name passed'() {
-				const key = 'group1-command1';
-				const description = command.getGroupDescription(new Set([key]), commandsMap);
-				assert.equal(commandsMap.get(key).description, description);
-			},
-			'Should return composite description of sub commands when multiple command names passed'() {
-				const key1 = 'group1-command1';
-				const key2 = 'group2-command1';
-				const description = command.getGroupDescription(new Set([key1, key2]), commandsMap);
-				const expected = `${commandsMap.get(key1).name}  ${commandsMap.get(key1).description}\n${
-					commandsMap.get(key1).name
-				}  ${commandsMap.get(key2).description}`;
-
-				assert.equal(expected, description);
-			}
+		'should return default command for group'() {
+			const command = getCommand(groupMap, 'foo');
+			assert.strictEqual(command, defaultFooCommand);
+		},
+		'should throw an error when the group does not exist'() {
+			assert.throws(() => getCommand(groupMap, 'fake'), /Unable to find command group: fake/);
+		},
+		'should throw an error when the command does not exist'() {
+			assert.throws(() => getCommand(groupMap, 'foo', 'fake'), /Unable to find command: fake for group: foo/);
 		}
 	}
 });

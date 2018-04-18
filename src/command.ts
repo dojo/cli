@@ -1,5 +1,4 @@
-import { Command, CommandWrapper, CommandsMap } from './interfaces';
-const cliui = require('cliui');
+import { Command, CommandWrapper, GroupMap } from './interfaces';
 
 /**
  * Function to create a loader instance, this allows the config to be injected
@@ -16,7 +15,7 @@ export function initCommandLoader(searchPrefixes: string[]): (path: string) => C
 
 		try {
 			const command = convertModuleToCommand(module);
-			const { description, register, run, alias, eject } = command;
+			const { description, register, run, alias, eject, global = false } = command;
 			//  derive the group and name from the module directory name, e.g. dojo-cli-group-name
 			const [, group, name] = <string[]>commandRegExp.exec(path);
 
@@ -26,6 +25,8 @@ export function initCommandLoader(searchPrefixes: string[]): (path: string) => C
 				alias,
 				description,
 				register,
+				installed: true,
+				global: group === 'create' && name === 'app' ? true : global,
 				run,
 				path,
 				eject
@@ -46,12 +47,14 @@ export function createBuiltInCommandLoader(): (path: string) => CommandWrapper {
 		try {
 			const command = convertModuleToCommand(module);
 			//  derive the name and group of the built in commands from the command itself (these are optional props)
-			const { name = '', group = '', alias, description, register, run } = command;
+			const { name = '', group = '', alias, description, register, run, global = false } = command;
 
 			return {
 				name,
 				group,
 				alias,
+				global,
+				installed: true,
 				description,
 				register,
 				run,
@@ -75,24 +78,19 @@ export function convertModuleToCommand(module: any): Command {
 	}
 }
 
-export function getGroupDescription(commandNames: Set<string>, commands: CommandsMap): string {
-	const numCommands = commandNames.size;
-	if (numCommands > 1) {
-		return getMultiCommandDescription(commandNames, commands);
-	} else {
-		const { description } = <CommandWrapper>commands.get(Array.from(commandNames.keys())[0]);
-		return description;
+export function getCommand(groupMap: GroupMap, groupName: string, commandName?: string) {
+	const commandMap = groupMap.get(groupName);
+	if (!commandMap) {
+		throw new Error(`Unable to find command group: ${groupName}`);
 	}
-}
-
-function getMultiCommandDescription(commandNames: Set<string>, commands: CommandsMap): string {
-	const descriptions = Array.from(commandNames.keys(), (commandName) => {
-		const { name, description } = <CommandWrapper>commands.get(commandName);
-		return `${name}  \t${description}`;
-	});
-	const ui = cliui({
-		width: 80
-	});
-	ui.div(descriptions.join('\n'));
-	return ui.toString();
+	if (commandName) {
+		const command = commandMap.get(commandName);
+		if (!command) {
+			throw new Error(`Unable to find command: ${commandName} for group: ${groupName}`);
+		}
+		return command;
+	}
+	return [...commandMap.values()].find((wrapper) => {
+		return !!wrapper.default;
+	})!;
 }

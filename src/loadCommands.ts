@@ -1,11 +1,7 @@
 import * as globby from 'globby';
 import { resolve as pathResolve, join } from 'path';
-import { CliConfig, CommandsMap, CommandWrapper, LoadedCommands, YargsCommandNames } from './interfaces';
+import { CliConfig, CommandWrapper, GroupMap } from './interfaces';
 import configurationHelper from './configurationHelper';
-
-export function setDefaultGroup(commandsMap: CommandsMap, commandName: string, commandWrapper: CommandWrapper) {
-	commandsMap.set(commandName, commandWrapper);
-}
 
 export function isEjected(groupName: string, command: string): boolean {
 	const config: any = configurationHelper.sandbox(groupName, command).get();
@@ -49,34 +45,24 @@ export async function enumerateBuiltInCommands(config: CliConfig): Promise<strin
  * @returns Promise This function is async and returns a promise once all
  * of the commands have been loaded.
  */
-export async function loadCommands(paths: string[], load: (path: string) => CommandWrapper): Promise<LoadedCommands> {
-	return new Promise<LoadedCommands>((resolve, reject) => {
-		const commandsMap: CommandsMap = new Map();
-		const yargsCommandNames: YargsCommandNames = new Map();
+export async function loadCommands(paths: string[], load: (path: string) => CommandWrapper): Promise<GroupMap> {
+	return new Promise<GroupMap>((resolve, reject) => {
+		const specialCommandsMap: GroupMap = new Map();
 
 		paths.forEach((path) => {
 			try {
 				const commandWrapper = load(path);
 				const { group, name } = commandWrapper;
-				let compositeKey = group;
-				if (name) {
-					compositeKey = `${group}-${name}`;
-				}
 
 				if (!isEjected(group, name)) {
-					if (!commandsMap.has(group)) {
-						// First of each type will be 'default' for now
-						setDefaultGroup(commandsMap, group, commandWrapper);
-						yargsCommandNames.set(group, new Set());
+					if (!specialCommandsMap.has(group)) {
+						commandWrapper.default = true;
+						specialCommandsMap.set(group, new Map());
 					}
 
-					if (!commandsMap.has(compositeKey)) {
-						commandsMap.set(compositeKey, commandWrapper);
-					}
-
-					const groupCommandNames = yargsCommandNames.get(group);
-					if (groupCommandNames) {
-						groupCommandNames.add(compositeKey);
+					const commandsMap = specialCommandsMap.get(group)!;
+					if (!specialCommandsMap.get(group)!.has(name)) {
+						commandsMap.set(name, commandWrapper);
 					}
 				}
 			} catch (error) {
@@ -85,9 +71,6 @@ export async function loadCommands(paths: string[], load: (path: string) => Comm
 			}
 		});
 
-		resolve({
-			commandsMap,
-			yargsCommandNames
-		});
+		resolve(specialCommandsMap);
 	});
 }

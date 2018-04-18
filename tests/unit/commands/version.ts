@@ -7,7 +7,7 @@ import chalk from 'chalk';
 
 import { join, resolve as pathResolve } from 'path';
 
-import { CommandsMap, CommandWrapper } from '../../../src/interfaces';
+import { CommandMap, CommandWrapper } from '../../../src/interfaces';
 import { getCommandWrapperWithConfiguration } from '../../support/testHelper';
 const validPackageInfo: any = require('../../support/valid-package/package.json');
 const anotherValidPackageInfo: any = require('../../support/another-valid-package/package.json');
@@ -60,13 +60,12 @@ describe('version command', () => {
 
 	it(`should run and return 'no registered commands' when there are no installed commands`, () => {
 		const noCommandOutput = `${noCommandsPrefix}${outputSuffix}`;
-		const commandMap: CommandsMap = new Map<string, CommandWrapper>();
+		const groupMap = new Map();
 
 		const helper = { command: 'version' };
-		mockAllCommands.default = sandbox.stub().resolves({ commandsMap: commandMap });
+		mockAllCommands.default = sandbox.stub().resolves(groupMap);
 		return moduleUnderTest.run(helper, { outdated: false }).then(
 			() => {
-				// assert.isTrue(mockDavid.getUpdatedDependencies.notCalled);
 				assert.equal(logStub.firstCall.args[0].trim(), noCommandOutput);
 			},
 			() => {
@@ -84,8 +83,9 @@ describe('version command', () => {
 			path: join(pathResolve('.'), 'path/that/does/not/exist')
 		});
 
-		const commandMap: CommandsMap = new Map<string, CommandWrapper>([['badCommand', badCommandWrapper]]);
-		mockAllCommands.default = sandbox.stub().resolves({ commandsMap: commandMap });
+		const commandMap: CommandMap = new Map<string, CommandWrapper>([['badCommand', badCommandWrapper]]);
+		const groupMap = new Map([['apple', commandMap]]);
+		mockAllCommands.default = sandbox.stub().resolves(groupMap);
 
 		const helper = { command: 'version' };
 		return moduleUnderTest.run(helper, { outdated: false }).then(
@@ -116,11 +116,12 @@ ${validPackageInfo.name}@${validPackageInfo.version}
 ${anotherValidPackageInfo.name}@${anotherValidPackageInfo.version}
 ${outputSuffix}`;
 
-		const commandMap: CommandsMap = new Map<string, CommandWrapper>([
+		const commandMap: CommandMap = new Map<string, CommandWrapper>([
 			['installedCommand1', installedCommandWrapper1],
 			['installedCommand2', installedCommandWrapper2]
 		]);
-		mockAllCommands.default = sandbox.stub().resolves({ commandsMap: commandMap });
+		const groupMap = new Map([['test', commandMap]]);
+		mockAllCommands.default = sandbox.stub().resolves(groupMap);
 		const helper = { command: 'version' };
 		return moduleUnderTest.run(helper, { outdated: false }).then(
 			() => {
@@ -149,13 +150,14 @@ ${outputSuffix}`;
 ${validPackageInfo.name}@${validPackageInfo.version}
 ${outputSuffix}`;
 
-		const commandMap: CommandsMap = new Map<string, CommandWrapper>([
+		const commandMap: CommandMap = new Map<string, CommandWrapper>([
 			['installedCommand1', installedCommandWrapper],
 			['builtInCommand1', builtInCommandWrapper]
 		]);
+		const groupMap = new Map([['test', commandMap]]);
 
 		const helper = { command: 'version' };
-		mockAllCommands.default = sandbox.stub().resolves({ commandsMap: commandMap });
+		mockAllCommands.default = sandbox.stub().resolves(groupMap);
 		return moduleUnderTest.run(helper, { outdated: false }).then(
 			() => {
 				assert.equal(logStub.firstCall.args[0].trim(), expectedOutput);
@@ -184,12 +186,13 @@ ${outputSuffix}`;
 ${validPackageInfo.name}@${chalk.blue(validPackageInfo.version)}
 ${outputSuffix}`;
 
-		const commandMap: CommandsMap = new Map<string, CommandWrapper>([
+		const commandMap: CommandMap = new Map<string, CommandWrapper>([
 			['installedCommand1', installedCommandWrapper]
 		]);
+		const groupMap = new Map([['test', commandMap]]);
 
 		const helper = { command: 'version' };
-		mockAllCommands.default = sandbox.stub().resolves({ commandsMap: commandMap });
+		mockAllCommands.default = sandbox.stub().resolves(groupMap);
 		return moduleUnderTest.run(helper, { outdated: true }).then(
 			() => {
 				assert.isTrue(logStub.firstCall.calledWith('Fetching latest version information...'));
@@ -218,12 +221,13 @@ ${outputSuffix}`;
 ${validPackageInfo.name}@${chalk.blue(validPackageInfo.version)} ${chalk.green('(latest is 1.2.3)')}
 ${outputSuffix}`;
 
-		const commandMap: CommandsMap = new Map<string, CommandWrapper>([
+		const commandMap: CommandMap = new Map<string, CommandWrapper>([
 			['installedCommand1', installedCommandWrapper]
 		]);
+		const groupMap = new Map([['test', commandMap]]);
 
 		const helper = { command: 'version' };
-		mockAllCommands.default = sandbox.stub().resolves({ commandsMap: commandMap });
+		mockAllCommands.default = sandbox.stub().resolves(groupMap);
 		return moduleUnderTest.run(helper, { outdated: true }).then(
 			() => {
 				assert.isTrue(logStub.firstCall.calledWith('Fetching latest version information...'));
@@ -246,12 +250,13 @@ ${outputSuffix}`;
 
 		const expectedOutput = 'Something went wrong trying to fetch command versions: Error';
 
-		const commandMap: CommandsMap = new Map<string, CommandWrapper>([
+		const commandMap: CommandMap = new Map<string, CommandWrapper>([
 			['installedCommand1', installedCommandWrapper]
 		]);
+		const groupMap = new Map([['test', commandMap]]);
 
 		const helper = { command: 'version' };
-		mockAllCommands.default = sandbox.stub().resolves({ commandsMap: commandMap });
+		mockAllCommands.default = sandbox.stub().resolves(groupMap);
 		return moduleUnderTest.run(helper, { outdated: true }).then(
 			() => {
 				assert.isTrue(logStub.firstCall.calledWith('Fetching latest version information...'));

@@ -1,4 +1,4 @@
-import { Helper, OptionsHelper, CommandsMap, NpmPackageDetails } from '../interfaces';
+import { Helper, OptionsHelper, GroupMap, NpmPackageDetails } from '../interfaces';
 import { join } from 'path';
 import { Argv } from 'yargs';
 import chalk from 'chalk';
@@ -154,7 +154,7 @@ function readPackageDetails(packageDir: string): PackageDetails {
  * @param {CommandsMap} commandsMap
  * @returns {{name, version, group}[]}
  */
-function buildVersions(commandsMap: CommandsMap): ModuleVersion[] {
+function buildVersions(groupMap: GroupMap): ModuleVersion[] {
 	/*
 	 * commandsMap comes in as a map of [command-name, command]. The command has a default command,
 	 * the map will actually contain two entries for one command, on for the default command, one for the real,
@@ -163,11 +163,13 @@ function buildVersions(commandsMap: CommandsMap): ModuleVersion[] {
 	 * Loop over commandsMap and create a new map with one entry per command, then loop over each entry and extract
 	 * the package details.
 	 */
-	const consolidatedCommands = [
-		...new Map<string, string>(
-			[...commandsMap].map(([, command]) => <[string, string]>[command.path, command.group])
-		)
-	];
+
+	const consolidatedCommands = [];
+	for (let [, commandMap] of groupMap.entries()) {
+		for (let [, value] of commandMap.entries()) {
+			consolidatedCommands.push([value.path, value.group]);
+		}
+	}
 
 	const versionInfo = consolidatedCommands
 		.map(([path, group]) => {
@@ -195,10 +197,10 @@ function buildVersions(commandsMap: CommandsMap): ModuleVersion[] {
  * @param {boolean} checkOutdated should we check if there is a later stable version available for the command
  * @returns {string} the stdout output
  */
-function createVersionsString(commandsMap: CommandsMap, checkOutdated: boolean): Promise<string> {
+function createVersionsString(groupMap: GroupMap, checkOutdated: boolean): Promise<string> {
 	const packagePath = pkgDir.sync(__dirname);
 	const myPackageDetails = readPackageDetails(packagePath); // fetch the cli's package details
-	const versions: ModuleVersion[] = buildVersions(commandsMap);
+	const versions: ModuleVersion[] = buildVersions(groupMap);
 	if (checkOutdated) {
 		return areCommandsOutdated(versions).then(
 			(commandVersions: ModuleVersion[]) => createOutput(myPackageDetails, commandVersions),
@@ -213,8 +215,8 @@ function createVersionsString(commandsMap: CommandsMap, checkOutdated: boolean):
 
 function run(helper: Helper, args: VersionArgs): Promise<any> {
 	return allCommands()
-		.then((commands) => {
-			return createVersionsString(commands.commandsMap, args.outdated);
+		.then((groupMap) => {
+			return createVersionsString(groupMap, args.outdated);
 		})
 		.then(console.log);
 }
@@ -224,5 +226,7 @@ export default {
 	group: 'version',
 	description: 'provides version information for all installed commands and the cli itself',
 	register,
+	global: true,
+	installed: true,
 	run
 };
