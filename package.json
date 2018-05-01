@@ -66,7 +66,7 @@
     "@types/grunt": "~0.4.0",
     "@types/inquirer": "0.0.36",
     "@types/mockery": "^1.4.29",
-    "@types/node": "^8.5.2",
+    "@types/node": "~9.6.5",
     "@types/sinon": "^4.1.2",
     "@types/update-notifier": "^1.0.1",
     "@types/yargs": "^10.0.0",
