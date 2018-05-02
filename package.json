@@ -33,9 +33,6 @@
     "typings.json"
   ],
   "dependencies": {
-    "@dojo/core": "~0.3.0",
-    "@dojo/has": "~0.1.1",
-    "@dojo/shim": "~0.2.3",
     "chalk": "^2.3.0",
     "cliui": "^4.0.0",
     "configstore": "^3.1.1",
@@ -55,7 +52,6 @@
     "yargs": "^10.0.3"
   },
   "devDependencies": {
-    "@dojo/loader": "~0.1.1",
     "@types/configstore": "^2.1.1",
     "@types/detect-indent": "^5.0.0",
     "@types/ejs": "^2.3.33",
