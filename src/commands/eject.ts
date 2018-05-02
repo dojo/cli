@@ -58,7 +58,7 @@ async function run(helper: Helper, args: EjectArgs): Promise<any> {
 							toEject.add(command);
 						}
 						return toEject;
-					}, new Set<EjectableCommandWrapper>());
+					}, toEject);
 				});
 				const npmPackages: NpmPackage = {
 					dependencies: {},
