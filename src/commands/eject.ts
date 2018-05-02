@@ -5,7 +5,6 @@ import chalk from 'chalk';
 import * as inquirer from 'inquirer';
 import { CommandWrapper, Helper, NpmPackage, OptionsHelper, EjectOutput, FileCopyConfig } from '../interfaces';
 import { loadExternalCommands } from '../allCommands';
-import { deepAssign } from '@dojo/core/lang';
 import { installDependencies, installDevDependencies } from '../npmInstall';
 import configurationHelper from '../configurationHelper';
 
@@ -59,7 +58,7 @@ async function run(helper: Helper, args: EjectArgs): Promise<any> {
 							toEject.add(command);
 						}
 						return toEject;
-					}, new Set<EjectableCommandWrapper>());
+					}, toEject);
 				});
 				const npmPackages: NpmPackage = {
 					dependencies: {},
@@ -74,7 +73,8 @@ async function run(helper: Helper, args: EjectArgs): Promise<any> {
 
 						const { npm = {}, copy = false, hints = false } = command.eject(helper);
 
-						deepAssign(npmPackages, npm);
+						npmPackages.dependencies = { ...npmPackages.dependencies, ...npm.dependencies };
+						npmPackages.devDependencies = { ...npmPackages.devDependencies, ...npm.devDependencies };
 						copy && copyFiles(commandKey, copy);
 						hints && allHints.push(...hints);
 						configurationHelper.sandbox(command.group, command.name).set({ [ejectedKey]: true });
