@@ -18,7 +18,7 @@ export interface Config {
 
 export interface ConfigurationHelper {
 	set(config: Config): void;
-	get(): {};
+	get(command?: string): {};
 }
 
 export type RenderFilesConfig = {
