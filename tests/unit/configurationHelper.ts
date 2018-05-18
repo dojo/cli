@@ -2,27 +2,29 @@ const { registerSuite } = intern.getInterface('object');
 const { assert } = intern.getPlugin('chai');
 
 import { resolve as pathResolve } from 'path';
-import MockModule from '../support/MockModule';
 import * as sinon from 'sinon';
+import MockModule from '../support/MockModule';
 
 let sandbox: any;
 let mockModule: MockModule;
 let mockPkgDir: any;
 let mockFs: any;
 let mockPath: any;
+let mockReadlineSync: any;
 let moduleUnderTest: any;
 let configurationHelper: any;
 let consoleWarnStub: sinon.SinonStub;
 
 const packagePath = pathResolve(__dirname, '../support');
 const dojoRcPath = `${packagePath}/.dojorc`;
+const packageJsonPath = `${packagePath}/package.json`;
 
 registerSuite('Configuration Helper', {
 	'package dir exists': {
 		beforeEach() {
 			sandbox = sinon.sandbox.create();
 			mockModule = new MockModule('../../src/configurationHelper', require);
-			mockModule.dependencies(['pkg-dir', 'fs', 'path', dojoRcPath]);
+			mockModule.dependencies(['pkg-dir', 'fs', 'path', 'readline-sync', dojoRcPath, packageJsonPath]);
 			mockPkgDir = mockModule.getMock('pkg-dir');
 			mockPkgDir.ctor.sync = sandbox.stub().returns(packagePath);
 			mockFs = mockModule.getMock('fs');
@@ -31,6 +33,8 @@ registerSuite('Configuration Helper', {
 			mockFs.writeFileSync = sinon.stub();
 			mockPath = mockModule.getMock('path');
 			mockPath.join = sinon.stub().returns(dojoRcPath);
+			mockReadlineSync = mockModule.getMock('readline-sync');
+			mockReadlineSync.isInKeyYN = sinon.stub().returns(true);
 			moduleUnderTest = mockModule.getModuleUnderTest().default;
 			configurationHelper = moduleUnderTest;
 		},
@@ -121,7 +125,7 @@ registerSuite('Configuration Helper', {
 				const existingConfig = { existing: 'config' };
 				mockFs.readFileSync.returns(JSON.stringify({ 'testGroupName-testCommandName': existingConfig }));
 				const config = configurationHelper.sandbox('testGroupName', 'testCommandName').get();
-				assert.isTrue(mockFs.readFileSync.calledOnce);
+				assert.isTrue(mockFs.readFileSync.calledTwice);
 				assert.deepEqual(config, existingConfig);
 			},
 			'Should accept and ignore commandName parameter'() {
@@ -175,6 +179,80 @@ registerSuite('Configuration Helper', {
 				configurationHelper.sandbox('testGroupName', 'testCommandName').set({});
 				assert.isFalse(mockFs.writeFileSync.called);
 				assert.isTrue(consoleWarnStub.calledOnce);
+			}
+		}
+	},
+
+	'package json': {
+		beforeEach() {
+			sandbox = sinon.sandbox.create();
+			mockModule = new MockModule('../../src/configurationHelper', require);
+			mockModule.dependencies(['pkg-dir', 'fs', 'path', 'readline-sync', dojoRcPath]);
+			mockPkgDir = mockModule.getMock('pkg-dir');
+			mockPkgDir.ctor.sync = sandbox.stub().returns(packagePath);
+			mockFs = mockModule.getMock('fs');
+			mockFs.existsSync = sinon.stub().callsFake((filename) => filename === packageJsonPath);
+			mockFs.readFileSync = sinon.stub().returns(
+				JSON.stringify({
+					dojo: {
+						test: {
+							hello: 'world'
+						},
+						'testGroupName-testCommandName': {
+							one: 'two'
+						}
+					}
+				})
+			);
+			mockFs.writeFileSync = sinon.stub();
+			mockPath = mockModule.getMock('path');
+			mockPath.join = sinon
+				.stub()
+				.callsFake((...args) => (args.some((a) => a === 'package.json') ? packageJsonPath : dojoRcPath));
+			mockReadlineSync = mockModule.getMock('readline-sync');
+			mockReadlineSync.keyInYN = sinon.stub().returns(true);
+			moduleUnderTest = mockModule.getModuleUnderTest().default;
+			configurationHelper = moduleUnderTest;
+		},
+		afterEach() {
+			sandbox.restore();
+			mockModule.destroy();
+		},
+		tests: {
+			'reads config from package.json if available'() {
+				assert.deepEqual(configurationHelper.sandbox('testGroupName', 'testCommandName').get(), {
+					one: 'two'
+				});
+
+				assert.deepEqual(configurationHelper.sandbox('testGroupName', 'testCommandName').get('test'), {
+					hello: 'world'
+				});
+			},
+
+			'confirms writing config to package.json'() {
+				configurationHelper.sandbox('testGroupName', 'testCommandName').set({
+					hello: 'world'
+				});
+
+				assert.isTrue(mockReadlineSync.keyInYN.called);
+
+				configurationHelper.sandbox('testGroupName', 'testCommandName').set({
+					hello: 'world'
+				});
+
+				assert.isTrue(mockReadlineSync.keyInYN.calledOnce);
+
+				assert.isTrue(mockFs.writeFileSync.calledTwice);
+			},
+
+			'does not write to package.json if no answered'() {
+				mockReadlineSync.keyInYN = sinon.stub().returns(false);
+
+				configurationHelper.sandbox('testGroupName', 'testCommandName').set({
+					hello: 'world'
+				});
+
+				assert.isFalse(mockFs.writeFileSync.called);
 			}
 		}
 	}
