@@ -47,10 +47,10 @@ function createPadding(text: string, paddingLength: number, paddingChar = ' '): 
 }
 
 function formatHeader(group: string = '<group>', command: string = '[<command>]') {
-	return `${dojoArt}
+	return `${chalk.blueBright(dojoArt)}
 ${chalk.bold('Usage:')}
 
-  $ ${chalk.green('dojo')} ${chalk.green(group)} ${chalk.dim.green(command)} [<options>] [--help]`;
+  $ ${chalk.greenBright('dojo')} ${chalk.greenBright(group)} ${chalk.green(command)} [<options>] [--help]`;
 }
 
 function capitalize(value: string) {
@@ -84,7 +84,7 @@ function formatHelpOutput(
 	let hasGroup = false;
 	let commandOptionHelp = '';
 	groupMap.forEach((commandMap, group) => {
-		let groupOutput = `  ${chalk.green(group)} ${createPadding(group, 8)}`;
+		let groupOutput = `  ${chalk.greenBright(group)} ${createPadding(group, 8)}`;
 		if (hasGroup) {
 			groupOutput = `\n${groupOutput}`;
 		}
@@ -96,7 +96,7 @@ function formatHelpOutput(
 			if (hasCommand) {
 				groupOutput = `${groupOutput}\n${' '.repeat(11)}`;
 			}
-			groupOutput = `${groupOutput}  ${chalk.dim.green(name)}`;
+			groupOutput = `${groupOutput}  ${chalk.green(name)}`;
 			groupOutput = `${groupOutput}${createPadding(name, 10)}`;
 			groupOutput = `${groupOutput}  ${capitalize(description)}`;
 			if (isDefault && showDefault && filteredCommandMap.length > 1) {
@@ -132,14 +132,14 @@ function formatCommandOptions(commandWrapper: CommandWrapper, isDefaultCommand =
 
 	register(
 		(key, options) => {
-			let optionKeys = `${addOptionPrefix(chalk.green(key))}`;
+			let optionKeys = `${addOptionPrefix(chalk.greenBright(key))}`;
 			if (options.alias) {
 				const aliases = Array.isArray(options.alias) ? options.alias : [options.alias];
 				optionKeys = aliases.reduce((result, alias) => {
 					if (alias.length === 1) {
-						return `${addOptionPrefix(chalk.green(alias))}, ${result}`;
+						return `${addOptionPrefix(chalk.greenBright(alias))}, ${result}`;
 					}
-					return `${result}, ${addOptionPrefix(chalk.green(alias))}`;
+					return `${result}, ${addOptionPrefix(chalk.greenBright(alias))}`;
 				}, optionKeys);
 			}
 			commandOptionHelp = `${commandOptionHelp}\n  ${optionKeys}`;
