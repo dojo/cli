@@ -16,7 +16,14 @@ function writeConfigFile(config: Config) {
 
 function getConfigFile(): Config {
 	const configExists = !!dojoRcPath && existsSync(dojoRcPath);
-	return configExists ? JSON.parse(readFileSync(dojoRcPath, 'utf8')) : {};
+	if (configExists) {
+		try {
+			return JSON.parse(readFileSync(dojoRcPath, 'utf8'));
+		} catch (error) {
+			throw new Error(`Invalid .dojorc: ${error}`);
+		}
+	}
+	return {};
 }
 
 class SingleCommandConfigurationHelper implements ConfigurationHelper {

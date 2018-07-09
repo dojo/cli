@@ -109,6 +109,11 @@ registerSuite('Configuration Helper', {
 					mockFs.writeFileSync.firstCall.args[1],
 					JSON.stringify({ 'testGroupName-testCommandName': newConfig }, null, 2)
 				);
+			},
+			'Should throw an error when the config is not valid JSON'() {
+				mockFs.readFileSync.returns('{]');
+				const test = () => configurationHelper.sandbox('testGroupName', 'testCommandName').get();
+				assert.throws(test, Error, /^Invalid \.dojorc: /);
 			}
 		}
 	},
