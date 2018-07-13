@@ -59,7 +59,7 @@ function dojoRcExists() {
 }
 
 function getConfigFile(): Config {
-	if (configExists) {
+	if (dojoRcExists()) {
 		try {
 			return JSON.parse(readFileSync(dojoRcPath, 'utf8'));
 		} catch (error) {
