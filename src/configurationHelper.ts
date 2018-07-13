@@ -21,12 +21,8 @@ if (existsSync(packageJsonPath)) {
 }
 
 function readPackageConfig() {
-	if (existsSync(packageJsonPath)) {
-		const { dojo } = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
-		return dojo;
-	}
-
-	return {};
+	const { dojo } = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
+	return dojo;
 }
 
 let canWriteToPackageJson: boolean | undefined;
