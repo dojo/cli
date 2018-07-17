@@ -22,7 +22,7 @@ registerSuite('config', {
 	},
 	'Should look in peer packages second'() {
 		const paths = config.searchPaths;
-		const expectedPath = resolve('.');
+		const expectedPath = resolve('./dist');
 		assert.equal(paths[1], expectedPath);
 	},
 	'Should look in packages node_modules last'() {

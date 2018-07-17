@@ -5,7 +5,7 @@ import MockModule from '../../support/MockModule';
 import * as sinon from 'sinon';
 import chalk from 'chalk';
 
-import { join, resolve as pathResolve } from 'path';
+import { join } from 'path';
 
 import { CommandMap, CommandWrapper } from '../../../src/interfaces';
 import { getCommandWrapperWithConfiguration } from '../../support/testHelper';
@@ -30,7 +30,7 @@ describe('version command', () => {
 		mockModule = new MockModule('../../../src/commands/version', require);
 		mockModule.dependencies(['pkg-dir', '../allCommands', '../installableCommands']);
 		mockPkgDir = mockModule.getMock('pkg-dir');
-		mockPkgDir.ctor.sync = sandbox.stub().returns(join(pathResolve('.'), '/_build/tests/support/valid-package'));
+		mockPkgDir.ctor.sync = sandbox.stub().returns(join(__dirname, '../../support/valid-package'));
 		mockAllCommands = mockModule.getMock('../allCommands');
 		mockInstallableCommands = mockModule.getMock('../installableCommands');
 		mockInstallableCommands.getLatestCommands = sandbox.stub().resolves([]);
@@ -80,7 +80,7 @@ describe('version command', () => {
 		const badCommandWrapper = getCommandWrapperWithConfiguration({
 			group: 'apple',
 			name: 'test',
-			path: join(pathResolve('.'), 'path/that/does/not/exist')
+			path: join(__dirname, 'path/that/does/not/exist')
 		});
 
 		const commandMap: CommandMap = new Map<string, CommandWrapper>([['badCommand', badCommandWrapper]]);
@@ -103,12 +103,12 @@ describe('version command', () => {
 		const installedCommandWrapper1 = getCommandWrapperWithConfiguration({
 			group: 'apple',
 			name: 'test',
-			path: join(pathResolve('.'), '_build/tests/support/valid-package')
+			path: join(__dirname, '../../support/valid-package')
 		});
 		const installedCommandWrapper2 = getCommandWrapperWithConfiguration({
 			group: 'orange',
 			name: 'anotherTest',
-			path: join(pathResolve('.'), '_build/tests/support/another-valid-package')
+			path: join(__dirname, '../../support/another-valid-package')
 		});
 
 		const expectedOutput = `${outputPrefix}
@@ -137,13 +137,13 @@ ${outputSuffix}`;
 		const installedCommandWrapper = getCommandWrapperWithConfiguration({
 			group: 'apple',
 			name: 'test',
-			path: join(pathResolve('.'), '_build/tests/support/valid-package')
+			path: join(__dirname, '../../support/valid-package')
 		});
 
 		const builtInCommandWrapper = getCommandWrapperWithConfiguration({
 			group: 'orange',
 			name: 'anotherTest',
-			path: join(pathResolve('.'), '/_build/src/commands/builtInCommand.js')
+			path: join(__dirname, '../../../src/commands/builtInCommand.js')
 		});
 
 		const expectedOutput = `${outputPrefix}
@@ -179,7 +179,7 @@ ${outputSuffix}`;
 		const installedCommandWrapper = getCommandWrapperWithConfiguration({
 			group: 'apple',
 			name: 'test',
-			path: join(pathResolve('.'), '_build/tests/support/valid-package')
+			path: join(__dirname, '../../support/valid-package')
 		});
 
 		const expectedOutput = `${outputPrefix}
@@ -214,7 +214,7 @@ ${outputSuffix}`;
 		const installedCommandWrapper = getCommandWrapperWithConfiguration({
 			group: 'apple',
 			name: 'test',
-			path: join(pathResolve('.'), '_build/tests/support/valid-package')
+			path: join(__dirname, '../../support/valid-package')
 		});
 
 		const expectedOutput = `${outputPrefix}
@@ -245,7 +245,7 @@ ${outputSuffix}`;
 		const installedCommandWrapper = getCommandWrapperWithConfiguration({
 			group: 'apple',
 			name: 'test',
-			path: join(pathResolve('.'), '_build/tests/support/valid-package')
+			path: join(__dirname, '../../support/valid-package')
 		});
 
 		const expectedOutput = 'Something went wrong trying to fetch command versions: Error';

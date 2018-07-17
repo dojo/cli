@@ -1,13 +1,13 @@
 # Test against the latest version of this Node.js version
 environment:
   nodejs_version: "6"
+  FORCE_COLOR: 1
 
 # Install scripts. (runs after repo cloning)
 install:
   # Get the latest stable version of Node.js or io.js
   - ps: Install-Product node $env:nodejs_version
   # install modules
-  - npm install grunt cli
   - npm install
 
 # Post-install test scripts.
@@ -16,9 +16,8 @@ test_script:
   - node --version
   - npm --version
   # run tests
-  - node_modules\.bin\grunt.cmd
-  - node_modules\.bin\grunt.cmd intern:node --test-reporter --color
-  - node_modules\.bin\grunt.cmd uploadCoverage
+  - npm test
+  - npm run uploadCoverage
 
 # Don't actually build.
 build: off
