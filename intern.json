@@ -1,21 +1,3 @@
 {
-	"environments": [
-		{ "browserName": "node" }
-	],
-
-	"browser": {
-		"loader": "./node_modules/grunt-dojo2/lib/intern/internLoader.js"
-	},
-
-	"suites": [
-		"./_build/tests/unit/all.js"
-	],
-
-	"coverage": [
-		"./_build/src/**/*.js"
-	],
-
-	"configs": {
-		"local": {}
-	}
+	"extends": "./node_modules/@dojo/scripts/intern/base.json"
 }

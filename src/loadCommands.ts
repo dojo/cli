@@ -19,7 +19,7 @@ export async function enumerateInstalledCommands(config: CliConfig): Promise<str
 	const globPaths = searchPrefixes.reduce((globPaths: string[], key) => {
 		return globPaths.concat(config.searchPaths.map((depPath) => pathResolve(depPath, `${key}-*`)));
 	}, []);
-	return globby(globPaths, { ignore: '**/*.map' });
+	return globby(globPaths, { ignore: '**/*.{map,d.ts}' });
 }
 
 /**
@@ -29,7 +29,7 @@ export async function enumerateInstalledCommands(config: CliConfig): Promise<str
  */
 export async function enumerateBuiltInCommands(config: CliConfig): Promise<string[]> {
 	const builtInCommandParentDirGlob = join(config.builtInCommandLocation, '/*.js');
-	return globby(builtInCommandParentDirGlob, { ignore: '**/*.map' });
+	return globby(builtInCommandParentDirGlob, { ignore: '**/*.{map,d.ts}' });
 }
 
 /**

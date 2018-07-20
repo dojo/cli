@@ -3,7 +3,7 @@ const { assert } = intern.getPlugin('chai');
 
 import MockModule from '../support/MockModule';
 import * as sinon from 'sinon';
-import { join, resolve as pathResolve } from 'path';
+import { join } from 'path';
 
 describe('cli main module', () => {
 	let mockModule: MockModule;
@@ -14,6 +14,7 @@ describe('cli main module', () => {
 	let mockAllCommands: any;
 	let mockRegisterCommands: any;
 	let mergeStub: sinon.SinonStub;
+	let init: any;
 
 	it('should run functions in order', () => {
 		describe('inner', () => {
@@ -36,9 +37,7 @@ describe('cli main module', () => {
 					.returnsArg(0);
 
 				mockPkgDir = mockModule.getMock('pkg-dir');
-				mockPkgDir.ctor.sync = sandbox
-					.stub()
-					.returns(join(pathResolve('.'), '/_build/tests/support/valid-package'));
+				mockPkgDir.ctor.sync = sandbox.stub().returns(join(__dirname, '..', 'support/valid-package'));
 
 				mockUpdate = mockModule.getMock('./updateNotifier');
 				mockAllCommands = mockModule.getMock('./allCommands');
@@ -51,7 +50,7 @@ describe('cli main module', () => {
 				});
 				mockRegisterCommands = mockModule.getMock('./registerCommands');
 				sandbox.stub(console, 'log');
-				mockModule.getModuleUnderTest();
+				init = mockModule.getModuleUnderTest().init;
 			});
 
 			afterEach(() => {
@@ -59,7 +58,9 @@ describe('cli main module', () => {
 				mockModule.destroy();
 			});
 
-			it('should run init to completion', () => {
+			it('should run init to completion', async () => {
+				await init();
+
 				assert.isTrue(mockUpdate.default.calledOnce, 'should call update notifier');
 				assert.isTrue(mockInstallableCommands.default.calledOnce, 'Should look for installable commands');
 				assert.isTrue(mockAllCommands.default.calledOnce, 'should call init');
@@ -82,14 +83,12 @@ describe('cli main module', () => {
 				mockModule = new MockModule('../../src/index', require);
 				mockModule.dependencies(['./updateNotifier', 'pkg-dir', 'yargs']);
 				mockPkgDir = mockModule.getMock('pkg-dir');
-				mockPkgDir.ctor.sync = sandbox
-					.stub()
-					.returns(join(pathResolve('.'), '/_build/tests/support/valid-package'));
+				mockPkgDir.ctor.sync = sandbox.stub().returns(join(__dirname, '..', 'support/valid-package'));
 
 				mockUpdate = mockModule.getMock('./updateNotifier');
 				mockUpdate.default = sandbox.stub().throws(expectedError);
 				sandbox.stub(console, 'log');
-				mockModule.getModuleUnderTest();
+				init = mockModule.getModuleUnderTest().init;
 			});
 
 			afterEach(() => {
@@ -97,7 +96,9 @@ describe('cli main module', () => {
 				mockModule.destroy();
 			});
 
-			it('catches runtime error', () => {
+			it('catches runtime error', async () => {
+				await init();
+
 				assert.throw(mockUpdate.default, Error, errMessage);
 				assert.equal(
 					(console.log as sinon.SinonStub).args[0][0],

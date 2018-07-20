@@ -10,8 +10,7 @@ function convertToInlineDependencies(dependencies: { [key: string]: string }): s
 
 async function npmInstall(args: string[] = []) {
 	return new Promise((resolve, reject) => {
-		cs
-			.spawn('npm', ['--silent', 'install', ...args], { stdio: 'inherit' })
+		cs.spawn('npm', ['--silent', 'install', ...args], { stdio: 'inherit' })
 			.on('close', () => {
 				resolve();
 			})

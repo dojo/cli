@@ -3,12 +3,10 @@ import { stub, spy } from 'sinon';
 
 export type GroupDef = {
 	groupName: string;
-	commands: [
-		{
-			commandName: string;
-			fails?: boolean;
-		}
-	];
+	commands: {
+		commandName: string;
+		fails?: boolean;
+	}[];
 }[];
 
 export interface CommandWrapperConfig {

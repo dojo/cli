@@ -13,13 +13,10 @@ before_install:
   $encrypted_12c8071d2874_key -iv $encrypted_12c8071d2874_iv
   -in deploy_key.enc -out deploy_key -d; fi
 install:
-- travis_retry npm install grunt cli
 - travis_retry npm install
 script:
-- grunt
-- grunt intern:node --test-reporter --color
-- grunt uploadCoverage
-- grunt doc
+- npm test
+- npm run uploadCoverage
 notifications:
   slack:
     secure: csk4Z27tvAFFsiGHL8OCTyXA+lqqDBXXDnf0v1QHaeeOokxvh+ke9C6k1AYo+mjo6YRfTJjlPyQvz2baG0cIFfKwDkDTmdk6XRhIGlrWEs/ZUmmaYa/pBcz3jGZ1xytTe/Mg07Ll4VLMtz6uSNk2ApwxuB6p5A1dN7GvwZIw9IxFHJ49QvYar61NkYwGvvzOkAoWAyw1MR3rZpGMNbHR+S8BQ5hNwVd8UwzEEg5ZHvx6p7A9EYleRCbER93VWK1fOamPvM7XFtB6znPewDeViUO+xug9z7RwnzppTjlkan/IyjoduuupS9L7VrchyevcS4UOUODJsOW36gUv/ZczjbJVlGzAvMkBRRn/8++lPPqxz60m/7QCkK0yDPSoxhsiNMmPzCt9D61kr2KvM5p/OzyxAjAyridQ7td5BZfbAvWq6Ow5o81hp+r0ywXSOV858pKJF/RjI3zVt8yyT2f35tlKpNG3z0mTwOSUfarsQYmMFHbJgvHQbfPOQs3WlyXLhfwNyjMsCSjyA/N+Ubg0EVEddhBD5NWt+h+YUgvCTaDVFGOSQ90MCdVmcTe8e7Oz673c5SQI1qMB7fKKb080lit4HfJR3+6mpgQ9LgoaJU2+4zLojkbaWMBl71o1n9Qt1Y0yIutypuzhbuXkCPh9g3x3l7KP5+mnqUg2Y+ejavQ=

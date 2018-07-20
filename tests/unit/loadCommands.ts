@@ -1,7 +1,7 @@
 const { registerSuite } = intern.getInterface('object');
 const { assert } = intern.getPlugin('chai');
 
-import { join, resolve as pathResolve } from 'path';
+import { join } from 'path';
 import { stub, SinonStub, sandbox } from 'sinon';
 import { CliConfig } from '../../src/interfaces';
 import MockModule from '../support/MockModule';
@@ -24,9 +24,9 @@ let testSandbox: any;
 function config(invalid = false): CliConfig {
 	// tests are run in package-dir (from cli, using grunt test) - FIX to use pkg-dir
 	const config: CliConfig = {
-		searchPaths: ['_build/tests/support'],
+		searchPaths: ['dist/dev/tests/support'],
 		searchPrefixes: ['test-prefix'],
-		builtInCommandLocation: join(pathResolve('.'), '/_build/tests/support/commands')
+		builtInCommandLocation: join(__dirname, '../support/commands')
 	};
 	const badConfig: CliConfig = {
 		searchPaths: ['just/garbage', 'yep/really/bad/paths/here'],
@@ -120,7 +120,7 @@ registerSuite('loadCommands', {
 		'unsuccessful load': {
 			async 'Should fail to load modules that dont satisfy the Command interface'() {
 				const failConfig = {
-					searchPaths: ['_build/tests/support'],
+					searchPaths: ['dist/dev/tests/support'],
 					searchPrefixes: ['esmodule-fail']
 				};
 				const installedPaths = await enumInstalledCommands(<any>failConfig);

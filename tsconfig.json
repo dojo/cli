@@ -1,15 +1,19 @@
 {
+	"extends": "./node_modules/@dojo/scripts/tsconfig/commonjs.json",
 	"compilerOptions": {
 		"declaration": false,
-		"module": "commonjs",
-		"moduleResolution": "node",
-		"noUnusedLocals": true,
-		"outDir": "_build/",
-		"removeComments": false,
-		"sourceMap": true,
-		"strict": true,
+		"lib": [
+			"dom",
+			"es5",
+			"es2015.core",
+			"es2015.promise",
+			"es2015.collection",
+			"es2015.iterable",
+			"es2015.promise",
+			"es2015.symbol",
+			"es2015.symbol.wellknown"
+		],
 		"target": "es2016",
-		"importHelpers": true,
 		"types": [ "intern" ]
 	},
 	"include": [

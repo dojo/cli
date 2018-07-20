@@ -6,7 +6,7 @@ import commandLoader from './allCommands';
 import installableCommands, { mergeInstalledCommandsWithAvailableCommands } from './installableCommands';
 const pkgDir = require('pkg-dir');
 
-async function init() {
+export async function init() {
 	try {
 		const packagePath = pkgDir.sync(__dirname);
 		const packageJsonFilePath = join(packagePath, 'package.json');
@@ -23,6 +23,3 @@ async function init() {
 		console.log(`Commands are not available: ${err}`);
 	}
 }
-
-process.env.DOJO_CLI = 'true';
-init();
