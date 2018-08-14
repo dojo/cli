@@ -22,7 +22,7 @@ let mockedLoadCommands: any;
 let testSandbox: any;
 
 function config(invalid = false): CliConfig {
-	// tests are run in package-dir (from cli, using grunt test) - FIX to use pkg-dir
+	// tests are run in package-dir (from cli) - FIX to use pkg-dir
 	const config: CliConfig = {
 		searchPaths: ['dist/dev/tests/support'],
 		searchPrefixes: ['test-prefix'],

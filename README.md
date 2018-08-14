@@ -148,7 +148,7 @@ npm run prettier
 
 To start working with this package, clone the repository and run `npm install`.
 
-In order to build the project run `grunt dev` or `grunt dist`.
+In order to build the project run `npm run build` or to watch files for local development run `npm run watch`.
 
 ### Testing
 
@@ -158,19 +158,7 @@ Test cases MUST be written using [Intern](https://theintern.github.io) using the
 
 To test locally in node run:
 
-`grunt test`
-
-To test against browsers with a local selenium server run:
-
-`grunt test:local`
-
-To test against BrowserStack or Sauce Labs run:
-
-`grunt test:browserstack`
-
-or
-
-`grunt test:saucelabs`
+`npm run test`
 
 ## Licensing information
 
