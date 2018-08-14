@@ -84,6 +84,7 @@ export interface Command<T = any> {
 	register(options: OptionsHelper, helper: Helper): void;
 	run(helper: Helper, args?: T): Promise<any>;
 	eject?(helper: Helper): EjectOutput;
+	validate?(helper: Helper): void;
 	name?: string;
 	group?: string;
 	alias?: Alias[] | Alias;

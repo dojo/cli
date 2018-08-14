@@ -4,6 +4,7 @@ const { assert } = intern.getPlugin('chai');
 import { stub, SinonStub } from 'sinon';
 import { getYargsStub, GroupDef, getGroupMap } from '../support/testHelper';
 import MockModule from '../support/MockModule';
+import sinon = require('sinon');
 const groupDef: GroupDef = [
 	{
 		groupName: 'group1',
@@ -15,6 +16,7 @@ const groupDef: GroupDef = [
 	}
 ];
 
+let sandbox: any;
 let mockModule: MockModule;
 let groupMap: any;
 let yargsStub: {
@@ -28,6 +30,7 @@ let registerCommands: any;
 
 registerSuite('registerCommands', {
 	beforeEach() {
+		sandbox = sinon.sandbox.create();
 		mockModule = new MockModule('../../src/registerCommands', require);
 		mockModule.dependencies(['./configurationHelper']);
 		mockModule.dependencies(['./help']);
@@ -38,6 +41,7 @@ registerSuite('registerCommands', {
 	},
 
 	afterEach() {
+		sandbox.restore();
 		processExitStub.restore();
 		process.argv = [];
 		mockModule.destroy();
@@ -72,6 +76,15 @@ registerSuite('registerCommands', {
 			registerCommands(yargsStub, groupMap);
 			assert.isTrue(yargsStub.option.called);
 		},
+		// 'Should call validate if validate command is associated with the command'() {
+		// 	groupMap = getGroupMap(groupDef, undefined, () => {});
+
+		// 	const validate = mockModule.getMock('./commands/validate');
+		// 	validate.isValidateableCommandWrapper.reset();
+		// 	registerCommands(yargsStub, groupMap);
+		// 	assert.isTrue(yargsStub.command.called);
+		// 	console.log(validate.isValidateableCommandWrapper);
+		// },
 
 		help: {
 			beforeEach() {

@@ -14,7 +14,7 @@ function writeConfigFile(config: Config) {
 	writeFileSync(dojoRcPath, JSON.stringify(config, null, 2));
 }
 
-function getConfigFile(): Config {
+export function getConfigFile(): Config {
 	const configExists = !!dojoRcPath && existsSync(dojoRcPath);
 	if (configExists) {
 		try {

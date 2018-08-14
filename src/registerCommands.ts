@@ -7,6 +7,7 @@ import { CommandError, CommandWrapper, GroupMap, CommandMap } from './interfaces
 import { formatHelp } from './help';
 import { createOptionValidator } from './validation';
 import { getCommand } from './command';
+import { isValidateableCommandWrapper, validateCommand } from './commands/validate';
 
 const requireOptions = {
 	demand: false,
@@ -135,11 +136,15 @@ function registerGroups(yargs: Argv, helper: HelperFactory, groupName: string, c
 					return Promise.resolve({});
 				}
 
-				const args = getOptions(
-					aliases,
-					helper.sandbox(groupName, defaultCommand.name).configuration.get(),
-					argv
-				);
+				const config = helper.sandbox(groupName, defaultCommand.name).configuration.get();
+				const args = getOptions(aliases, config, argv);
+
+				if (isValidateableCommandWrapper(defaultCommand)) {
+					if (!validateCommand(defaultCommand, config, true)) {
+						return;
+					}
+				}
+
 				return defaultCommand.run(helper.sandbox(groupName, defaultCommand.name), args).catch(reportError);
 			}
 		}
@@ -167,7 +172,16 @@ function registerCommands(yargs: Argv, helper: HelperFactory, groupName: string,
 					console.log(formatHelp(argv, groupMap));
 					return Promise.resolve({});
 				}
-				const args = getOptions(aliases, helper.sandbox(groupName, name).configuration.get(), argv);
+
+				const config = helper.sandbox(groupName, name).configuration.get();
+				const args = getOptions(aliases, config, argv);
+
+				if (isValidateableCommandWrapper(command)) {
+					if (!validateCommand(command, config, true)) {
+						return;
+					}
+				}
+
 				return run(helper.sandbox(groupName, name), args).catch(reportError);
 			}
 		);

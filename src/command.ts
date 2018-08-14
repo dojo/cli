@@ -15,7 +15,7 @@ export function initCommandLoader(searchPrefixes: string[]): (path: string) => C
 
 		try {
 			const command = convertModuleToCommand(module);
-			const { description, register, run, alias, eject, global = false } = command;
+			const { description, register, run, alias, eject, global = false, validate } = command;
 			//  derive the group and name from the module directory name, e.g. dojo-cli-group-name
 			const [, group, name] = <string[]>commandRegExp.exec(path);
 
@@ -29,7 +29,8 @@ export function initCommandLoader(searchPrefixes: string[]): (path: string) => C
 				global: group === 'create' && name === 'app' ? true : global,
 				run,
 				path,
-				eject
+				eject,
+				validate
 			};
 		} catch (err) {
 			throw new Error(`Path: ${path} returned module that does not satisfy the Command interface. ${err}`);

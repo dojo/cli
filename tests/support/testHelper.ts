@@ -16,11 +16,12 @@ export interface CommandWrapperConfig {
 	path?: string;
 	runs?: boolean;
 	eject?: boolean;
+	validate?: boolean;
 	installed?: boolean;
 	global?: boolean;
 }
 
-export function getGroupMap(groupDef: GroupDef, registerMock?: Function) {
+export function getGroupMap(groupDef: GroupDef, registerMock?: Function, validate?: () => void) {
 	const groupMap = new Map();
 	if (registerMock === undefined) {
 		registerMock = (compositeKey: string) => {
@@ -42,15 +43,19 @@ export function getGroupMap(groupDef: GroupDef, registerMock?: Function) {
 			const runSpy = spy(
 				() => (command.fails ? Promise.reject(new Error('test error message')) : Promise.resolve(compositeKey))
 			);
-			const commandWrapper = {
+			const commandWrapper: any = {
 				name: command.commandName,
 				group: group.groupName,
 				description: compositeKey,
 				register: registerMock!(compositeKey),
 				runSpy,
 				default: isDefault,
-				run: runSpy
+				run: runSpy,
+				validate: undefined
 			};
+			if (validate) {
+				commandWrapper.validate = validate;
+			}
 			isDefault = false;
 			commandMap.set(command.commandName, commandWrapper);
 		});
@@ -93,7 +98,8 @@ export function getCommandWrapperWithConfiguration(config: CommandWrapperConfig)
 		runs = false,
 		eject = false,
 		global = false,
-		installed = false
+		installed = false,
+		validate = false
 	} = config;
 
 	const commandWrapper: CommandWrapper = {
@@ -109,6 +115,10 @@ export function getCommandWrapperWithConfiguration(config: CommandWrapperConfig)
 
 	if (eject) {
 		commandWrapper.eject = stub().returns({});
+	}
+
+	if (validate) {
+		commandWrapper.validate = stub().returns([]);
 	}
 
 	return commandWrapper;

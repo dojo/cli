@@ -13,6 +13,7 @@ import './template';
 import './validation';
 import './updateNotifier';
 import './commands/eject';
+import './commands/validate';
 import './commands/init';
 import './commands/version';
 import './bin/dojo';
