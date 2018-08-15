@@ -28,7 +28,6 @@ describe('validate', () => {
 	let mockConfigurationHelper: any;
 	let mockValidate: any;
 	let consoleLogStub: any;
-	// let validateCommand: any;
 
 	const validateableCommandWrapper: ValidateableCommandWrapper = {
 		name: 'test',
@@ -305,9 +304,15 @@ describe('validate', () => {
 			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves(groupMap);
 			return moduleUnderTest.run(helper, {}).then(
 				() => {
-					assert.fail(null, null, 'should throw an error');
+					assert.equal(consoleLogStub.callCount, 1);
+					assert.equal(
+						consoleLogStub.getCall(0).args[0],
+						red(`A config was found, but it was not valid JSON`)
+					);
 				},
-				(error: { message: string }) => {}
+				(error: { message: string }) => {
+					assert.fail(null, null, 'should throw an error');
+				}
 			);
 		});
 

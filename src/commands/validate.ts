@@ -42,8 +42,12 @@ export function logNoConfig() {
 	console.log(yellow(`No config has been detected`));
 }
 
+export function logMalformedConfig() {
+	console.log(red(`A config was found, but it was not valid JSON`));
+}
+
 export function logEmptyConfig() {
-	console.log(yellow(`A config was found, but it had no properties`));
+	console.log(yellow(`A config was found, but it has no properties`));
 }
 
 export function logSchemaErrors(mismatch: string) {
@@ -112,10 +116,15 @@ export function validateCommand(command: ValidateableCommandWrapper, config: Con
 }
 
 function validateCommands(commands: Map<string, Map<string, CommandWrapper>>) {
-	const config = getConfigFile();
+	let config: any;
+	try {
+		config = getConfigFile();
+	} catch (e) {
+		logMalformedConfig();
+		return;
+	}
 	const noConfig = config === undefined;
 	const emptyConfig = typeof config === 'object' && Object.keys(config).length === 0;
-
 	if (noConfig) {
 		logNoConfig();
 		return;
@@ -133,7 +142,7 @@ function validateCommands(commands: Map<string, Map<string, CommandWrapper>>) {
 	let noMismatches = true;
 
 	[...toValidate].forEach((command) => {
-		noMismatches = validateCommand(command, config, false) && noMismatches;
+		noMismatches = validateCommand(command, config as Config, false) && noMismatches;
 	});
 
 	if (noMismatches) {
