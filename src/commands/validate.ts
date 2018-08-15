@@ -8,11 +8,13 @@ import { Validator } from 'jsonschema';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
-const { red, green } = chalk;
+const { red, green, yellow } = chalk;
 
 export const VALIDATION_FILENAME = 'rc-schema.json';
 
 export interface ValidateArgs extends Argv {}
+
+type ValidationErrors = string[];
 
 export interface ValidateableCommandWrapper extends CommandWrapper {
 	validate(helper: Helper): any;
@@ -36,25 +38,12 @@ export function loadValidationSchema(path: string) {
 	throw new Error(`Schema file does not exist on filesystem. Path tried was: ${path}`);
 }
 
-type ValidationErrors = string[];
+export function logNoConfig() {
+	console.log(yellow(`No config has been detected`));
+}
 
-export function validate(config: any, schema: any): ValidationErrors {
-	const validator = new Validator();
-	const result = validator.validate(config, schema);
-	let errors: any = [];
-
-	if (result.errors.length === 0) {
-		return errors;
-	}
-
-	errors = result.errors.map((err: any) => {
-		let message = err.stack;
-		message = message.replace(' enum ', ' expected ');
-		message = message.replace('instance.', 'config.');
-		return message;
-	});
-
-	return errors;
+export function logEmptyConfig() {
+	console.log(yellow(`A config was found, but it had no properties`));
 }
 
 export function logSchemaErrors(mismatch: string) {
@@ -73,6 +62,25 @@ export function getConfigPath(command: ValidateableCommandWrapper) {
 	return join(command.path, VALIDATION_FILENAME);
 }
 
+export function getValidationErrors(config: any, schema: any): ValidationErrors {
+	const validator = new Validator();
+	const result = validator.validate(config, schema);
+	let errors: any = [];
+
+	if (result.errors.length === 0) {
+		return errors;
+	}
+
+	errors = result.errors.map((err: any) => {
+		let message = err.stack;
+		message = message.replace(' enum ', ' expected ');
+		message = message.replace('instance.', 'config.');
+		return message;
+	});
+
+	return errors;
+}
+
 function createValidationCommandSet(commands: Map<string, Map<string, CommandWrapper>>) {
 	let toValidate = new Set<ValidateableCommandWrapper>();
 	commands.forEach((commandMap, group) => {
@@ -89,7 +97,7 @@ function createValidationCommandSet(commands: Map<string, Map<string, CommandWra
 export function validateCommand(command: ValidateableCommandWrapper, config: Config, silentSuccess: boolean): boolean {
 	const path = getConfigPath(command);
 	const schema = loadValidationSchema(path);
-	const mismatches = validate(config, schema);
+	const mismatches = getValidationErrors(config, schema);
 	let noMismatches = true;
 
 	if (mismatches.length) {
@@ -108,7 +116,11 @@ function validateCommands(commands: Map<string, Map<string, CommandWrapper>>) {
 	const noConfig = config === undefined;
 	const emptyConfig = typeof config === 'object' && Object.keys(config).length === 0;
 
-	if (noConfig || emptyConfig) {
+	if (noConfig) {
+		logNoConfig();
+		return;
+	} else if (emptyConfig) {
+		logEmptyConfig();
 		return;
 	}
 

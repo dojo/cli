@@ -5,11 +5,12 @@ import chalk from 'chalk';
 import { join, resolve as pathResolve } from 'path';
 import * as sinon from 'sinon';
 import {
-	validate,
-	// getConfigPath,
+	getValidationErrors,
+	getConfigPath,
 	ValidateableCommandWrapper,
-	isValidateableCommandWrapper
-	// VALIDATION_FILENAME
+	isValidateableCommandWrapper,
+	VALIDATION_FILENAME,
+	validateCommand
 } from '../../../src/commands/validate';
 
 import { CommandMap, CommandWrapper } from '../../../src/interfaces';
@@ -82,7 +83,6 @@ describe('validate', () => {
 		mockAllExternalCommands = mockModule.getMock('../allCommands');
 		mockConfigurationHelper = mockModule.getMock('../configurationHelper');
 		moduleUnderTest = mockModule.getModuleUnderTest().default;
-		// validateCommand = mockModule.getModuleUnderTest().validateCommand;
 		consoleLogStub = sandbox.stub(console, 'log');
 	});
 
@@ -97,15 +97,15 @@ describe('validate', () => {
 			expect(isValidateableCommandWrapper(noneValidateableCommandWrapper)).to.be.false;
 		});
 
-		// describe('getConfigPath', () => {
-		// 	const result = getConfigPath(validateableCommandWrapper);
-		// 	expect(result).to.equal(validateableCommandWrapper + VALIDATION_FILENAME);
-		// });
+		describe('getConfigPath', () => {
+			const result = getConfigPath(validateableCommandWrapper);
+			expect(result).to.equal(validateableCommandWrapper.path + VALIDATION_FILENAME);
+		});
 
-		describe('validate', () => {
-			it(`should have a validate if all object criteria are met`, () => {
-				assert(validate !== undefined);
-				expect(validate).to.not.be.undefined;
+		describe('getValidationErrors', () => {
+			it(`should return no errors if all object criteria are met`, () => {
+				assert(getValidationErrors !== undefined);
+				expect(getValidationErrors).to.not.be.undefined;
 				const mockSchema = {
 					type: 'object',
 					properties: {
@@ -115,13 +115,13 @@ describe('validate', () => {
 					},
 					required: ['command']
 				};
-				const errors = validate({ command: 'foo' }, mockSchema);
+				const errors = getValidationErrors({ command: 'foo' }, mockSchema);
 				expect(errors).to.be.lengthOf(0);
 			});
 
-			it(`nested properties in configs behave as expected`, () => {
-				assert(validate !== undefined);
-				expect(validate).to.not.be.undefined;
+			it(`errenous nested properties in configs behave as expected`, () => {
+				assert(getValidationErrors !== undefined);
+				expect(getValidationErrors).to.not.be.undefined;
 				const mockSchema = {
 					type: 'object',
 					properties: {
@@ -144,41 +144,38 @@ describe('validate', () => {
 						bar: 'foo'
 					}
 				};
-				const errors = validate(config, mockSchema);
+				const errors = getValidationErrors(config, mockSchema);
 				expect(errors).to.be.lengthOf(2);
 			});
 		});
 
-		// describe('validateCommand', () => {
-		// const config = {
-		// 	foo: {
-		// 		bar: 'foo'
-		// 	}
-		// };
-		// it(`should skip validating if not validateable command`, () => {
-		// 	expect(validateCommand).to.not.be.undefined;
-		// 	const mismatches = validateCommand(validateableCommandWrapper, config);
-		// 	expect(mismatches).to.be.true;
-		// });
-		// it(`should have a validate if all object criteria are met`, () => {
-		//     const validateCommand = moduleUnderTest.validateCommand;
-		//     expect(validateCommand).to.not.be.undefined;
-		//     moduleUnderTest.loadValidationSchema = sandbox.stub().returns({
-		// 		type: 'object',
-		// 		properties: {
-		// 			command: {
-		// 				type: 'string'
-		// 			}
-		// 		},
-		// 		required: ['command']
-		// 	});
-		// 	const mismatches = validateCommand(commandWrapper, );
-		// 	expect(mismatches).to.be.true;
-		// });
-		// });
+		describe('validateCommand', () => {
+			it(`should fail on validating a command with mismatching config and schema`, () => {
+				expect(validateCommand).to.not.be.undefined;
+				const config = {
+					foo: {
+						bar: 'foo'
+					}
+				};
+				const valid = validateCommand(validateableCommandWrapper, config, false);
+				expect(valid).to.be.false;
+			});
+
+			it(`should pass on validating a valid command`, () => {
+				expect(validateCommand).to.not.be.undefined;
+				const config = {
+					foo: {
+						bar: 'foobar'
+					}
+				};
+
+				const valid = validateCommand(validateableCommandWrapper, config, false);
+				expect(valid).to.be.true;
+			});
+		});
 	});
 
-	describe('command', () => {
+	describe('run command', () => {
 		it(`should never call validation logic with no config`, () => {
 			mockConfigurationHelper.getConfigFile = sandbox.stub().returns({});
 			mockValidate = mockModule.getModuleUnderTest();
