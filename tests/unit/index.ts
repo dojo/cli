@@ -4,6 +4,7 @@ const { assert } = intern.getPlugin('chai');
 import MockModule from '../support/MockModule';
 import * as sinon from 'sinon';
 import { join } from 'path';
+import chalk from 'chalk';
 
 describe('cli main module', () => {
 	let mockModule: MockModule;
@@ -15,6 +16,7 @@ describe('cli main module', () => {
 	let mockRegisterCommands: any;
 	let mergeStub: sinon.SinonStub;
 	let init: any;
+	let warnStub: sinon.SinonStub;
 
 	it('should run functions in order', () => {
 		describe('inner', () => {
@@ -25,6 +27,7 @@ describe('cli main module', () => {
 					'./updateNotifier',
 					'pkg-dir',
 					'yargs',
+					'fs',
 					'./allCommands',
 					'./registerCommands',
 					'./installableCommands'
@@ -50,6 +53,7 @@ describe('cli main module', () => {
 				});
 				mockRegisterCommands = mockModule.getMock('./registerCommands');
 				sandbox.stub(console, 'log');
+				warnStub = sandbox.stub(console, 'warn');
 				init = mockModule.getModuleUnderTest().init;
 			});
 
@@ -71,8 +75,28 @@ describe('cli main module', () => {
 					'should call register commands after commands have been merged'
 				);
 			});
+
+			it('warns the user if no package.json is present', async () => {
+				const mockFs = mockModule.getMock('fs');
+				mockFs.existsSync = sandbox.stub().returns(false);
+				await init();
+				assert.equal(
+					warnStub.firstCall.args[0],
+					chalk.yellow(
+						'Warning: a package.json file was not found and is expected for many Dojo CLI commands. You can initialise one by running'
+					)
+				);
+			});
+
+			it('does not warn the user if package.json is present', async () => {
+				const mockFs = mockModule.getMock('fs');
+				mockFs.existsSync = sandbox.stub().returns(true);
+				await init();
+				assert.isFalse(warnStub.called);
+			});
 		});
 	});
+
 	it('should catch runtime errors', () => {
 		describe('runtime error inner', () => {
 			const errMessage = 'ugh - oh noes';
@@ -88,6 +112,8 @@ describe('cli main module', () => {
 				mockUpdate = mockModule.getMock('./updateNotifier');
 				mockUpdate.default = sandbox.stub().throws(expectedError);
 				sandbox.stub(console, 'log');
+				sandbox.stub(console, 'error');
+				warnStub = sandbox.stub(console, 'warn');
 				init = mockModule.getModuleUnderTest().init;
 			});
 
@@ -101,8 +127,8 @@ describe('cli main module', () => {
 
 				assert.throw(mockUpdate.default, Error, errMessage);
 				assert.equal(
-					(console.log as sinon.SinonStub).args[0][0],
-					`Commands are not available: Error: ${errMessage}`
+					(console.error as sinon.SinonStub).args[0][0],
+					chalk.red(`Commands are not available: Error: ${errMessage}`)
 				);
 			});
 		});
