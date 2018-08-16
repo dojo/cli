@@ -148,7 +148,6 @@ function registerGroups(yargs: Argv, helper: HelperFactory, groupName: string, c
 						return;
 					}
 				}
-
 				return defaultCommand.run(helper.sandbox(groupName, defaultCommand.name), args).catch(reportError);
 			}
 		}

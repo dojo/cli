@@ -85,7 +85,7 @@ registerSuite('Configuration Helper', {
 					)
 				);
 			},
-			'Should return undefined config when no dojorc for commandName exists'() {
+			'Should return undefined command config when no dojorc config for command exists'() {
 				mockFs.existsSync.returns(false);
 				const config = configurationHelper.sandbox('testGroupName', 'testCommandName').get();
 				assert.isTrue(mockFs.readFileSync.notCalled);

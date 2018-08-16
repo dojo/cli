@@ -27,6 +27,7 @@ let consoleLogStub: SinonStub;
 let processExitStub: SinonStub;
 const errorMessage = 'test error message';
 let registerCommands: any;
+let validate: any;
 
 registerSuite('registerCommands', {
 	beforeEach() {
@@ -34,6 +35,9 @@ registerSuite('registerCommands', {
 		mockModule = new MockModule('../../src/registerCommands', require);
 		mockModule.dependencies(['./configurationHelper']);
 		mockModule.dependencies(['./help']);
+		mockModule.dependencies(['./commands/validate']);
+		validate = mockModule.getMock('./commands/validate');
+
 		registerCommands = mockModule.getModuleUnderTest().default;
 		yargsStub = getYargsStub();
 		groupMap = getGroupMap(groupDef);
@@ -76,16 +80,6 @@ registerSuite('registerCommands', {
 			registerCommands(yargsStub, groupMap);
 			assert.isTrue(yargsStub.option.called);
 		},
-		// 'Should call validate if validate command is associated with the command'() {
-		// 	groupMap = getGroupMap(groupDef, undefined, () => {});
-
-		// 	const validate = mockModule.getMock('./commands/validate');
-		// 	validate.isValidateableCommandWrapper.reset();
-		// 	registerCommands(yargsStub, groupMap);
-		// 	assert.isTrue(yargsStub.command.called);
-		// 	console.log(validate.isValidateableCommandWrapper);
-		// },
-
 		help: {
 			beforeEach() {
 				registerCommands(yargsStub, groupMap);
@@ -292,6 +286,48 @@ registerSuite('registerCommands', {
 					const { run } = groupMap.get('group1').get('command1');
 					yargsStub.command.firstCall.args[3]({ _: ['group', 'command'] });
 					assert.isFalse(run.calledOnce);
+				}
+			}
+		},
+		'validating command': {
+			beforeEach() {
+				groupMap = getGroupMap(groupDef);
+				consoleErrorStub = stub(console, 'error');
+			},
+
+			afterEach() {
+				consoleErrorStub.restore();
+			},
+
+			tests: {
+				'Should run isValidateableCommandWrapper'() {
+					validate.isValidateableCommandWrapper = sinon.stub().returns(false);
+					registerCommands(yargsStub, groupMap);
+
+					const { run } = groupMap.get('group1').get('command1');
+					yargsStub.command.firstCall.args[3]({ _: ['group'] });
+					assert.isTrue(run.calledOnce);
+					assert.isTrue(validate.isValidateableCommandWrapper.called);
+				},
+				'Should run validateCommand and continue if valid'() {
+					validate.isValidateableCommandWrapper = sinon.stub().returns(true);
+					validate.validateCommand = sinon.stub().returns(true);
+					registerCommands(yargsStub, groupMap);
+
+					const { run } = groupMap.get('group1').get('command1');
+					yargsStub.command.firstCall.args[3]({ _: ['group'] });
+					assert.isTrue(run.calledOnce);
+					assert.isTrue(validate.validateCommand.called);
+				},
+				'Should run validateCommand stop if invalid'() {
+					validate.isValidateableCommandWrapper = sinon.stub().returns(true);
+					validate.validateCommand = sinon.stub().returns(false);
+					registerCommands(yargsStub, groupMap);
+
+					const { run } = groupMap.get('group1').get('command1');
+					yargsStub.command.firstCall.args[3]({ _: ['group'] });
+					assert.isFalse(run.calledOnce);
+					assert.isTrue(validate.validateCommand.called);
 				}
 			}
 		},
