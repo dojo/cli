@@ -52,7 +52,7 @@ class SingleCommandConfigurationHelper implements ConfigurationHelper {
 	get(commandName: string): Config;
 	get(commandName?: string): Config {
 		const config = getConfigFile() || {};
-		return config[this._configurationKey] || {};
+		return config[this._configurationKey];
 	}
 
 	/**

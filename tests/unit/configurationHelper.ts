@@ -89,7 +89,7 @@ registerSuite('Configuration Helper', {
 				mockFs.existsSync.returns(false);
 				const config = configurationHelper.sandbox('testGroupName', 'testCommandName').get();
 				assert.isTrue(mockFs.readFileSync.notCalled);
-				assert.deepEqual(config, {});
+				assert.equal(config, undefined);
 			},
 			'Should return existing config when a dojorc entry exists'() {
 				const existingConfig = { existing: 'config' };
@@ -139,11 +139,11 @@ registerSuite('Configuration Helper', {
 		},
 
 		tests: {
-			'Should return empty object when pkgdir returns null'() {
+			'Should return undefined config when pkgdir returns null'() {
 				const config = configurationHelper.sandbox('testGroupName', 'testCommandName').get();
 				assert.isFalse(mockFs.readFileSync.called);
 				assert.isFalse(mockPath.join.called);
-				assert.deepEqual(config, {});
+				assert.equal(config, undefined);
 			},
 			'Should warn user when config save called outside of a pkgdir'() {
 				configurationHelper.sandbox('testGroupName', 'testCommandName').set({});

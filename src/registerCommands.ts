@@ -51,6 +51,10 @@ function userSetOption(option: string, aliases: Aliases) {
 }
 
 function getRcOption(rcConfig: any, option: string, aliases: Aliases) {
+	if (rcConfig === undefined) {
+		return undefined;
+	}
+
 	if (rcConfig[option] !== undefined) {
 		return option;
 	}

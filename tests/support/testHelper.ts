@@ -118,7 +118,7 @@ export function getCommandWrapperWithConfiguration(config: CommandWrapperConfig)
 	}
 
 	if (validate) {
-		commandWrapper.validate = stub().returns([]);
+		commandWrapper.validate = true;
 	}
 
 	return commandWrapper;

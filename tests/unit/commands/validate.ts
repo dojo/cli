@@ -37,7 +37,7 @@ describe('validate', () => {
 		global: false,
 		installed: true,
 		default: false,
-		validate: () => {},
+		validate: true,
 		register: () => {},
 		run: () => {
 			return Promise.resolve();
@@ -114,7 +114,7 @@ describe('validate', () => {
 					},
 					required: ['command']
 				};
-				const errors = getValidationErrors({ command: 'foo' }, mockSchema);
+				const errors = getValidationErrors('create-app', { command: 'foo' }, mockSchema);
 				expect(errors).to.be.lengthOf(0);
 			});
 
@@ -143,7 +143,7 @@ describe('validate', () => {
 						bar: 'foo'
 					}
 				};
-				const errors = getValidationErrors(config, mockSchema);
+				const errors = getValidationErrors('create-app', config, mockSchema);
 				expect(errors).to.be.lengthOf(2);
 			});
 		});
@@ -339,7 +339,10 @@ describe('validate', () => {
 			return moduleUnderTest.run(helper, {}).then(
 				() => {
 					assert.equal(consoleLogStub.callCount, 1);
-					assert.isTrue(consoleLogStub.getCall(0).calledWith(red(`config.foo is not of a type(s) object`)));
+					assert.equal(
+						consoleLogStub.getCall(0).args[0],
+						red(`command-test config.foo is not of a type(s) object`)
+					);
 				},
 				(error: { message: string }) => {
 					assert.fail(
@@ -377,12 +380,11 @@ describe('validate', () => {
 				() => {
 					assert.isTrue(consoleLogStub.called);
 					assert.equal(consoleLogStub.callCount, 2);
-					assert.isTrue(
-						consoleLogStub.getCall(0).calledWith(green(`test command config validation was successful!`))
+					assert.equal(
+						consoleLogStub.getCall(0).args[0],
+						green(`command-test config validation was successful!`)
 					);
-					assert.isTrue(
-						consoleLogStub.getCall(1).calledWith(green(`There were no issues with your config!`))
-					);
+					assert.equal(consoleLogStub.getCall(1).args[0], green(`There were no issues with your config!`));
 				},
 				(error: { message: string }) => {
 					assert.fail(
