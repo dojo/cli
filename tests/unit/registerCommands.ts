@@ -37,7 +37,6 @@ registerSuite('registerCommands', {
 		mockModule.dependencies(['./help']);
 		mockModule.dependencies(['./commands/validate']);
 		validate = mockModule.getMock('./commands/validate');
-
 		registerCommands = mockModule.getModuleUnderTest().default;
 		yargsStub = getYargsStub();
 		groupMap = getGroupMap(groupDef);
@@ -131,13 +130,11 @@ registerSuite('registerCommands', {
 						};
 					}
 				};
-
 				registerCommands(yargsStub, groupMap);
 				yargsStub.command.secondCall.args[3]({ f: undefined });
 				assert.isTrue(run.calledOnce);
 				assert.deepEqual(run.firstCall.args[1], { foo: 'bar', f: 'bar', fo: 'bar' });
 			},
-
 			'command line args should override dojo rc config'() {
 				process.argv = ['-foo'];
 				const { run } = groupMap.get('group1').get('command1');
@@ -152,13 +149,11 @@ registerSuite('registerCommands', {
 						};
 					}
 				};
-
 				registerCommands(yargsStub, groupMap);
 				yargsStub.command.secondCall.args[3]({ foo: 'foo' });
 				assert.isTrue(run.calledOnce);
 				assert.deepEqual(run.firstCall.args[1], { foo: 'foo' });
 			},
-
 			'default command line args should not override dojo rc config'() {
 				groupMap = getGroupMap(groupDef, (compositeKey: string) => {
 					return (func: Function) => {
@@ -178,13 +173,11 @@ registerSuite('registerCommands', {
 						};
 					}
 				};
-
 				registerCommands(yargsStub, groupMap);
 				yargsStub.command.secondCall.args[3]({ foo: 'foo', fo: 'foo', f: 'foo' });
 				assert.isTrue(run.calledOnce);
 				assert.deepEqual(run.firstCall.args[1], { foo: 'bar', fo: 'bar', f: 'bar' });
 			},
-
 			'command line options aliases should override dojo rc config'() {
 				process.argv = ['-f'];
 				yargsStub = getYargsStub();
@@ -206,13 +199,11 @@ registerSuite('registerCommands', {
 						};
 					}
 				};
-
 				registerCommands(yargsStub, groupMap);
 				yargsStub.command.secondCall.args[3]({ f: 'foo', foo: 'foo' });
 				assert.isTrue(run.calledOnce);
 				assert.deepEqual(run.firstCall.args[1], { foo: 'foo', f: 'foo' });
 			},
-
 			'should use rc config value for option aliases'() {
 				yargsStub = getYargsStub({ foo: ['f'], f: ['foo'] });
 				groupMap = getGroupMap(groupDef, (compositeKey: string) => {
@@ -233,13 +224,11 @@ registerSuite('registerCommands', {
 						};
 					}
 				};
-
 				registerCommands(yargsStub, groupMap);
 				yargsStub.command.secondCall.args[3]({ f: 'foo', foo: 'foo' });
 				assert.isTrue(run.calledOnce);
 				assert.deepEqual(run.firstCall.args[1], { foo: 'bar', f: 'bar' });
 			},
-
 			'should use default command line arguments when not provided in config'() {
 				yargsStub = getYargsStub({ foo: ['f'], f: ['foo'] });
 				const { run } = groupMap.get('group1').get('command1');
@@ -254,7 +243,6 @@ registerSuite('registerCommands', {
 						};
 					}
 				};
-
 				registerCommands(yargsStub, groupMap);
 				yargsStub.command.secondCall.args[3]({ f: 'foo', foo: 'foo' });
 				assert.isTrue(run.calledOnce);
@@ -293,6 +281,8 @@ registerSuite('registerCommands', {
 			beforeEach() {
 				groupMap = getGroupMap(groupDef);
 				consoleErrorStub = stub(console, 'error');
+				validate.isValidateableCommandWrapper.reset();
+				validate.validateCommand.reset();
 			},
 
 			afterEach() {
@@ -301,45 +291,58 @@ registerSuite('registerCommands', {
 
 			tests: {
 				'Should run isValidateableCommandWrapper'() {
+					groupMap = getGroupMap(groupDef, () => () => {}, true);
+					const registerCommands = mockModule.getModuleUnderTest().default;
+					validate.isValidateableCommandWrapper = sinon.stub().returns(true);
+					registerCommands(yargsStub, groupMap);
+					yargsStub.command.secondCall.args[3]({});
+					assert.isTrue(validate.isValidateableCommandWrapper.called);
+					assert.isTrue(validate.isValidateableCommandWrapper.returned(true));
+				},
+				'Should run isValidateableCommandWrapper and not validate command if it is false'() {
+					groupMap = getGroupMap(groupDef, () => () => {}, true);
+					const registerCommands = mockModule.getModuleUnderTest().default;
 					validate.isValidateableCommandWrapper = sinon.stub().returns(false);
 					registerCommands(yargsStub, groupMap);
-
-					const { run } = groupMap.get('group1').get('command1');
-					yargsStub.command.firstCall.args[3]({ _: ['group'] });
-					assert.isTrue(run.calledOnce);
+					yargsStub.command.secondCall.args[3]({});
 					assert.isTrue(validate.isValidateableCommandWrapper.called);
+					assert.isTrue(validate.isValidateableCommandWrapper.returned(false));
+					assert.isFalse(validate.validateCommand.called);
 				},
 				'Should run validateCommand and continue if valid'() {
+					groupMap = getGroupMap(groupDef, () => () => {}, true);
+					const { run } = groupMap.get('group1').get('command1');
+					const registerCommands = mockModule.getModuleUnderTest().default;
 					validate.isValidateableCommandWrapper = sinon.stub().returns(true);
 					validate.validateCommand = sinon.stub().returns(true);
 					registerCommands(yargsStub, groupMap);
+					yargsStub.command.secondCall.args[3]({});
 
-					const { run } = groupMap.get('group1').get('command1');
-					yargsStub.command.firstCall.args[3]({ _: ['group'] });
-					assert.isTrue(run.calledOnce);
+					assert.isTrue(validate.isValidateableCommandWrapper.called);
+					assert.isTrue(validate.isValidateableCommandWrapper.returned(true));
 					assert.isTrue(validate.validateCommand.called);
+					assert.isTrue(validate.validateCommand.returned(true));
+					assert.isTrue(run.calledOnce);
 				},
 				'Should run validateCommand stop if invalid'() {
+					groupMap = getGroupMap(groupDef, () => () => {}, true);
+					const { run } = groupMap.get('group1').get('command1');
+					const registerCommands = mockModule.getModuleUnderTest().default;
 					validate.isValidateableCommandWrapper = sinon.stub().returns(true);
 					validate.validateCommand = sinon.stub().returns(false);
 					registerCommands(yargsStub, groupMap);
+					yargsStub.command.secondCall.args[3]({});
 
-					const { run } = groupMap.get('group1').get('command1');
-					yargsStub.command.firstCall.args[3]({ _: ['group'] });
-					assert.isFalse(run.calledOnce);
+					assert.isTrue(validate.isValidateableCommandWrapper.called);
+					assert.isTrue(validate.isValidateableCommandWrapper.returned(true));
 					assert.isTrue(validate.validateCommand.called);
+					assert.isTrue(validate.validateCommand.returned(false));
+					assert.isFalse(run.calledOnce);
 				}
 			}
 		},
 		'handling errors': {
 			beforeEach() {
-				groupMap = getGroupMap([
-					{
-						groupName: 'group1',
-						commands: [{ commandName: 'command1', fails: true }]
-					}
-				]);
-				registerCommands(yargsStub, groupMap);
 				consoleErrorStub = stub(console, 'error');
 			},
 
@@ -349,15 +352,41 @@ registerSuite('registerCommands', {
 
 			tests: {
 				async 'Should show error message if the run command rejects'() {
+					groupMap = getGroupMap([
+						{
+							groupName: 'group1',
+							commands: [{ commandName: 'command1', fails: true }]
+						}
+					]);
+					registerCommands(yargsStub, groupMap);
 					await yargsStub.command.firstCall.args[3]({ _: ['group'] });
 					assert.isTrue(consoleErrorStub.calledOnce);
 					assert.isTrue(consoleErrorStub.firstCall.calledWithMatch(errorMessage));
 					assert.isTrue(processExitStub.called);
 				},
 				async 'Should exit process with exitCode of 1 when no exitCode is returned'() {
+					groupMap = getGroupMap([
+						{
+							groupName: 'group1',
+							commands: [{ commandName: 'command1', fails: true }]
+						}
+					]);
+					registerCommands(yargsStub, groupMap);
 					await yargsStub.command.firstCall.args[3]({ _: ['group'] });
 					assert.isTrue(processExitStub.calledOnce);
 					assert.isTrue(processExitStub.calledWith(1));
+				},
+				async 'Should exit process with passed exit code'() {
+					groupMap = getGroupMap([
+						{
+							groupName: 'group1',
+							commands: [{ commandName: 'command1', fails: true, exitCode: 100 }]
+						}
+					]);
+					registerCommands(yargsStub, groupMap);
+					await yargsStub.command.firstCall.args[3]({ _: ['group'] });
+					assert.isTrue(processExitStub.calledOnce);
+					assert.isTrue(processExitStub.calledWith(100));
 				}
 			}
 		}

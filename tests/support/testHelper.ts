@@ -6,6 +6,7 @@ export type GroupDef = {
 	commands: {
 		commandName: string;
 		fails?: boolean;
+		exitCode?: number;
 	}[];
 }[];
 
@@ -21,7 +22,7 @@ export interface CommandWrapperConfig {
 	global?: boolean;
 }
 
-export function getGroupMap(groupDef: GroupDef, registerMock?: Function, validate?: () => void) {
+export function getGroupMap(groupDef: GroupDef, registerMock?: Function, validate?: boolean) {
 	const groupMap = new Map();
 	if (registerMock === undefined) {
 		registerMock = (compositeKey: string) => {
@@ -40,9 +41,11 @@ export function getGroupMap(groupDef: GroupDef, registerMock?: Function, validat
 		}
 		group.commands.forEach((command) => {
 			const compositeKey = `${group.groupName}-${command.commandName}`;
-			const runSpy = spy(
-				() => (command.fails ? Promise.reject(new Error('test error message')) : Promise.resolve(compositeKey))
-			);
+			const error = new Error('test error message');
+			if (command.exitCode) {
+				(error as any).exitCode = command.exitCode;
+			}
+			const runSpy = spy(() => (command.fails ? Promise.reject(error) : Promise.resolve(compositeKey)));
 			const commandWrapper: any = {
 				name: command.commandName,
 				group: group.groupName,
