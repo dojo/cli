@@ -7,7 +7,7 @@ import chalk from 'chalk';
 
 const pkgDir = require('pkg-dir');
 const noPackageWarning =
-	chalk.yellow(`A root `) +
+	chalk.yellow(`Warning: A root `) +
 	chalk.whiteBright.bold('package.json ') +
 	chalk.yellow(
 		`was not found; this directory will be used for the root for your Dojo project. It is strongly recommended you create one by running `

@@ -60,7 +60,7 @@ describe('init command', () => {
 		assert.isTrue(warnStub.calledOnce);
 		assert.isTrue(
 			warnStub.calledWith(
-				chalk.yellow(`A root `) +
+				chalk.yellow(`Warning: A root `) +
 					chalk.whiteBright.bold('package.json ') +
 					chalk.yellow(
 						`was not found; this directory will be used for the root for your Dojo project. It is strongly recommended you create one by running `
