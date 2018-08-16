@@ -10,8 +10,7 @@ import {
 	ValidateableCommandWrapper,
 	isValidateableCommandWrapper,
 	VALIDATION_FILENAME,
-	validateCommand,
-	createValidationCommandSet
+	validateCommand
 } from '../../../src/commands/validate';
 
 import { CommandMap, CommandWrapper } from '../../../src/interfaces';
@@ -105,21 +104,6 @@ describe('validate', () => {
 			expect(result).to.equal(validationFile);
 		});
 
-		describe('createValidationCommandSet', () => {
-			const installedCommandWrapper = getCommandWrapperWithConfiguration({
-				group: 'command',
-				name: 'test',
-				validate: true
-			});
-			const commandMap = new Map<string, CommandWrapper>([['command', installedCommandWrapper]]);
-			const groupMap = new Map([['test', commandMap]]);
-			const result = createValidationCommandSet(groupMap);
-			assert.deepEqual(
-				result,
-				new Set<ValidateableCommandWrapper>([installedCommandWrapper as ValidateableCommandWrapper])
-			);
-		});
-
 		describe('getValidationErrors', () => {
 			it(`should return no errors if all object criteria are met`, () => {
 				assert(getValidationErrors !== undefined);
@@ -200,12 +184,36 @@ describe('validate', () => {
 	});
 
 	describe('run command', () => {
-		it(`should return no validatable commands`, () => {
+		it(`should return no validatable commands with no commands`, () => {
 			mockConfigurationHelper.getConfigFile = sandbox.stub().returns({ foo: 'bar' });
 
 			const commandMap: CommandMap = new Map<string, CommandWrapper>([]);
 			const groupMap = new Map([['test', commandMap]]);
 
+			const helper = getHelper();
+			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves(groupMap);
+			return moduleUnderTest.run(helper, {}).then(
+				() => {
+					assert.equal(
+						consoleLogStub.getCall(0).args[0],
+						green(`There were no commands to validate against`)
+					);
+				},
+				(error: { message: string }) => {
+					assert.fail(null, null, 'no config route should be taken which should be error free');
+				}
+			);
+		});
+
+		it(`should return no validatable commands with no validatable commands`, () => {
+			mockConfigurationHelper.getConfigFile = sandbox.stub().returns({ foo: 'bar' });
+			const installedCommandWrapper = getCommandWrapperWithConfiguration({
+				group: 'command',
+				name: 'test',
+				validate: false
+			});
+			const commandMap: CommandMap = new Map<string, CommandWrapper>([['command', installedCommandWrapper]]);
+			const groupMap = new Map([['test', commandMap]]);
 			const helper = getHelper();
 			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves(groupMap);
 			return moduleUnderTest.run(helper, {}).then(
