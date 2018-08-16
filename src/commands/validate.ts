@@ -109,12 +109,7 @@ export function validateCommand(
 ): boolean {
 	const path = getConfigPath(command);
 	const schema = loadValidationSchema(path);
-	let commandKey;
-	if (command.group) {
-		commandKey = command.group + '-' + command.name;
-	} else {
-		commandKey = command.name;
-	}
+	const commandKey = command.group + '-' + command.name; // group and name are required properties
 
 	if (commandConfig === undefined) {
 		logSchemaErrors(`.dojorc config does not have the top level command property '${commandKey}'`);

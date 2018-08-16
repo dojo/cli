@@ -17,7 +17,7 @@ import { CommandMap, CommandWrapper } from '../../../src/interfaces';
 import MockModule from '../../support/MockModule';
 import { getCommandWrapperWithConfiguration } from '../../support/testHelper';
 
-const { green, red } = chalk;
+const { green, red, yellow } = chalk;
 
 describe('validate', () => {
 	const validatePackagePath = join(pathResolve(__dirname), '../../support/validate');
@@ -160,6 +160,12 @@ describe('validate', () => {
 				expect(valid).to.be.false;
 			});
 
+			it(`should fail on validating a command with undefined config`, () => {
+				expect(validateCommand).to.not.be.undefined;
+				const valid = validateCommand(validateableCommandWrapper, undefined, false);
+				expect(valid).to.be.false;
+			});
+
 			it(`should pass on validating a valid command`, () => {
 				expect(validateCommand).to.not.be.undefined;
 				const config = {
@@ -175,6 +181,27 @@ describe('validate', () => {
 	});
 
 	describe('run command', () => {
+		it(`should return no validatable commands`, () => {
+			mockConfigurationHelper.getConfigFile = sandbox.stub().returns({ foo: 'bar' });
+
+			const commandMap: CommandMap = new Map<string, CommandWrapper>([]);
+			const groupMap = new Map([['test', commandMap]]);
+
+			const helper = getHelper();
+			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves(groupMap);
+			return moduleUnderTest.run(helper, {}).then(
+				() => {
+					assert.equal(
+						consoleLogStub.getCall(0).args[0],
+						green(`There were no commands to validate against`)
+					);
+				},
+				(error: { message: string }) => {
+					assert.fail(null, null, 'no config route should be taken which should be error free');
+				}
+			);
+		});
+
 		it(`should never call validation logic with no config`, () => {
 			mockConfigurationHelper.getConfigFile = sandbox.stub().returns({});
 			mockValidate = mockModule.getModuleUnderTest();
@@ -192,7 +219,63 @@ describe('validate', () => {
 			const helper = getHelper();
 			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves(groupMap);
 			return moduleUnderTest.run(helper, {}).then(
+				() => {},
+				(error: { message: string }) => {
+					assert.fail(null, null, 'no config route should be taken which should be error free');
+				}
+			);
+		});
+
+		it(`should call no config found if config is undefined`, () => {
+			mockConfigurationHelper.getConfigFile = sandbox.stub().returns(undefined);
+			mockValidate = mockModule.getModuleUnderTest();
+			mockValidate.validate = sandbox.stub().returns([]);
+
+			const installedCommandWrapper = getCommandWrapperWithConfiguration({
+				group: 'command',
+				name: 'test',
+				validate: true
+			});
+
+			const commandMap: CommandMap = new Map<string, CommandWrapper>([['command', installedCommandWrapper]]);
+			const groupMap = new Map([['test', commandMap]]);
+
+			const helper = getHelper();
+			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves(groupMap);
+			return moduleUnderTest.run(helper, {}).then(
 				() => {
+					assert.equal(consoleLogStub.getCall(0).args[0], yellow(`No config has been detected`));
+					assert.isTrue(mockConfigurationHelper.getConfigFile.called);
+					assert.isFalse(mockValidate.validate.called);
+				},
+				(error: { message: string }) => {
+					assert.fail(null, null, 'no config route should be taken which should be error free');
+				}
+			);
+		});
+
+		it(`should never call validation logic with no config, should log  no config properties found`, () => {
+			mockConfigurationHelper.getConfigFile = sandbox.stub().returns({});
+			mockValidate = mockModule.getModuleUnderTest();
+			mockValidate.validate = sandbox.stub().returns([]);
+
+			const installedCommandWrapper = getCommandWrapperWithConfiguration({
+				group: 'command',
+				name: 'test',
+				validate: true
+			});
+
+			const commandMap: CommandMap = new Map<string, CommandWrapper>([['command', installedCommandWrapper]]);
+			const groupMap = new Map([['test', commandMap]]);
+
+			const helper = getHelper();
+			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves(groupMap);
+			return moduleUnderTest.run(helper, {}).then(
+				() => {
+					assert.equal(
+						consoleLogStub.getCall(0).args[0],
+						yellow(`A config was found, but it has no properties`)
+					);
 					assert.isTrue(mockConfigurationHelper.getConfigFile.called);
 					assert.isFalse(mockValidate.validate.called);
 				},
