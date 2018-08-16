@@ -18,6 +18,7 @@ import MockModule from '../../support/MockModule';
 import { getCommandWrapperWithConfiguration } from '../../support/testHelper';
 
 const { green, red, yellow } = chalk;
+let validationFile: string;
 
 describe('validate', () => {
 	const validatePackagePath = join(pathResolve(__dirname), '../../support/validate');
@@ -33,7 +34,7 @@ describe('validate', () => {
 		name: 'test',
 		description: 'test command',
 		group: 'testgroup',
-		path: 'tests/support/validate/',
+		path: pathResolve('tests', 'support', 'validate'),
 		global: false,
 		installed: true,
 		default: false,
@@ -44,11 +45,13 @@ describe('validate', () => {
 		}
 	};
 
+	validationFile = join(validateableCommandWrapper.path, VALIDATION_FILENAME);
+
 	const noneValidateableCommandWrapper: CommandWrapper = {
 		name: 'test',
 		description: 'test command',
 		group: 'testgroup',
-		path: 'tests/support/validate/',
+		path: pathResolve('tests', 'support', 'validate'),
 		global: false,
 		installed: true,
 		default: false,
@@ -98,7 +101,7 @@ describe('validate', () => {
 
 		describe('getConfigPath', () => {
 			const result = getConfigPath(validateableCommandWrapper);
-			expect(result).to.equal(validateableCommandWrapper.path + VALIDATION_FILENAME);
+			expect(result).to.equal(validationFile);
 		});
 
 		describe('getValidationErrors', () => {
