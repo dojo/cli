@@ -52,6 +52,18 @@ registerSuite('Configuration Helper', {
 					JSON.stringify({ 'testGroupName-testCommandName': newConfig }, null, 2)
 				);
 			},
+			'Should write new config to file when save called without commandName'() {
+				const newConfig = { foo: 'bar' };
+				mockFs.readFileSync = sinon.stub().returns(JSON.stringify({ testGroupName: {} }));
+				configurationHelper.sandbox('testGroupName').set(newConfig);
+
+				assert.isTrue(mockFs.writeFileSync.calledOnce);
+				assert.equal(mockFs.writeFileSync.firstCall.args[0], dojoRcPath);
+				assert.equal(
+					mockFs.writeFileSync.firstCall.args[1],
+					JSON.stringify({ testGroupName: newConfig }, null, 2)
+				);
+			},
 			'Should merge new config with old when save called'() {
 				const newConfig = { foo: 'bar' };
 				const existingConfig = { existing: 'config' };
@@ -65,6 +77,20 @@ registerSuite('Configuration Helper', {
 						null,
 						2
 					)
+				);
+			},
+			'Should write new config when one does not exist'() {
+				mockFs.existsSync.returns(false);
+				assert.isTrue(mockFs.readFileSync.notCalled);
+
+				const newConfig = { foo: 'bar' };
+				configurationHelper.sandbox('testGroupName', 'testCommandName').set(newConfig);
+
+				assert.isTrue(mockFs.writeFileSync.calledOnce);
+				assert.equal(mockFs.writeFileSync.firstCall.args[0], dojoRcPath);
+				assert.equal(
+					mockFs.writeFileSync.firstCall.args[1],
+					JSON.stringify({ 'testGroupName-testCommandName': newConfig }, null, 2)
 				);
 			},
 			'Should merge new commandNames with existing command config when save called'() {

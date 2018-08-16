@@ -10,7 +10,8 @@ import {
 	ValidateableCommandWrapper,
 	isValidateableCommandWrapper,
 	VALIDATION_FILENAME,
-	validateCommand
+	validateCommand,
+	createValidationCommandSet
 } from '../../../src/commands/validate';
 
 import { CommandMap, CommandWrapper } from '../../../src/interfaces';
@@ -102,6 +103,21 @@ describe('validate', () => {
 		describe('getConfigPath', () => {
 			const result = getConfigPath(validateableCommandWrapper);
 			expect(result).to.equal(validationFile);
+		});
+
+		describe('createValidationCommandSet', () => {
+			const installedCommandWrapper = getCommandWrapperWithConfiguration({
+				group: 'command',
+				name: 'test',
+				validate: true
+			});
+			const commandMap = new Map<string, CommandWrapper>([['command', installedCommandWrapper]]);
+			const groupMap = new Map([['test', commandMap]]);
+			const result = createValidationCommandSet(groupMap);
+			assert.deepEqual(
+				result,
+				new Set<ValidateableCommandWrapper>([installedCommandWrapper as ValidateableCommandWrapper])
+			);
 		});
 
 		describe('getValidationErrors', () => {
