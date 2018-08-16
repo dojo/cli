@@ -3,11 +3,14 @@ const { assert } = intern.getPlugin('chai');
 
 import MockModule from '../../support/MockModule';
 import * as sinon from 'sinon';
+import chalk from 'chalk';
 
 describe('init command', () => {
 	let mockModule: MockModule;
 	let sandbox: sinon.SinonSandbox;
 	let fs: any;
+	let pkgDir: any;
+	let warnStub: any;
 
 	beforeEach(() => {
 		sandbox = sinon.sandbox.create();
@@ -15,8 +18,9 @@ describe('init command', () => {
 		mockModule.dependencies(['fs', 'pkg-dir', '../allCommands']);
 
 		sandbox.stub(console, 'log');
+		warnStub = sandbox.stub(console, 'warn');
 
-		const pkgDir = mockModule.getMock('pkg-dir');
+		pkgDir = mockModule.getMock('pkg-dir');
 		pkgDir.ctor.sync = sandbox.stub().returns('./');
 
 		fs = mockModule.getMock('fs');
@@ -45,6 +49,25 @@ describe('init command', () => {
 	afterEach(() => {
 		sandbox.restore();
 		mockModule.destroy();
+	});
+
+	it('shows a warning if no package.json file is found', async () => {
+		pkgDir.ctor.sync = sandbox.stub().returns(undefined);
+		fs.readFileSync = sandbox.stub().returns(undefined);
+		const moduleUnderTest = mockModule.getModuleUnderTest().default;
+		await moduleUnderTest.run();
+		assert.isTrue(pkgDir.ctor.sync.calledOnce);
+		assert.isTrue(warnStub.calledOnce);
+		assert.isTrue(
+			warnStub.calledWith(
+				chalk.yellow(`A root `) +
+					chalk.whiteBright.bold('package.json ') +
+					chalk.yellow(
+						`was not found; this directory will be used for the root for your Dojo project. It is strongly recommended you create one by running `
+					) +
+					chalk.whiteBright.bold('npm init')
+			)
+		);
 	});
 
 	it('creates a .dojorc with the available commands', async () => {
