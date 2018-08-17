@@ -10,7 +10,7 @@ import { join } from 'path';
 
 const { red, green, yellow } = chalk;
 
-export const VALIDATION_FILENAME = 'rc-schema.json';
+export const VALIDATION_FILENAME = 'command-schema.json';
 
 export interface ValidateArgs extends Argv {}
 
