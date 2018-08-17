@@ -139,7 +139,6 @@ function registerGroups(yargs: Argv, helper: HelperFactory, groupName: string, c
 					console.log(formatHelp(argv, groupMap));
 					return Promise.resolve({});
 				}
-
 				const config = helper.sandbox(groupName, defaultCommand.name).configuration.get();
 				const args = getOptions(aliases, config, argv);
 
