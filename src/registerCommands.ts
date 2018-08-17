@@ -118,12 +118,10 @@ function registerGroups(yargs: Argv, helper: HelperFactory, groupName: string, c
 		groupName,
 		false,
 		(subYargs: Argv) => {
-			if (defaultCommand) {
-				defaultCommand.register((key: string, options: Options) => {
-					aliases = parseAliases(aliases, key, options.alias);
-					subYargs.option(key, { ...options, ...requireOptions });
-				}, helper.sandbox(groupName, defaultCommand.name));
-			}
+			defaultCommand.register((key: string, options: Options) => {
+				aliases = parseAliases(aliases, key, options.alias);
+				subYargs.option(key, { ...options, ...requireOptions });
+			}, helper.sandbox(groupName, defaultCommand.name));
 
 			registerCommands(subYargs, helper, groupName, commandMap);
 			return subYargs

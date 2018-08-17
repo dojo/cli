@@ -109,7 +109,6 @@ registerSuite('registerCommands', {
 				}
 			}
 		},
-
 		'command arguments': {
 			'pass dojo rc config as run arguments and expand to all aliases'() {
 				groupMap = getGroupMap(groupDef, (compositeKey: string) => {
@@ -274,6 +273,24 @@ registerSuite('registerCommands', {
 					const { run } = groupMap.get('group1').get('command1');
 					yargsStub.command.firstCall.args[3]({ _: ['group', 'command'] });
 					assert.isFalse(run.calledOnce);
+				},
+				'Should run validateable command when yargs called'() {
+					const { run } = groupMap.get('group1').get('command1');
+					validate.isValidateableCommandWrapper = sinon.stub().returns(true);
+					validate.validateCommand = sinon.stub().returns(true);
+					yargsStub.command.firstCall.args[3]({ _: ['group'] });
+					assert.isTrue(validate.isValidateableCommandWrapper.calledOnce);
+					assert.isTrue(validate.validateCommand.calledOnce);
+					assert.isTrue(run.calledOnce);
+				},
+				'Should not run validateable command when yargs called with failing command'() {
+					const { run } = groupMap.get('group1').get('command1');
+					validate.isValidateableCommandWrapper = sinon.stub().returns(true);
+					validate.validateCommand = sinon.stub().returns(false);
+					yargsStub.command.firstCall.args[3]({ _: ['group'] });
+					assert.isTrue(validate.isValidateableCommandWrapper.calledOnce);
+					assert.isTrue(validate.validateCommand.calledOnce);
+					assert.isFalse(run.called);
 				}
 			}
 		},

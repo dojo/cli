@@ -79,7 +79,7 @@ export function convertModuleToCommand(module: any): Command {
 	}
 }
 
-export function getCommand(groupMap: GroupMap, groupName: string, commandName?: string) {
+export function getCommand(groupMap: GroupMap, groupName: string, commandName?: string): CommandWrapper {
 	const commandMap = groupMap.get(groupName);
 	if (!commandMap) {
 		throw new Error(`Unable to find command group: ${groupName}`);
