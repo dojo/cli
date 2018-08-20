@@ -6,9 +6,22 @@ import { loadExternalCommands } from '../allCommands';
 import chalk from 'chalk';
 
 const pkgDir = require('pkg-dir');
+const noPackageWarning =
+	chalk.yellow(`Warning: A root `) +
+	chalk.whiteBright.bold('package.json ') +
+	chalk.yellow(
+		`was not found; this directory will be used for the root for your Dojo project. It is strongly recommended you create one by running `
+	) +
+	chalk.whiteBright.bold('npm init');
 
 async function run(helper: Helper, args: {}) {
-	const rootDir = pkgDir.sync(process.cwd());
+	const cwd = process.cwd();
+	let rootDir = pkgDir.sync(cwd);
+	if (!rootDir) {
+		console.warn(noPackageWarning);
+		rootDir = cwd;
+	}
+
 	const dojoRcPath = join(rootDir, '.dojorc');
 	const file = existsSync(dojoRcPath) && readFileSync(dojoRcPath, 'utf8');
 	let json: { [name: string]: {} } = {};
