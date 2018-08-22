@@ -2,108 +2,71 @@ const { beforeEach, afterEach, describe, it } = intern.getInterface('bdd');
 const { assert, expect } = intern.getPlugin('chai');
 
 import chalk from 'chalk';
-import { join, resolve as pathResolve } from 'path';
 import * as sinon from 'sinon';
-import {
-	getValidationErrors,
-	getConfigPath,
-	ValidateableCommandWrapper,
-	isValidateableCommandWrapper,
-	VALIDATION_FILENAME,
-	validateCommand
-} from '../../../src/commands/validate';
+import { getValidationErrors, builtInCommandValidation } from '../../../src/commands/validate';
 
-import { CommandMap, CommandWrapper } from '../../../src/interfaces';
+// import { CommandWrapper } from '../../../src/interfaces';
 import MockModule from '../../support/MockModule';
+import { ValidationWrapper, CommandMap, CommandWrapper } from '../../../src/interfaces';
 import { getCommandWrapperWithConfiguration } from '../../support/testHelper';
+// import { getCommandWrapperWithConfiguration } from '../../support/testHelper';
 
-const { green, red, yellow } = chalk;
-let validationFile: string;
+const { green, yellow, red } = chalk;
+// let validationFile: string;
 
 describe('validate', () => {
-	const validatePackagePath = join(pathResolve(__dirname), '../../support/validate');
+	// const validatePackagePath = join(pathResolve(__dirname), '../../support/validate');
 	let moduleUnderTest: any;
 	let mockModule: MockModule;
 	let mockAllExternalCommands: any;
 	let sandbox: sinon.SinonSandbox;
 	let mockConfigurationHelper: any;
-	let mockValidate: any;
+	// let mockValidate: any;
 	let consoleLogStub: any;
 
-	const validateableCommandWrapper: ValidateableCommandWrapper = {
-		name: 'test',
-		description: 'test command',
-		group: 'testgroup',
-		path: pathResolve('tests', 'support', 'validate'),
-		global: false,
-		installed: true,
-		default: false,
-		validate: true,
-		register: () => {},
-		run: () => {
-			return Promise.resolve();
-		}
+	const validateableCommandWrapper: ValidationWrapper = {
+		commandGroup: 'testGroup',
+		commandName: 'testCommand',
+		commandSchema: {},
+		commandConfig: {},
+		silentSuccess: false
 	};
 
-	validationFile = join(validateableCommandWrapper.path, VALIDATION_FILENAME);
-
-	const noneValidateableCommandWrapper: CommandWrapper = {
-		name: 'test',
-		description: 'test command',
-		group: 'testgroup',
-		path: pathResolve('tests', 'support', 'validate'),
-		global: false,
-		installed: true,
-		default: false,
-		register: () => {},
-		run: () => {
-			return Promise.resolve();
-		}
-	};
-
-	function getHelper(config?: any) {
-		const basicHelper = {
-			command: 'validate',
-			configuration: {
-				get: sandbox.stub().returns({}),
-				set: sandbox.stub()
+	const detailedSchema = {
+		type: 'object',
+		properties: {
+			foo: {
+				type: 'object',
+				required: ['bar'],
+				properties: {
+					bar: {
+						enum: ['foobar'],
+						type: 'string'
+					}
+				}
 			}
-		};
+		},
+		required: ['foo']
+	};
 
-		return Object.assign({}, basicHelper, config);
-	}
+	const mismatchedConfig = {
+		foo: { bar: 'foo' }
+	};
+
+	const matchedConfig = {
+		foo: { bar: 'foobar' }
+	};
 
 	beforeEach(() => {
 		sandbox = sinon.sandbox.create();
-		mockModule = new MockModule('../../../src/commands/validate', require);
-		mockModule.dependencies([
-			'../allCommands',
-			'path',
-			`${validatePackagePath}/package.json`,
-			'../configurationHelper'
-		]);
-		mockAllExternalCommands = mockModule.getMock('../allCommands');
-		mockConfigurationHelper = mockModule.getMock('../configurationHelper');
-		moduleUnderTest = mockModule.getModuleUnderTest().default;
 		consoleLogStub = sandbox.stub(console, 'log');
 	});
 
 	afterEach(() => {
 		sandbox.restore();
-		mockModule.destroy();
 	});
 
 	describe('function', () => {
-		describe('isValidateableCommandWrapper', () => {
-			expect(isValidateableCommandWrapper(validateableCommandWrapper)).to.be.true;
-			expect(isValidateableCommandWrapper(noneValidateableCommandWrapper)).to.be.false;
-		});
-
-		describe('getConfigPath', () => {
-			const result = getConfigPath(validateableCommandWrapper);
-			expect(result).to.equal(validationFile);
-		});
-
 		describe('getValidationErrors', () => {
 			it(`should return no errors if all object criteria are met`, () => {
 				assert(getValidationErrors !== undefined);
@@ -141,59 +104,141 @@ describe('validate', () => {
 					},
 					required: ['foo']
 				};
-				const config = {
-					foo: {
-						bar: 'foo'
-					}
-				};
+				const config = { ...mismatchedConfig };
 				const errors = getValidationErrors('create-app', config, mockSchema);
 				expect(errors).to.be.lengthOf(2);
 			});
 		});
 
-		describe('validateCommand', () => {
+		describe('builtInCommandValidation', () => {
+			it(`should fail on validating a command with empty config and a valid schema`, () => {
+				expect(builtInCommandValidation).to.not.be.undefined;
+				validateableCommandWrapper.commandConfig = {};
+				validateableCommandWrapper.commandSchema = { ...detailedSchema };
+				const valid = builtInCommandValidation(validateableCommandWrapper);
+				expect(valid).to.be.false;
+				expect(consoleLogStub.callCount).to.equal(2);
+			});
 			it(`should fail on validating a command with mismatching config and schema`, () => {
-				expect(validateCommand).to.not.be.undefined;
-				const config = {
-					foo: {
-						bar: 'foo'
-					}
-				};
-				const valid = validateCommand(validateableCommandWrapper, config, false);
+				expect(builtInCommandValidation).to.not.be.undefined;
+				validateableCommandWrapper.commandConfig = { ...mismatchedConfig };
+				validateableCommandWrapper.commandSchema = { ...detailedSchema };
+				const valid = builtInCommandValidation(validateableCommandWrapper);
 				expect(valid).to.be.false;
+				expect(consoleLogStub.callCount).to.equal(2);
 			});
-
 			it(`should fail on validating a command with undefined config`, () => {
-				expect(validateCommand).to.not.be.undefined;
-				const valid = validateCommand(validateableCommandWrapper, undefined, false);
+				expect(builtInCommandValidation).to.not.be.undefined;
+				validateableCommandWrapper.commandConfig = undefined;
+				validateableCommandWrapper.commandSchema = { ...detailedSchema };
+				const valid = builtInCommandValidation(validateableCommandWrapper);
+				expect(consoleLogStub.callCount).to.equal(1);
 				expect(valid).to.be.false;
 			});
-
-			it(`should pass on validating a valid command`, () => {
-				expect(validateCommand).to.not.be.undefined;
-				const config = {
-					foo: {
-						bar: 'foobar'
-					}
-				};
-
-				const valid = validateCommand(validateableCommandWrapper, config, false);
+			it(`should pass on validating a valid command logging success`, () => {
+				expect(builtInCommandValidation).to.not.be.undefined;
+				validateableCommandWrapper.commandConfig = { ...matchedConfig };
+				validateableCommandWrapper.commandSchema = { ...detailedSchema };
+				const valid = builtInCommandValidation(validateableCommandWrapper);
+				expect(consoleLogStub.callCount).to.equal(1);
+				expect(valid).to.be.true;
+			});
+			it(`should pass on validating a valid command silently`, () => {
+				expect(builtInCommandValidation).to.not.be.undefined;
+				validateableCommandWrapper.silentSuccess = true;
+				validateableCommandWrapper.commandConfig = { ...matchedConfig };
+				validateableCommandWrapper.commandSchema = { ...detailedSchema };
+				const valid = builtInCommandValidation(validateableCommandWrapper);
+				expect(consoleLogStub.callCount).to.equal(0);
 				expect(valid).to.be.true;
 			});
 		});
 	});
 
-	describe('run command', () => {
-		it(`should return no validatable commands with no commands`, () => {
-			mockConfigurationHelper.getConfigFile = sandbox.stub().returns({ foo: 'bar' });
+	describe('default export', () => {
+		const getHelper = function(config?: any) {
+			const basicHelper = {
+				command: 'validate',
+				configuration: {
+					get: sandbox.stub().returns({}),
+					set: sandbox.stub()
+				}
+			};
 
+			return Object.assign({}, basicHelper, config);
+		};
+
+		beforeEach(() => {
+			mockModule = new MockModule('../../../src/commands/validate', require);
+			mockModule.dependencies(['../allCommands', '../configurationHelper']);
+			mockAllExternalCommands = mockModule.getMock('../allCommands');
+			mockConfigurationHelper = mockModule.getMock('../configurationHelper');
+			moduleUnderTest = mockModule.getModuleUnderTest().default;
+		});
+
+		afterEach(() => {
+			mockModule.destroy();
+		});
+
+		it('should call register which has no supported arguments', () => {
+			const options = sandbox.stub();
+			moduleUnderTest.register(options);
+			assert.isFalse(options.called);
+		});
+
+		it(`should never call validation logic with no config`, () => {
 			const commandMap: CommandMap = new Map<string, CommandWrapper>([]);
 			const groupMap = new Map([['test', commandMap]]);
 
-			const helper = getHelper();
 			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves(groupMap);
+			mockConfigurationHelper.getConfigFile = sandbox.stub().returns(undefined);
+
+			const helper = getHelper();
 			return moduleUnderTest.run(helper, {}).then(
 				() => {
+					assert.isTrue(consoleLogStub.called);
+					assert.equal(consoleLogStub.getCall(0).args[0], yellow(`No config has been detected`));
+				},
+				(error: { message: string }) => {
+					assert.fail(null, null, 'no config route should be taken which should be error free');
+				}
+			);
+		});
+
+		it(`should never call validation logic with empty config`, () => {
+			const commandMap: CommandMap = new Map<string, CommandWrapper>([]);
+			const groupMap = new Map([['test', commandMap]]);
+
+			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves(groupMap);
+			mockConfigurationHelper.getConfigFile = sandbox.stub().returns({});
+
+			const helper = getHelper();
+			return moduleUnderTest.run(helper, {}).then(
+				() => {
+					assert.isTrue(consoleLogStub.called);
+					assert.equal(
+						consoleLogStub.getCall(0).args[0],
+						yellow(`A config was found, but it has no properties`)
+					);
+				},
+				(error: { message: string }) => {
+					assert.fail(null, null, 'no config route should be taken which should be error free');
+				}
+			);
+		});
+
+		it(`should return no validatable commands with no commands`, () => {
+			const commandMap: CommandMap = new Map<string, CommandWrapper>([]);
+			const groupMap = new Map([['test', commandMap]]);
+
+			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves(groupMap);
+			mockConfigurationHelper.getConfigFile = sandbox.stub().returns({ ...matchedConfig });
+
+			const helper = getHelper();
+			return moduleUnderTest.run(helper, {}).then(
+				() => {
+					assert.isTrue(mockConfigurationHelper.getConfigFile.called);
+					assert.isTrue(consoleLogStub.called);
 					assert.equal(
 						consoleLogStub.getCall(0).args[0],
 						green(`There were no commands to validate against`)
@@ -209,8 +254,7 @@ describe('validate', () => {
 			mockConfigurationHelper.getConfigFile = sandbox.stub().returns({ foo: 'bar' });
 			const installedCommandWrapper = getCommandWrapperWithConfiguration({
 				group: 'command',
-				name: 'test',
-				validate: false
+				name: 'test'
 			});
 			const commandMap: CommandMap = new Map<string, CommandWrapper>([['command', installedCommandWrapper]]);
 			const groupMap = new Map([['test', commandMap]]);
@@ -229,279 +273,63 @@ describe('validate', () => {
 			);
 		});
 
-		it(`should never call validation logic with no config`, () => {
-			mockConfigurationHelper.getConfigFile = sandbox.stub().returns({});
-			mockValidate = mockModule.getModuleUnderTest();
-			mockValidate.validate = sandbox.stub().returns([]);
-
+		it(`should handle errors in the validate function gracefully`, () => {
 			const installedCommandWrapper = getCommandWrapperWithConfiguration({
 				group: 'command',
 				name: 'test',
-				validate: true
+				validate: sinon.stub().throws('A test error')
 			});
-
+			mockConfigurationHelper.getConfigFile = sandbox.stub().returns({
+				foo: 'bar'
+			});
 			const commandMap: CommandMap = new Map<string, CommandWrapper>([['command', installedCommandWrapper]]);
 			const groupMap = new Map([['test', commandMap]]);
-
-			const helper = getHelper();
-			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves(groupMap);
-			return moduleUnderTest.run(helper, {}).then(
-				() => {},
-				(error: { message: string }) => {
-					assert.fail(null, null, 'no config route should be taken which should be error free');
-				}
-			);
-		});
-
-		it(`should call no config found if config is undefined`, () => {
-			mockConfigurationHelper.getConfigFile = sandbox.stub().returns(undefined);
-			mockValidate = mockModule.getModuleUnderTest();
-			mockValidate.validate = sandbox.stub().returns([]);
-
-			const installedCommandWrapper = getCommandWrapperWithConfiguration({
-				group: 'command',
-				name: 'test',
-				validate: true
-			});
-
-			const commandMap: CommandMap = new Map<string, CommandWrapper>([['command', installedCommandWrapper]]);
-			const groupMap = new Map([['test', commandMap]]);
-
 			const helper = getHelper();
 			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves(groupMap);
 			return moduleUnderTest.run(helper, {}).then(
 				() => {
-					assert.equal(consoleLogStub.getCall(0).args[0], yellow(`No config has been detected`));
-					assert.isTrue(mockConfigurationHelper.getConfigFile.called);
-					assert.isFalse(mockValidate.validate.called);
-				},
-				(error: { message: string }) => {
-					assert.fail(null, null, 'no config route should be taken which should be error free');
-				}
-			);
-		});
-
-		it(`should never call validation logic with no config, should log  no config properties found`, () => {
-			mockConfigurationHelper.getConfigFile = sandbox.stub().returns({});
-			mockValidate = mockModule.getModuleUnderTest();
-			mockValidate.validate = sandbox.stub().returns([]);
-
-			const installedCommandWrapper = getCommandWrapperWithConfiguration({
-				group: 'command',
-				name: 'test',
-				validate: true
-			});
-
-			const commandMap: CommandMap = new Map<string, CommandWrapper>([['command', installedCommandWrapper]]);
-			const groupMap = new Map([['test', commandMap]]);
-
-			const helper = getHelper();
-			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves(groupMap);
-			return moduleUnderTest.run(helper, {}).then(
-				() => {
+					assert.isTrue((installedCommandWrapper.validate as sinon.SinonStub).called);
+					assert.isTrue((installedCommandWrapper.validate as sinon.SinonStub).threw());
 					assert.equal(
 						consoleLogStub.getCall(0).args[0],
-						yellow(`A config was found, but it has no properties`)
+						red(`The validation function for this command threw an error: A test error`)
 					);
-					assert.isTrue(mockConfigurationHelper.getConfigFile.called);
-					assert.isFalse(mockValidate.validate.called);
+				},
+				(error: { message: string }) => {
+					assert.fail(null, null, 'validate should handle error throws gracefully');
+				}
+			);
+		});
+
+		it(`should log out that there were no issues if all commands are valid`, () => {
+			mockConfigurationHelper.getConfigFile = sandbox.stub().returns({ foo: 'bar' });
+			const commandMap: CommandMap = new Map<string, CommandWrapper>([
+				[
+					'command',
+					getCommandWrapperWithConfiguration({
+						group: 'command',
+						name: 'test',
+						validate: sinon.stub().returns(true)
+					})
+				],
+				[
+					'command1',
+					getCommandWrapperWithConfiguration({
+						group: 'command1',
+						name: 'test1',
+						validate: sinon.stub().returns(true)
+					})
+				]
+			]);
+			const groupMap = new Map([['test', commandMap]]);
+			const helper = getHelper();
+			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves(groupMap);
+			return moduleUnderTest.run(helper, {}).then(
+				() => {
+					assert.equal(consoleLogStub.getCall(0).args[0], green(`There were no issues with your config!`));
 				},
 				(error: { message: string }) => {
 					assert.fail(null, null, 'no config route should be taken which should be error free');
-				}
-			);
-		});
-
-		it(`should not call against commands that have no schema`, () => {
-			mockModule.getMock('path').join = sandbox.stub().returns('./noneExistantPath.json');
-			const installedCommandWrapper = getCommandWrapperWithConfiguration({
-				group: 'command',
-				name: 'test',
-				validate: true
-			});
-
-			mockConfigurationHelper.getConfigFile = sandbox.stub().returns({
-				foo: 'bar'
-			});
-
-			const commandMap: CommandMap = new Map<string, CommandWrapper>([['command', installedCommandWrapper]]);
-			const groupMap = new Map([['test', commandMap]]);
-
-			const helper = getHelper();
-			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves(groupMap);
-			return moduleUnderTest.run(helper, {}).then(
-				() => {
-					assert.fail(null, null, 'without a valid schema the test should fail');
-				},
-				(error: { message: string }) => {}
-			);
-		});
-
-		it(`should throw an error because a corrupt schema is provided`, () => {
-			mockModule.getMock('path').join = sandbox.stub().returns('tests/support/validate/corruptSchema.json');
-			const installedCommandWrapper = getCommandWrapperWithConfiguration({
-				group: 'command',
-				name: 'test',
-				validate: true
-			});
-
-			mockConfigurationHelper.getConfigFile = sandbox.stub().returns({
-				foo: 'bar'
-			});
-
-			const commandMap: CommandMap = new Map<string, CommandWrapper>([['command', installedCommandWrapper]]);
-			const groupMap = new Map([['test', commandMap]]);
-
-			const helper = getHelper();
-			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves(groupMap);
-			return moduleUnderTest.run(helper, {}).then(
-				() => {
-					assert.fail(null, null, 'moduleUnderTest.run should reject because schema is corrupt.');
-				},
-				(error: { message: string }) => {
-					// Ensure not erroring because it can't find the path
-					expect(error.message.includes('Schema file does not exist on filesystem')).to.equal(false);
-					expect(error.message.includes('Unexpected token')).to.equal(true);
-				}
-			);
-		});
-
-		it(`should not throw error with well formed schema and config provided`, () => {
-			mockConfigurationHelper.getConfigFile = sandbox.stub().returns({
-				foo: 'bar'
-			});
-
-			mockModule.getMock('path').join = sandbox.stub().returns('tests/support/validate/schema.json');
-
-			const installedCommandWrapper = getCommandWrapperWithConfiguration({
-				group: 'command',
-				name: 'test',
-				validate: true
-			});
-
-			const commandMap: CommandMap = new Map<string, CommandWrapper>([['command', installedCommandWrapper]]);
-			const groupMap = new Map([['test', commandMap]]);
-
-			const helper = getHelper();
-			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves(groupMap);
-			return moduleUnderTest.run(helper, {}).then(
-				() => {},
-				(error: { message: string }) => {
-					assert.fail(
-						null,
-						null,
-						'moduleUnderTest.run should not have rejected promise. Rejected with: ' + error.message
-					);
-				}
-			);
-		});
-
-		it(`should throw error with a detailed schema and erroneous config`, () => {
-			mockModule.getMock('path').join = sandbox.stub().returns('tests/support/validate/detailedSchema.json');
-
-			mockConfigurationHelper.getConfigFile = sandbox.stub().throws('Invalid .dojorc');
-
-			const installedCommandWrapper = getCommandWrapperWithConfiguration({
-				group: 'command',
-				name: 'test',
-				validate: true
-			});
-
-			const commandMap: CommandMap = new Map<string, CommandWrapper>([['command', installedCommandWrapper]]);
-			const groupMap = new Map([['test', commandMap]]);
-
-			const helper = getHelper();
-			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves(groupMap);
-			return moduleUnderTest.run(helper, {}).then(
-				() => {
-					assert.equal(consoleLogStub.callCount, 1);
-					assert.equal(
-						consoleLogStub.getCall(0).args[0],
-						red(`A config was found, but it was not valid JSON`)
-					);
-				},
-				(error: { message: string }) => {
-					assert.fail(null, null, 'should throw an error');
-				}
-			);
-		});
-
-		it(`should have schema mismatches with a detailed schema and incorrect config`, () => {
-			mockModule.getMock('path').join = sandbox.stub().returns('tests/support/validate/detailedSchema.json');
-
-			mockConfigurationHelper.getConfigFile = sandbox.stub().returns({
-				foo: 'bar'
-			});
-
-			moduleUnderTest.logSchemaErrors = sandbox.stub();
-
-			const installedCommandWrapper = getCommandWrapperWithConfiguration({
-				group: 'command',
-				name: 'test',
-				validate: true
-			});
-
-			const commandMap: CommandMap = new Map<string, CommandWrapper>([['command', installedCommandWrapper]]);
-			const groupMap = new Map([['test', commandMap]]);
-
-			const helper = getHelper();
-			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves(groupMap);
-			return moduleUnderTest.run(helper, {}).then(
-				() => {
-					assert.equal(consoleLogStub.callCount, 1);
-					assert.equal(
-						consoleLogStub.getCall(0).args[0],
-						red(`command-test config.foo is not of a type(s) object`)
-					);
-				},
-				(error: { message: string }) => {
-					assert.fail(
-						null,
-						null,
-						'moduleUnderTest.run should not reject because schema valid. Error: ' + error.message
-					);
-				}
-			);
-		});
-
-		it(`should have no schema mismatches with a detailed schema and correct config`, () => {
-			mockModule.getMock('path').join = sandbox.stub().returns('tests/support/validate/detailedSchema.json');
-
-			mockConfigurationHelper.getConfigFile = sandbox.stub().returns({
-				foo: {
-					bar: 'foobar'
-				}
-			});
-
-			mockValidate = mockModule.getModuleUnderTest();
-
-			const installedCommandWrapper = getCommandWrapperWithConfiguration({
-				group: 'command',
-				name: 'test',
-				validate: true
-			});
-
-			const commandMap: CommandMap = new Map<string, CommandWrapper>([['command', installedCommandWrapper]]);
-			const groupMap = new Map([['test', commandMap]]);
-
-			const helper = getHelper();
-			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves(groupMap);
-			return moduleUnderTest.run(helper, {}).then(
-				() => {
-					assert.isTrue(consoleLogStub.called);
-					assert.equal(consoleLogStub.callCount, 2);
-					assert.equal(
-						consoleLogStub.getCall(0).args[0],
-						green(`command-test config validation was successful!`)
-					);
-					assert.equal(consoleLogStub.getCall(1).args[0], green(`There were no issues with your config!`));
-				},
-				(error: { message: string }) => {
-					assert.fail(
-						null,
-						null,
-						'moduleUnderTest.run should not reject because schema valid. Error: ' + error.message
-					);
 				}
 			);
 		});

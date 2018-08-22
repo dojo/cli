@@ -27,7 +27,6 @@ let consoleLogStub: SinonStub;
 let processExitStub: SinonStub;
 const errorMessage = 'test error message';
 let registerCommands: any;
-let validate: any;
 
 registerSuite('registerCommands', {
 	beforeEach() {
@@ -36,7 +35,7 @@ registerSuite('registerCommands', {
 		mockModule.dependencies(['./configurationHelper']);
 		mockModule.dependencies(['./help']);
 		mockModule.dependencies(['./commands/validate']);
-		validate = mockModule.getMock('./commands/validate');
+
 		registerCommands = mockModule.getModuleUnderTest().default;
 		yargsStub = getYargsStub();
 		groupMap = getGroupMap(groupDef);
@@ -275,22 +274,18 @@ registerSuite('registerCommands', {
 					assert.isFalse(run.calledOnce);
 				},
 				'Should run validateable command when yargs called'() {
-					const { run } = groupMap.get('group1').get('command1');
-					validate.isValidateableCommandWrapper = sinon.stub().returns(true);
-					validate.validateCommand = sinon.stub().returns(true);
+					const command = groupMap.get('group1').get('command1');
+					command.validate = sinon.stub().returns(true);
 					yargsStub.command.firstCall.args[3]({ _: ['group'] });
-					assert.isTrue(validate.isValidateableCommandWrapper.calledOnce);
-					assert.isTrue(validate.validateCommand.calledOnce);
-					assert.isTrue(run.calledOnce);
+					assert.isTrue(command.validate.calledOnce);
+					assert.isTrue(command.run.calledOnce);
 				},
 				'Should not run validateable command when yargs called with failing command'() {
-					const { run } = groupMap.get('group1').get('command1');
-					validate.isValidateableCommandWrapper = sinon.stub().returns(true);
-					validate.validateCommand = sinon.stub().returns(false);
+					const command = groupMap.get('group1').get('command1');
+					command.validate = sinon.stub().returns(false);
 					yargsStub.command.firstCall.args[3]({ _: ['group'] });
-					assert.isTrue(validate.isValidateableCommandWrapper.calledOnce);
-					assert.isTrue(validate.validateCommand.calledOnce);
-					assert.isFalse(run.called);
+					assert.isTrue(command.validate.calledOnce);
+					assert.isFalse(command.run.called);
 				}
 			}
 		},
@@ -298,8 +293,6 @@ registerSuite('registerCommands', {
 			beforeEach() {
 				groupMap = getGroupMap(groupDef);
 				consoleErrorStub = stub(console, 'error');
-				validate.isValidateableCommandWrapper.reset();
-				validate.validateCommand.reset();
 			},
 
 			afterEach() {
@@ -307,54 +300,27 @@ registerSuite('registerCommands', {
 			},
 
 			tests: {
-				'Should run isValidateableCommandWrapper'() {
-					groupMap = getGroupMap(groupDef, () => () => {}, true);
-					const registerCommands = mockModule.getModuleUnderTest().default;
-					validate.isValidateableCommandWrapper = sinon.stub().returns(true);
-					registerCommands(yargsStub, groupMap);
-					yargsStub.command.secondCall.args[3]({});
-					assert.isTrue(validate.isValidateableCommandWrapper.called);
-					assert.isTrue(validate.isValidateableCommandWrapper.returned(true));
-				},
-				'Should run isValidateableCommandWrapper and not validate command if it is false'() {
-					groupMap = getGroupMap(groupDef, () => () => {}, true);
-					const registerCommands = mockModule.getModuleUnderTest().default;
-					validate.isValidateableCommandWrapper = sinon.stub().returns(false);
-					registerCommands(yargsStub, groupMap);
-					yargsStub.command.secondCall.args[3]({});
-					assert.isTrue(validate.isValidateableCommandWrapper.called);
-					assert.isTrue(validate.isValidateableCommandWrapper.returned(false));
-					assert.isFalse(validate.validateCommand.called);
-				},
 				'Should run validateCommand and continue if valid'() {
 					groupMap = getGroupMap(groupDef, () => () => {}, true);
-					const { run } = groupMap.get('group1').get('command1');
+					const command = groupMap.get('group1').get('command1');
+					command.validate = sinon.stub().returns(true);
 					const registerCommands = mockModule.getModuleUnderTest().default;
-					validate.isValidateableCommandWrapper = sinon.stub().returns(true);
-					validate.validateCommand = sinon.stub().returns(true);
 					registerCommands(yargsStub, groupMap);
 					yargsStub.command.secondCall.args[3]({});
-
-					assert.isTrue(validate.isValidateableCommandWrapper.called);
-					assert.isTrue(validate.isValidateableCommandWrapper.returned(true));
-					assert.isTrue(validate.validateCommand.called);
-					assert.isTrue(validate.validateCommand.returned(true));
-					assert.isTrue(run.calledOnce);
+					assert.isTrue(command.validate.called);
+					assert.isTrue(command.validate.returned(true));
+					assert.isTrue(command.run.calledOnce);
 				},
 				'Should run validateCommand stop if invalid'() {
 					groupMap = getGroupMap(groupDef, () => () => {}, true);
-					const { run } = groupMap.get('group1').get('command1');
+					const command = groupMap.get('group1').get('command1');
+					command.validate = sinon.stub().returns(false);
 					const registerCommands = mockModule.getModuleUnderTest().default;
-					validate.isValidateableCommandWrapper = sinon.stub().returns(true);
-					validate.validateCommand = sinon.stub().returns(false);
 					registerCommands(yargsStub, groupMap);
 					yargsStub.command.secondCall.args[3]({});
-
-					assert.isTrue(validate.isValidateableCommandWrapper.called);
-					assert.isTrue(validate.isValidateableCommandWrapper.returned(true));
-					assert.isTrue(validate.validateCommand.called);
-					assert.isTrue(validate.validateCommand.returned(false));
-					assert.isFalse(run.calledOnce);
+					assert.isTrue(command.validate.called);
+					assert.isTrue(command.validate.returned(false));
+					assert.isFalse(command.run.calledOnce);
 				}
 			}
 		},

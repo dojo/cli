@@ -17,9 +17,9 @@ export interface CommandWrapperConfig {
 	path?: string;
 	runs?: boolean;
 	eject?: boolean;
-	validate?: boolean;
 	installed?: boolean;
 	global?: boolean;
+	validate?: () => boolean;
 }
 
 export function getGroupMap(groupDef: GroupDef, registerMock?: Function, validate?: boolean) {
@@ -102,7 +102,7 @@ export function getCommandWrapperWithConfiguration(config: CommandWrapperConfig)
 		eject = false,
 		global = false,
 		installed = false,
-		validate = false
+		validate
 	} = config;
 
 	const commandWrapper: CommandWrapper = {
@@ -116,12 +116,12 @@ export function getCommandWrapperWithConfiguration(config: CommandWrapperConfig)
 		run: stub().returns(runs ? 'success' : 'error')
 	};
 
-	if (eject) {
-		commandWrapper.eject = stub().returns({});
+	if (validate) {
+		commandWrapper.validate = validate;
 	}
 
-	if (validate) {
-		commandWrapper.validate = true;
+	if (eject) {
+		commandWrapper.eject = stub().returns({});
 	}
 
 	return commandWrapper;

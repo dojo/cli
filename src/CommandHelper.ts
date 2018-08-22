@@ -4,6 +4,7 @@ import HelperFactory from './Helper';
 import template from './template';
 import { CommandHelper, GroupMap } from './interfaces';
 import { getCommand } from './command';
+import { builtInCommandValidation } from './commands/validate';
 
 export type RenderFilesConfig = {
 	src: string;
@@ -35,7 +36,14 @@ export class SingleCommandHelper implements CommandHelper {
 		try {
 			const command = getCommand(this._groupMap, group, commandName);
 			if (command) {
-				const helper = new HelperFactory(this, yargs, this._context, this._configurationFactory);
+				const validateHelper = { validate: builtInCommandValidation };
+				const helper = new HelperFactory(
+					this,
+					yargs,
+					this._context,
+					this._configurationFactory,
+					validateHelper
+				);
 				return command.run(helper.sandbox(group, command.name), args);
 			} else {
 				return Promise.reject(new Error('The command does not exist'));

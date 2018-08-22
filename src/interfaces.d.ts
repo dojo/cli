@@ -26,6 +26,17 @@ export type RenderFilesConfig = {
 	dest: string;
 }[];
 
+export type ValidationWrapper = {
+	commandGroup: string;
+	commandName?: string;
+	commandSchema: any;
+	commandConfig: any;
+	silentSuccess: boolean;
+};
+
+export interface ValidateHelper {
+	validate(validateOpts: ValidationWrapper): boolean;
+}
 export interface CommandHelper {
 	run(group: string, commandName?: string, args?: Argv): Promise<any>;
 	exists(group: string, commandName?: string): boolean;
@@ -37,6 +48,7 @@ export interface Helper {
 	command: CommandHelper;
 	context: any;
 	configuration: ConfigurationHelper;
+	validation: ValidateHelper;
 }
 
 export type OptionsHelper = (key: string, options: Options) => void;
@@ -84,7 +96,7 @@ export interface Command<T = any> {
 	register(options: OptionsHelper, helper: Helper): void;
 	run(helper: Helper, args?: T): Promise<any>;
 	eject?(helper: Helper): EjectOutput;
-	validate?: boolean;
+	validate?: (helper: Helper) => boolean;
 	name?: string;
 	group?: string;
 	alias?: Alias[] | Alias;

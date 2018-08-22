@@ -7,7 +7,7 @@ import { CommandError, CommandWrapper, GroupMap, CommandMap } from './interfaces
 import { formatHelp } from './help';
 import { createOptionValidator } from './validation';
 import { getCommand } from './command';
-import { isValidateableCommandWrapper, validateCommand } from './commands/validate';
+import { builtInCommandValidation } from './commands/validate';
 
 const requireOptions = {
 	demand: false,
@@ -140,8 +140,9 @@ function registerGroups(yargs: Argv, helper: HelperFactory, groupName: string, c
 				const config = helper.sandbox(groupName, defaultCommand.name).configuration.get();
 				const args = getOptions(aliases, config, argv);
 
-				if (isValidateableCommandWrapper(defaultCommand)) {
-					if (!validateCommand(defaultCommand, config, true)) {
+				if (typeof defaultCommand.validate === 'function') {
+					const valid = defaultCommand.validate(helper.sandbox(groupName, defaultCommand.name));
+					if (!valid) {
 						return;
 					}
 				}
@@ -176,12 +177,12 @@ function registerCommands(yargs: Argv, helper: HelperFactory, groupName: string,
 				const config = helper.sandbox(groupName, name).configuration.get();
 				const args = getOptions(aliases, config, argv);
 
-				if (isValidateableCommandWrapper(command)) {
-					if (!validateCommand(command, config, true)) {
+				if (typeof command.validate === 'function') {
+					const valid = command.validate(helper.sandbox(groupName, command.name));
+					if (!valid) {
 						return;
 					}
 				}
-
 				return run(helper.sandbox(groupName, name), args).catch(reportError);
 			}
 		);
@@ -191,7 +192,14 @@ function registerCommands(yargs: Argv, helper: HelperFactory, groupName: string,
 export default function(yargs: Argv, groupMap: GroupMap): void {
 	const helperContext = {};
 	const commandHelper = new CommandHelper(groupMap, helperContext, configurationHelperFactory);
-	const helperFactory = new HelperFactory(commandHelper, yargs, helperContext, configurationHelperFactory);
+	const validateHelper = { validate: builtInCommandValidation }; // Provide the default validation helper
+	const helperFactory = new HelperFactory(
+		commandHelper,
+		yargs,
+		helperContext,
+		configurationHelperFactory,
+		validateHelper
+	);
 
 	groupMap.forEach((commandMap, group) => {
 		registerGroups(yargs, helperFactory, group, commandMap);
