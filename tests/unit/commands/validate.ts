@@ -5,23 +5,18 @@ import chalk from 'chalk';
 import * as sinon from 'sinon';
 import { getValidationErrors, builtInCommandValidation } from '../../../src/commands/validate';
 
-// import { CommandWrapper } from '../../../src/interfaces';
 import MockModule from '../../support/MockModule';
 import { ValidationWrapper, CommandMap, CommandWrapper } from '../../../src/interfaces';
 import { getCommandWrapperWithConfiguration } from '../../support/testHelper';
-// import { getCommandWrapperWithConfiguration } from '../../support/testHelper';
 
 const { green, yellow, red } = chalk;
-// let validationFile: string;
 
 describe('validate', () => {
-	// const validatePackagePath = join(pathResolve(__dirname), '../../support/validate');
 	let moduleUnderTest: any;
 	let mockModule: MockModule;
 	let mockAllExternalCommands: any;
 	let sandbox: sinon.SinonSandbox;
 	let mockConfigurationHelper: any;
-	// let mockValidate: any;
 	let consoleLogStub: any;
 
 	const validateableCommandWrapper: ValidationWrapper = {
