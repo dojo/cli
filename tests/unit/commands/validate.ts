@@ -105,45 +105,64 @@ describe('validate', () => {
 			});
 		});
 
-		describe('builtInCommandValidation', () => {
-			it(`should fail on validating a command with empty config and a valid schema`, () => {
+		describe('builtInCommandValidation', async () => {
+			beforeEach(() => {
+				consoleLogStub.reset();
+			});
+
+			it(`should fail on validating a command with empty config and a valid schema`, async () => {
 				expect(builtInCommandValidation).to.not.be.undefined;
 				validateableCommandWrapper.commandConfig = {};
 				validateableCommandWrapper.commandSchema = { ...detailedSchema };
-				const valid = builtInCommandValidation(validateableCommandWrapper);
+				const valid = await builtInCommandValidation(validateableCommandWrapper);
 				expect(valid).to.be.false;
 				expect(consoleLogStub.callCount).to.equal(2);
+				expect(consoleLogStub.getCall(0).args[0]).to.equal(
+					red('Config is invalid! The following issues were found: ')
+				);
 			});
-			it(`should fail on validating a command with mismatching config and schema`, () => {
+			it(`should fail on validating a command with mismatching config and schema`, async () => {
 				expect(builtInCommandValidation).to.not.be.undefined;
 				validateableCommandWrapper.commandConfig = { ...mismatchedConfig };
 				validateableCommandWrapper.commandSchema = { ...detailedSchema };
-				const valid = builtInCommandValidation(validateableCommandWrapper);
+				const valid = await builtInCommandValidation(validateableCommandWrapper);
 				expect(valid).to.be.false;
 				expect(consoleLogStub.callCount).to.equal(2);
+				expect(consoleLogStub.getCall(0).args[0]).to.equal(
+					red('Config is invalid! The following issues were found: ')
+				);
+				expect(consoleLogStub.getCall(1).args[0]).to.equal(
+					red('testGroup-testCommand config.foo.bar is not one of expected values: foobar')
+				);
 			});
-			it(`should fail on validating a command with undefined config`, () => {
+			it(`should fail on validating a command with undefined config`, async () => {
 				expect(builtInCommandValidation).to.not.be.undefined;
 				validateableCommandWrapper.commandConfig = undefined;
 				validateableCommandWrapper.commandSchema = { ...detailedSchema };
-				const valid = builtInCommandValidation(validateableCommandWrapper);
+				const valid = await builtInCommandValidation(validateableCommandWrapper);
 				expect(consoleLogStub.callCount).to.equal(1);
+				expect(consoleLogStub.getCall(0).args[0]).to.equal(
+					red(".dojorc config does not have the top level command property 'testGroup-testCommand'")
+				);
 				expect(valid).to.be.false;
 			});
-			it(`should pass on validating a valid command logging success`, () => {
+			it(`should pass on validating a valid command logging success`, async () => {
 				expect(builtInCommandValidation).to.not.be.undefined;
 				validateableCommandWrapper.commandConfig = { ...matchedConfig };
 				validateableCommandWrapper.commandSchema = { ...detailedSchema };
-				const valid = builtInCommandValidation(validateableCommandWrapper);
+				const valid = await builtInCommandValidation(validateableCommandWrapper);
+				expect(consoleLogStub.getCall(0).args[0]).to.equal(
+					green('testGroup-testCommand config validation was successful!')
+				);
 				expect(consoleLogStub.callCount).to.equal(1);
 				expect(valid).to.be.true;
 			});
-			it(`should pass on validating a valid command silently`, () => {
+			it(`should pass on validating a valid command silently`, async () => {
 				expect(builtInCommandValidation).to.not.be.undefined;
 				validateableCommandWrapper.silentSuccess = true;
 				validateableCommandWrapper.commandConfig = { ...matchedConfig };
 				validateableCommandWrapper.commandSchema = { ...detailedSchema };
-				const valid = builtInCommandValidation(validateableCommandWrapper);
+				const valid = await builtInCommandValidation(validateableCommandWrapper);
 				expect(consoleLogStub.callCount).to.equal(0);
 				expect(valid).to.be.true;
 			});

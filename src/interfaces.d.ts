@@ -35,7 +35,7 @@ export type ValidationWrapper = {
 };
 
 export interface ValidateHelper {
-	validate(validateOpts: ValidationWrapper): boolean;
+	validate(validateOpts: ValidationWrapper): Promise<any>;
 }
 export interface CommandHelper {
 	run(group: string, commandName?: string, args?: Argv): Promise<any>;

@@ -11,12 +11,10 @@ const { red, green, yellow } = chalk;
 
 export interface ValidateArgs extends Argv {}
 
-type ValidationErrors = string[];
-
 function register(options: OptionsHelper): void {}
 
 export function logNoConfig() {
-	console.log(yellow(`No config has been detected`));
+	console.log(yellow('No config has been detected'));
 }
 
 export function logValidateFunctionFailed(error: Error) {
@@ -24,7 +22,7 @@ export function logValidateFunctionFailed(error: Error) {
 }
 
 export function logEmptyConfig() {
-	console.log(yellow(`A config was found, but it has no properties`));
+	console.log(yellow('A config was found, but it has no properties'));
 }
 
 export function logSchemaErrors(mismatch: string) {
@@ -36,14 +34,14 @@ export function logSchemaSuccess(commandName: string) {
 }
 
 export function logConfigValidateSuccess() {
-	console.log(green(`There were no issues with your config!`));
+	console.log(green('There were no issues with your config!'));
 }
 
 export function logNoValidatableCommands() {
-	console.log(green(`There were no commands to validate against`));
+	console.log(green('There were no commands to validate against'));
 }
 
-export function getValidationErrors(commandKey: string, commandConfig: any, commandSchema: any): ValidationErrors {
+export function getValidationErrors(commandKey: string, commandConfig: any, commandSchema: any): string[] {
 	const validator = new Validator();
 	const result = validator.validate(commandConfig, commandSchema);
 
@@ -57,45 +55,47 @@ export function getValidationErrors(commandKey: string, commandConfig: any, comm
 	return errors;
 }
 
-function createValidationCommandSet(commands: Map<string, Map<string, CommandWrapper>>) {
+function createValidationCommandSet(commandMaps: Map<string, Map<string, CommandWrapper>>) {
 	let toValidate = new Set<CommandWrapper>();
-	commands.forEach((commandMap, group) => {
-		toValidate = [...commandMap.values()].reduce((toValidate, command) => {
+	commandMaps.forEach((commandMap) => {
+		[...commandMap.values()].forEach((command) => {
 			if (typeof command.validate === 'function') {
 				toValidate.add(command);
 			}
-			return toValidate;
-		}, toValidate);
+		});
 	});
 	return toValidate;
 }
 
-export function builtInCommandValidation(validation: ValidationWrapper): boolean {
-	const commandKey = validation.commandGroup + '-' + validation.commandName; // group and name are required properties
+export async function builtInCommandValidation(validation: ValidationWrapper): Promise<any> {
+	return new Promise((resolve, reject) => {
+		const { commandGroup, commandName, commandSchema, commandConfig, silentSuccess } = validation;
+		const commandKey = `${commandGroup}-${commandName}`; // group and name are required properties
 
-	if (validation.commandConfig === undefined) {
-		logSchemaErrors(`.dojorc config does not have the top level command property '${commandKey}'`);
-		return false;
-	}
+		if (validation.commandConfig === undefined) {
+			logSchemaErrors(`.dojorc config does not have the top level command property '${commandKey}'`);
+			resolve(false);
+		}
 
-	const mismatches = getValidationErrors(commandKey, validation.commandConfig, validation.commandSchema);
-	let noMismatches = true;
+		const mismatches = getValidationErrors(commandKey, commandConfig, commandSchema);
+		const valid = mismatches.length === 0;
 
-	if (mismatches.length) {
-		noMismatches = false;
-		logSchemaErrors('Config is invalid! The following issues were found: ');
-		mismatches.forEach((mismatch) => {
-			logSchemaErrors(mismatch);
-		});
-	} else {
-		!validation.silentSuccess && logSchemaSuccess(commandKey);
-	}
+		if (!valid) {
+			logSchemaErrors('Config is invalid! The following issues were found: ');
+			mismatches.forEach((mismatch) => {
+				logSchemaErrors(mismatch);
+			});
+		} else {
+			!silentSuccess && logSchemaSuccess(commandKey);
+		}
 
-	return noMismatches;
+		resolve(valid);
+	});
 }
 
 function validateCommands(commands: Map<string, Map<string, CommandWrapper>>, helper: HelperFactory) {
 	const config = getConfigFile();
+
 	const noConfig = config === undefined;
 	const emptyConfig = typeof config === 'object' && Object.keys(config).length === 0;
 	if (noConfig) {
@@ -150,7 +150,7 @@ async function run(helper: Helper, args: ValidateArgs): Promise<any> {
 export default {
 	name: '',
 	group: 'validate',
-	description: 'validate your .dojorc build for installed commands',
+	description: 'validate your .dojorc configuration file for installed commands',
 	register,
 	global: false,
 	run
