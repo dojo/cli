@@ -68,13 +68,14 @@ function createValidationCommandSet(commandMaps: Map<string, Map<string, Command
 }
 
 export async function builtInCommandValidation(validation: ValidationWrapper): Promise<any> {
-	return new Promise((resolve, reject) => {
+	return new Promise((resolve) => {
 		const { commandGroup, commandName, commandSchema, commandConfig, silentSuccess } = validation;
 		const commandKey = `${commandGroup}-${commandName}`; // group and name are required properties
 
 		if (validation.commandConfig === undefined) {
 			logSchemaErrors(`.dojorc config does not have the top level command property '${commandKey}'`);
 			resolve(false);
+			return;
 		}
 
 		const mismatches = getValidationErrors(commandKey, commandConfig, commandSchema);

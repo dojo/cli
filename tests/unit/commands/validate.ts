@@ -136,6 +136,7 @@ describe('validate', () => {
 				);
 			});
 			it(`should fail on validating a command with undefined config`, async () => {
+				consoleLogStub.reset();
 				expect(builtInCommandValidation).to.not.be.undefined;
 				validateableCommandWrapper.commandConfig = undefined;
 				validateableCommandWrapper.commandSchema = { ...detailedSchema };
