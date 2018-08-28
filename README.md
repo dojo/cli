@@ -69,6 +69,7 @@ The CLI has the following built-in commands:
 
 * `dojo eject` - allows users to configure and run command instead of the cli.
 * `dojo version` - provides information on the versions of installed commands and the cli itself.
+* `dojo validate` - validates the `.dojorc` file for all installed commands
 
 In addition to the built-in commands, additional commands are available and will show up in your command list even if they have not been installed.
 
@@ -123,6 +124,8 @@ This configuration would automatically pass the `build-app-option: foo` to the c
 ```shell
 $ dojo build app --build-app-option bar
 ```
+
+The `.dojorc` file will be validated whenever `dojo validate` is run or an installed command is attempted to be run.
 
 ## A warning on ejecting
 

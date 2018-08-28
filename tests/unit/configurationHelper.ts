@@ -52,6 +52,18 @@ registerSuite('Configuration Helper', {
 					JSON.stringify({ 'testGroupName-testCommandName': newConfig }, null, 2)
 				);
 			},
+			'Should write new config to file when save called without commandName'() {
+				const newConfig = { foo: 'bar' };
+				mockFs.readFileSync = sinon.stub().returns(JSON.stringify({ testGroupName: {} }));
+				configurationHelper.sandbox('testGroupName').set(newConfig);
+
+				assert.isTrue(mockFs.writeFileSync.calledOnce);
+				assert.equal(mockFs.writeFileSync.firstCall.args[0], dojoRcPath);
+				assert.equal(
+					mockFs.writeFileSync.firstCall.args[1],
+					JSON.stringify({ testGroupName: newConfig }, null, 2)
+				);
+			},
 			'Should merge new config with old when save called'() {
 				const newConfig = { foo: 'bar' };
 				const existingConfig = { existing: 'config' };
@@ -65,6 +77,20 @@ registerSuite('Configuration Helper', {
 						null,
 						2
 					)
+				);
+			},
+			'Should write new config when one does not exist'() {
+				mockFs.existsSync.returns(false);
+				assert.isTrue(mockFs.readFileSync.notCalled);
+
+				const newConfig = { foo: 'bar' };
+				configurationHelper.sandbox('testGroupName', 'testCommandName').set(newConfig);
+
+				assert.isTrue(mockFs.writeFileSync.calledOnce);
+				assert.equal(mockFs.writeFileSync.firstCall.args[0], dojoRcPath);
+				assert.equal(
+					mockFs.writeFileSync.firstCall.args[1],
+					JSON.stringify({ 'testGroupName-testCommandName': newConfig }, null, 2)
 				);
 			},
 			'Should merge new commandNames with existing command config when save called'() {
@@ -85,11 +111,11 @@ registerSuite('Configuration Helper', {
 					)
 				);
 			},
-			'Should return undefined config when no dojorc for commandName exists'() {
+			'Should return undefined command config when no dojorc config for command exists'() {
 				mockFs.existsSync.returns(false);
 				const config = configurationHelper.sandbox('testGroupName', 'testCommandName').get();
 				assert.isTrue(mockFs.readFileSync.notCalled);
-				assert.deepEqual(config, {});
+				assert.equal(config, undefined);
 			},
 			'Should return existing config when a dojorc entry exists'() {
 				const existingConfig = { existing: 'config' };
@@ -139,11 +165,11 @@ registerSuite('Configuration Helper', {
 		},
 
 		tests: {
-			'Should return empty object when pkgdir returns null'() {
+			'Should return undefined config when pkgdir returns null'() {
 				const config = configurationHelper.sandbox('testGroupName', 'testCommandName').get();
 				assert.isFalse(mockFs.readFileSync.called);
 				assert.isFalse(mockPath.join.called);
-				assert.deepEqual(config, {});
+				assert.equal(config, undefined);
 			},
 			'Should warn user when config save called outside of a pkgdir'() {
 				configurationHelper.sandbox('testGroupName', 'testCommandName').set({});

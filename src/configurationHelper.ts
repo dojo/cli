@@ -14,7 +14,7 @@ function writeConfigFile(config: Config) {
 	writeFileSync(dojoRcPath, JSON.stringify(config, null, 2));
 }
 
-function getConfigFile(): Config {
+export function getConfigFile(): Config | undefined {
 	const configExists = !!dojoRcPath && existsSync(dojoRcPath);
 	if (configExists) {
 		try {
@@ -23,7 +23,7 @@ function getConfigFile(): Config {
 			throw new Error(`Invalid .dojorc: ${error}`);
 		}
 	}
-	return {};
+	return undefined;
 }
 
 class SingleCommandConfigurationHelper implements ConfigurationHelper {
@@ -51,8 +51,8 @@ class SingleCommandConfigurationHelper implements ConfigurationHelper {
 	 */
 	get(commandName: string): Config;
 	get(commandName?: string): Config {
-		const config = getConfigFile();
-		return config[this._configurationKey] || {};
+		const config = getConfigFile() || {};
+		return config[this._configurationKey];
 	}
 
 	/**
@@ -76,7 +76,7 @@ class SingleCommandConfigurationHelper implements ConfigurationHelper {
 			return;
 		}
 
-		const dojoRc = getConfigFile();
+		const dojoRc = getConfigFile() || {};
 		const commmandConfig: Config = dojoRc[this._configurationKey] || {};
 
 		Object.assign(commmandConfig, config);

@@ -7,6 +7,7 @@ import { CommandError, CommandWrapper, GroupMap, CommandMap } from './interfaces
 import { formatHelp } from './help';
 import { createOptionValidator } from './validation';
 import { getCommand } from './command';
+import { builtInCommandValidation } from './commands/validate';
 
 const requireOptions = {
 	demand: false,
@@ -50,6 +51,10 @@ function userSetOption(option: string, aliases: Aliases) {
 }
 
 function getRcOption(rcConfig: any, option: string, aliases: Aliases) {
+	if (rcConfig === undefined) {
+		return undefined;
+	}
+
 	if (rcConfig[option] !== undefined) {
 		return option;
 	}
@@ -113,12 +118,10 @@ function registerGroups(yargs: Argv, helper: HelperFactory, groupName: string, c
 		groupName,
 		false,
 		(subYargs: Argv) => {
-			if (defaultCommand) {
-				defaultCommand.register((key: string, options: Options) => {
-					aliases = parseAliases(aliases, key, options.alias);
-					subYargs.option(key, { ...options, ...requireOptions });
-				}, helper.sandbox(groupName, defaultCommand.name));
-			}
+			defaultCommand.register((key: string, options: Options) => {
+				aliases = parseAliases(aliases, key, options.alias);
+				subYargs.option(key, { ...options, ...requireOptions });
+			}, helper.sandbox(groupName, defaultCommand.name));
 
 			registerCommands(subYargs, helper, groupName, commandMap);
 			return subYargs
@@ -134,12 +137,15 @@ function registerGroups(yargs: Argv, helper: HelperFactory, groupName: string, c
 					console.log(formatHelp(argv, groupMap));
 					return Promise.resolve({});
 				}
+				const config = helper.sandbox(groupName, defaultCommand.name).configuration.get();
+				const args = getOptions(aliases, config, argv);
 
-				const args = getOptions(
-					aliases,
-					helper.sandbox(groupName, defaultCommand.name).configuration.get(),
-					argv
-				);
+				if (typeof defaultCommand.validate === 'function') {
+					const valid = defaultCommand.validate(helper.sandbox(groupName, defaultCommand.name));
+					if (!valid) {
+						return;
+					}
+				}
 				return defaultCommand.run(helper.sandbox(groupName, defaultCommand.name), args).catch(reportError);
 			}
 		}
@@ -167,7 +173,16 @@ function registerCommands(yargs: Argv, helper: HelperFactory, groupName: string,
 					console.log(formatHelp(argv, groupMap));
 					return Promise.resolve({});
 				}
-				const args = getOptions(aliases, helper.sandbox(groupName, name).configuration.get(), argv);
+
+				const config = helper.sandbox(groupName, name).configuration.get();
+				const args = getOptions(aliases, config, argv);
+
+				if (typeof command.validate === 'function') {
+					const valid = command.validate(helper.sandbox(groupName, command.name));
+					if (!valid) {
+						return;
+					}
+				}
 				return run(helper.sandbox(groupName, name), args).catch(reportError);
 			}
 		);
@@ -177,7 +192,14 @@ function registerCommands(yargs: Argv, helper: HelperFactory, groupName: string,
 export default function(yargs: Argv, groupMap: GroupMap): void {
 	const helperContext = {};
 	const commandHelper = new CommandHelper(groupMap, helperContext, configurationHelperFactory);
-	const helperFactory = new HelperFactory(commandHelper, yargs, helperContext, configurationHelperFactory);
+	const validateHelper = { validate: builtInCommandValidation }; // Provide the default validation helper
+	const helperFactory = new HelperFactory(
+		commandHelper,
+		yargs,
+		helperContext,
+		configurationHelperFactory,
+		validateHelper
+	);
 
 	groupMap.forEach((commandMap, group) => {
 		registerGroups(yargs, helperFactory, group, commandMap);
