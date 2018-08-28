@@ -125,7 +125,7 @@ This configuration would automatically pass the `build-app-option: foo` to the c
 $ dojo build app --build-app-option bar
 ```
 
-The file will be validated when ever `dojo validate` is run or an installed command is attempted to be run.
+The `.dojorc` file will be validated whenever `dojo validate` is run or an installed command is attempted to be run.
 
 ## A warning on ejecting
 

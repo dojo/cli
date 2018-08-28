@@ -105,7 +105,7 @@ describe('validate', () => {
 			});
 		});
 
-		describe('builtInCommandValidation', async () => {
+		describe('builtInCommandValidation', () => {
 			beforeEach(() => {
 				consoleLogStub.reset();
 			});

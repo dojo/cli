@@ -67,7 +67,7 @@ function createValidationCommandSet(commandMaps: Map<string, Map<string, Command
 	return toValidate;
 }
 
-export async function builtInCommandValidation(validation: ValidationWrapper): Promise<any> {
+export function builtInCommandValidation(validation: ValidationWrapper): Promise<any> {
 	return new Promise((resolve) => {
 		const { commandGroup, commandName, commandSchema, commandConfig, silentSuccess } = validation;
 		const commandKey = `${commandGroup}-${commandName}`; // group and name are required properties
@@ -131,7 +131,7 @@ function validateCommands(commands: Map<string, Map<string, CommandWrapper>>, he
 	}
 }
 
-async function run(helper: Helper, args: ValidateArgs): Promise<any> {
+function run(helper: Helper, args: ValidateArgs): Promise<any> {
 	return loadExternalCommands().then((commands) => {
 		const helperContext = {};
 		const commandHelper = new CommandHelper(commands, helperContext, configurationHelperFactory);
