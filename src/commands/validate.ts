@@ -132,7 +132,7 @@ function validateCommands(commands: Map<string, Map<string, CommandWrapper>>, he
 }
 
 async function run(helper: Helper, args: ValidateArgs): Promise<any> {
-	return loadExternalCommands().then(async (commands) => {
+	return loadExternalCommands().then((commands) => {
 		const helperContext = {};
 		const commandHelper = new CommandHelper(commands, helperContext, configurationHelperFactory);
 		const validateHelper = { validate: builtInCommandValidation };
