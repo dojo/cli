@@ -5,10 +5,8 @@ import * as fs from 'fs-extra';
 import { stub, SinonStub } from 'sinon';
 
 let writeFileStub: SinonStub;
-let mkdirsStub: SinonStub;
 let consoleStub: SinonStub;
-let existsSyncStub: SinonStub;
-let mkdirSyncStub: SinonStub;
+let ensureDirStub: SinonStub;
 const testEjsSrc = 'tests/support/template.ejs';
 const testDest = '/tmp/test/destination';
 const value = 'testValue';
@@ -22,33 +20,18 @@ registerSuite('template', {
 	},
 	beforeEach() {
 		writeFileStub = stub(fs, 'writeFile').callsArg(2);
-		mkdirsStub = stub(fs, 'mkdirsSync');
-		mkdirSyncStub = stub(fs, 'mkdirSync');
-		existsSyncStub = stub(fs, 'existsSync').returns(true);
+		ensureDirStub = stub(fs, 'ensureDir').returns(true);
 	},
 	afterEach() {
-		mkdirSyncStub.restore();
-		existsSyncStub.restore();
+		ensureDirStub.restore();
 		writeFileStub.restore();
-		mkdirsStub.restore();
 	},
 
 	tests: {
 		async 'directories are checked to exist'() {
 			await template(testEjsSrc, testDest, { value });
-			assert.isTrue(existsSyncStub.called);
-			assert.strictEqual(existsSyncStub.firstCall.args[0], '/tmp/test');
-		},
-		async 'creates directories if they do not exist'() {
-			existsSyncStub.onCall(0).returns(false);
-			existsSyncStub.onCall(1).returns(false);
-			existsSyncStub.onCall(2).returns(true);
-			await template(testEjsSrc, testDest, { value });
-			assert.isTrue(existsSyncStub.called);
-			assert.strictEqual(existsSyncStub.firstCall.args[0], '/tmp/test');
-			assert.strictEqual(existsSyncStub.secondCall.args[0], '/tmp');
-			assert.strictEqual(existsSyncStub.thirdCall.args[0], '/');
-			assert.strictEqual(mkdirSyncStub.callCount, 2);
+			assert.isTrue(ensureDirStub.called);
+			assert.strictEqual(ensureDirStub.firstCall.args[0], '/tmp/test/destination');
 		},
 		async 'can render ejs file'() {
 			await template(testEjsSrc, testDest, { value });
