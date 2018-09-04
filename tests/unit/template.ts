@@ -19,8 +19,8 @@ registerSuite('template', {
 		consoleStub.restore();
 	},
 	beforeEach() {
-		writeFileStub = stub(fs, 'writeFile').callsArg(2);
-		ensureDirStub = stub(fs, 'ensureDir').returns(true);
+		writeFileStub = stub(fs, 'writeFile').resolves();
+		ensureDirStub = stub(fs, 'ensureDir').resolves();
 	},
 	afterEach() {
 		ensureDirStub.restore();

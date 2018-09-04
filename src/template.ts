@@ -7,6 +7,7 @@ export function ejsRender(source: string, replacements: Object): Promise<string>
 		renderFile(source, replacements, (err: Error, str?: string) => {
 			if (err) {
 				reject(err);
+				return;
 			}
 			resolve(str);
 		});
@@ -14,14 +15,8 @@ export function ejsRender(source: string, replacements: Object): Promise<string>
 }
 
 export function writeRenderedFile(str: string, destination: string): Promise<void> {
-	return new Promise<void>((resolve, reject) => {
-		ensureDir(destination);
-		writeFile(destination, str, (err?: Error) => {
-			if (err) {
-				reject(err);
-			}
-			resolve();
-		});
+	return ensureDir(destination).then(() => {
+		return writeFile(destination, str);
 	});
 }
 
