@@ -17,7 +17,8 @@ describe('installableCommands', () => {
 	let mockConfigurationHelper: any;
 	let configHelperGetStub: sinon.SinonStub;
 	let mockCrossSpawn: any;
-	let mockExeca: any;
+	let mockLibNpmSearch: any;
+
 	const ONE_DAY = 1000 * 60 * 60 * 24;
 	const testCommandDetails = {
 		name: '@dojo/cli-test-command',
@@ -33,7 +34,10 @@ describe('installableCommands', () => {
 	beforeEach(() => {
 		sandbox = sinon.sandbox.create();
 		mockModule = new MockModule('../../src/installableCommands', require);
-		mockModule.dependencies(['execa', 'cross-spawn', 'configstore', './configurationHelper']);
+		mockModule.dependencies(['libnpmsearch', 'cross-spawn', 'configstore', './configurationHelper']);
+
+		mockLibNpmSearch = mockModule.getMock('libnpmsearch');
+		mockLibNpmSearch.ctor.resolves([]);
 
 		mockConfigStore = mockModule.getMock('configstore');
 		mockConfigStoreGet = sinon.stub();
@@ -50,9 +54,6 @@ describe('installableCommands', () => {
 			unref: sandbox.stub()
 		});
 
-		mockExeca = mockModule.getMock('execa');
-		mockExeca.ctor.resolves({ stdout: '[]' });
-
 		mockConfigurationHelper = mockModule.getMock('./configurationHelper').default;
 		configHelperGetStub = sandbox.stub().returns({ ejected: false });
 		sandbox.stub(mockConfigurationHelper, 'sandbox').returns({
@@ -60,7 +61,6 @@ describe('installableCommands', () => {
 		});
 
 		moduleUnderTest = mockModule.getModuleUnderTest();
-
 		sandbox.stub(console, 'log');
 	});
 
@@ -72,10 +72,7 @@ describe('installableCommands', () => {
 	it('should check for installable commands if the config store is empty', () => {
 		return moduleUnderTest.default('testName').then((commands: NpmPackageDetails[]) => {
 			assert.isTrue(mockConfigStoreGet.calledWith('commands'), 'checks for stored commands');
-			assert.isTrue(
-				mockExeca.ctor.calledWithMatch('npm', ['search', '@dojo', 'cli-', '--json', '--searchstaleness', '0']),
-				'calls npm search'
-			);
+			assert.isTrue(mockLibNpmSearch.ctor.calledWith('@dojo/cli-'), 'calls npm search');
 		});
 	});
 
@@ -83,17 +80,49 @@ describe('installableCommands', () => {
 		mockConfigStoreGet.withArgs('commands').returns([testCommandDetails]);
 		return moduleUnderTest.default('testName').then((commands: NpmPackageDetails[]) => {
 			assert.isTrue(mockConfigStoreGet.calledWith('commands'), 'checks for stored commands');
-			assert.isTrue(mockExeca.ctor.notCalled, 'does not call npm search');
+			assert.isTrue(mockLibNpmSearch.ctor.notCalled, 'does not call npm search');
+		});
+	});
+
+	it('filters out none dojo scoped commands from search results', () => {
+		mockLibNpmSearch.ctor.resolves([
+			{
+				name: '@company/cli-build-app',
+				scope: 'company',
+				version: '1.2.8',
+				description: 'CLI command to build Company Framework applications'
+			},
+			{
+				name: '@dojo/cli-build-app',
+				scope: 'dojo',
+				version: '3.0.7',
+				description: 'CLI command to build Dojo applications'
+			}
+		]);
+		return moduleUnderTest.default('testName').then((commands: NpmPackageDetails[]) => {
+			assert.equal(commands.length, 1);
+			assert.equal(commands[0].name, '@dojo/cli-build-app');
 		});
 	});
 
 	it('filters out @dojo/cli from search results', () => {
-		mockExeca.ctor.resolves({
-			stdout: `[{"name": "dojo-cli-helper"}, {"name": "@dojo/cli"}, {"name": "@dojo/cli-test"}]`
-		});
+		mockLibNpmSearch.ctor.resolves([
+			{
+				name: '@dojo/cli',
+				scope: 'dojo',
+				version: '3.0.0',
+				description: 'Dojo CLI utility'
+			},
+			{
+				name: '@dojo/cli-build-app',
+				scope: 'dojo',
+				version: '3.0.7',
+				description: 'CLI command to build Dojo applications'
+			}
+		]);
 		return moduleUnderTest.default('testName').then((commands: NpmPackageDetails[]) => {
 			assert.equal(commands.length, 1);
-			assert.equal(commands[0].name, '@dojo/cli-test');
+			assert.equal(commands[0].name, '@dojo/cli-build-app');
 		});
 	});
 
