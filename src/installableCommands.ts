@@ -1,4 +1,4 @@
-const search: any = require('libnpmsearch');
+import search = require('libnpmsearch');
 import { join } from 'path';
 const spawn: any = require('cross-spawn');
 import { NpmPackageDetails, CommandWrapper, GroupMap } from './interfaces';
@@ -41,12 +41,12 @@ async function searchNpmForCommands(): Promise<NpmPackageDetails[] | undefined> 
 	try {
 		const results = await search('@dojo/cli-');
 		const filteredResults = results
-			.filter((result: NpmPackageDetails) => {
+			.filter((result) => {
 				return result.scope === 'dojo' && result.name !== '@dojo/cli';
 			})
-			.map((result: NpmPackageDetails) => {
-				const { name, version, description, scope } = result;
-				return { name, version, description, scope };
+			.map((result) => {
+				const { name, version, description } = result;
+				return { name, version, description };
 			});
 		return filteredResults;
 	} catch (error) {
