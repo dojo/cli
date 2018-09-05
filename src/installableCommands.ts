@@ -52,8 +52,8 @@ async function searchNpmForCommands(): Promise<NpmPackageDetails[] | undefined> 
 				};
 			});
 		return filteredResults;
-	} catch (e) {
-		console.error('There was an error searching npm: ', e);
+	} catch (error) {
+		console.error('There was an error searching npm: ', error.message);
 	}
 }
 

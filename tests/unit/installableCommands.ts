@@ -62,6 +62,7 @@ describe('installableCommands', () => {
 
 		moduleUnderTest = mockModule.getModuleUnderTest();
 		sandbox.stub(console, 'log');
+		sandbox.stub(console, 'error');
 	});
 
 	afterEach(() => {
@@ -124,6 +125,14 @@ describe('installableCommands', () => {
 			assert.equal(commands.length, 1);
 			assert.equal(commands[0].name, '@dojo/cli-build-app');
 		});
+	});
+
+	it('alerts the user if something went wrong in the search', async () => {
+		const error = new Error('Test error');
+		mockLibNpmSearch.ctor.rejects(error);
+		await moduleUnderTest.default('testName');
+		assert.equal((console.error as sinon.SinonStub).getCall(0).args[0], 'There was an error searching npm: ');
+		assert.equal((console.error as sinon.SinonStub).getCall(0).args[1], 'Test error');
 	});
 
 	it('creates installable command prompts', () => {
