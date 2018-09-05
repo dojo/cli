@@ -8,16 +8,10 @@ const pkgDir = require('pkg-dir');
 
 const appPath = pkgDir.sync(process.cwd());
 let dojoRcPath: string;
+let packageJsonPath: string;
 if (appPath) {
 	dojoRcPath = join(appPath, '.dojorc');
-}
-
-const packageJsonPath = join(appPath, 'package.json');
-let hasPackageConfig = false;
-if (existsSync(packageJsonPath)) {
-	const { dojo } = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
-
-	hasPackageConfig = typeof dojo === 'object';
+	packageJsonPath = join(appPath, 'package.json');
 }
 
 function readPackageConfig() {
@@ -67,15 +61,17 @@ export function getConfigFile(): Config | undefined {
 }
 
 function getConfig(): Config | undefined {
-	if (!dojoRcExists() && hasPackageConfig) {
-		return readPackageConfig();
+	const packageConfig = readPackageConfig();
+	if (!dojoRcExists() && typeof packageConfig === 'object') {
+		return packageConfig;
 	} else {
 		return getConfigFile();
 	}
 }
 
 function writeConfig(config: Config) {
-	if (!dojoRcExists() && hasPackageConfig) {
+	const packageConfig = readPackageConfig();
+	if (!dojoRcExists() && typeof packageConfig === 'object') {
 		writePackageConfig(config);
 	} else {
 		writeConfigFile(config);
@@ -108,7 +104,7 @@ class SingleCommandConfigurationHelper implements ConfigurationHelper {
 	 */
 	get(commandName: string = this._configurationKey): Config {
 		const config = getConfig() || {};
-		return config[this._configurationKey];
+		return config[commandName];
 	}
 
 	/**

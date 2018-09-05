@@ -118,7 +118,7 @@ registerSuite('Configuration Helper', {
 			'Should return undefined command config when no dojorc config for command exists'() {
 				mockFs.existsSync.returns(false);
 				const config = configurationHelper.sandbox('testGroupName', 'testCommandName').get();
-				assert.isTrue(mockFs.readFileSync.notCalled);
+				assert.isTrue(mockFs.readFileSync.calledOnce);
 				assert.equal(config, undefined);
 			},
 			'Should return existing config when a dojorc entry exists'() {
@@ -141,7 +141,9 @@ registerSuite('Configuration Helper', {
 				);
 			},
 			'Should throw an error when the config is not valid JSON'() {
-				mockFs.readFileSync.returns('{]');
+				mockFs.readFileSync = sinon.stub();
+				mockFs.readFileSync.onCall(0).returns('{}');
+				mockFs.readFileSync.onCall(1).returns('{]');
 				const test = () => configurationHelper.sandbox('testGroupName', 'testCommandName').get();
 				assert.throws(test, Error, /^Invalid \.dojorc: /);
 			}
@@ -170,8 +172,9 @@ registerSuite('Configuration Helper', {
 
 		tests: {
 			'Should return undefined config when pkgdir returns null'() {
+				mockFs.readFileSync = sinon.stub();
+				mockFs.readFileSync.onCall(0).returns('{}');
 				const config = configurationHelper.sandbox('testGroupName', 'testCommandName').get();
-				assert.isFalse(mockFs.readFileSync.called);
 				assert.isFalse(mockPath.join.called);
 				assert.equal(config, undefined);
 			},
