@@ -41,19 +41,16 @@ async function searchNpmForCommands(): Promise<NpmPackageDetails[] | undefined> 
 	try {
 		const results = await search('@dojo/cli-');
 		const filteredResults = results
-			.filter((result: any) => {
+			.filter((result: NpmPackageDetails) => {
 				return result.scope === 'dojo' && result.name !== '@dojo/cli';
 			})
-			.map((result: any) => {
-				return {
-					name: result.name,
-					version: result.version,
-					description: result.description
-				};
+			.map((result: NpmPackageDetails) => {
+				const { name, version, description, scope } = result;
+				return { name, version, description, scope };
 			});
 		return filteredResults;
 	} catch (error) {
-		console.error('There was an error searching npm: ', error.message);
+		console.error('There was an error searching npm: ', error.message || error);
 	}
 }
 

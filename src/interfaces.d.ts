@@ -4,6 +4,7 @@ export interface NpmPackageDetails {
 	name: string;
 	description: string;
 	version: string;
+	scope: string;
 }
 
 export type CliConfig = {
