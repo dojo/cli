@@ -64,7 +64,7 @@
     "tslib": "1.8.1",
     "update-notifier": "2.5.0",
     "yargs": "10.1.2",
-    "readline-sync": "^1.4.9"
+    "readline-sync": "1.4.9"
   },
   "devDependencies": {
     "@dojo/scripts": "~3.0.1",

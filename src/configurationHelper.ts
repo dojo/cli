@@ -1,8 +1,9 @@
 import chalk from 'chalk';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
-import { Config, ConfigurationHelper } from './interfaces';
+import { Config, ConfigurationHelper, ConfigWrapper } from './interfaces';
 import * as readlineSync from 'readline-sync';
+import * as detectIndent from 'detect-indent';
 
 const pkgDir = require('pkg-dir');
 
@@ -14,14 +15,37 @@ if (appPath) {
 	packageJsonPath = join(appPath, 'package.json');
 }
 
-function readPackageConfig() {
-	const { dojo } = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
-	return dojo;
+let canWriteToPackageJson: boolean | undefined;
+const defaultIndent = 2;
+
+function parseConfigs(): ConfigWrapper {
+	const configWrapper: ConfigWrapper = {};
+
+	if (existsSync(dojoRcPath)) {
+		try {
+			const dojoRcFile = readFileSync(dojoRcPath, 'utf8');
+			configWrapper.dojoRcIndent = detectIndent(dojoRcFile).indent;
+			configWrapper.dojoRcConfig = JSON.parse(dojoRcFile);
+		} catch (error) {
+			throw Error(chalk.red(`Could not parse the .dojorc  file to get config : ${error}`));
+		}
+	}
+
+	if (existsSync(packageJsonPath)) {
+		try {
+			const packageJsonFile = readFileSync(packageJsonPath, 'utf8');
+			const packageJson = JSON.parse(packageJsonFile);
+			configWrapper.packageJsonIndent = detectIndent(packageJsonFile).indent;
+			configWrapper.packageJsonConfig = packageJson.dojo;
+		} catch (error) {
+			throw Error(chalk.red(`Could not parse the package.json file to get config: ${error}`));
+		}
+	}
+
+	return configWrapper;
 }
 
-let canWriteToPackageJson: boolean | undefined;
-
-function writePackageConfig(config: Config) {
+function writePackageConfig(config: Config, indent: string | number) {
 	if (canWriteToPackageJson === undefined) {
 		canWriteToPackageJson = Boolean(
 			readlineSync.keyInYN(
@@ -32,49 +56,26 @@ function writePackageConfig(config: Config) {
 	}
 
 	if (canWriteToPackageJson) {
-		const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
-
+		const packageJsonFile = readFileSync(packageJsonPath, 'utf8');
+		const packageJson = JSON.parse(packageJsonFile);
 		packageJson.dojo = config;
-
-		writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
+		const newPackageJson = JSON.stringify(packageJson, null, indent);
+		writeFileSync(packageJsonPath, newPackageJson);
 	}
 }
 
-function writeConfigFile(config: Config) {
-	writeFileSync(dojoRcPath, JSON.stringify(config, null, 2));
+function writeDojoRcConfig(config: Config, indent: string | number) {
+	const json = JSON.stringify(config, null, indent);
+	writeFileSync(dojoRcPath, json);
 }
 
-function dojoRcExists() {
-	return !!dojoRcPath && existsSync(dojoRcPath);
-}
+export function getConfig(): Config | undefined {
+	const { packageJsonConfig, dojoRcConfig } = parseConfigs();
 
-export function getConfigFile(): Config | undefined {
-	const configExists = dojoRcExists();
-	if (configExists) {
-		try {
-			return JSON.parse(readFileSync(dojoRcPath, 'utf8'));
-		} catch (error) {
-			throw new Error(`Invalid .dojorc: ${error}`);
-		}
-	}
-	return undefined;
-}
-
-function getConfig(): Config | undefined {
-	const packageConfig = readPackageConfig();
-	if (!dojoRcExists() && typeof packageConfig === 'object') {
-		return packageConfig;
+	if (dojoRcConfig === undefined && typeof packageJsonConfig === 'object') {
+		return packageJsonConfig;
 	} else {
-		return getConfigFile();
-	}
-}
-
-function writeConfig(config: Config) {
-	const packageConfig = readPackageConfig();
-	if (!dojoRcExists() && typeof packageConfig === 'object') {
-		writePackageConfig(config);
-	} else {
-		writeConfigFile(config);
+		return dojoRcConfig;
 	}
 }
 
@@ -123,18 +124,35 @@ class SingleCommandConfigurationHelper implements ConfigurationHelper {
 	 */
 	set(config: Config, commandName: string): void;
 	set(config: Config, commandName?: string): void {
-		if (!dojoRcPath) {
-			console.warn(chalk.red('You cannot save a config outside of a project directory'));
+		if (!dojoRcPath && !packageJsonPath) {
+			console.error(chalk.red('You cannot save a config outside of a project directory'));
 			return;
 		}
 
-		const dojoRc = getConfigFile() || {};
-		const commmandConfig: Config = dojoRc[this._configurationKey] || {};
+		const { packageJsonConfig, packageJsonIndent, dojoRcConfig, dojoRcIndent } = parseConfigs();
+
+		const hasPackageConfig = typeof packageJsonConfig === 'object';
+		const hasDojoRcConfig = typeof dojoRcConfig === 'object';
+
+		if (hasPackageConfig && hasDojoRcConfig) {
+			console.warn(
+				chalk.yellow(`Warning: Both a .dojorc configuration and a dojo configuration were found.
+				The .dojorc file will take precedent. It is recommended you stick to one configuration option.`)
+			);
+		}
+
+		const updateConfig = dojoRcConfig || packageJsonConfig || {};
+
+		const commmandConfig: Config = updateConfig[this._configurationKey] || {};
 
 		Object.assign(commmandConfig, config);
-		Object.assign(dojoRc, { [this._configurationKey]: commmandConfig });
+		Object.assign(updateConfig, { [this._configurationKey]: commmandConfig });
 
-		writeConfig(dojoRc);
+		if (!hasDojoRcConfig && hasPackageConfig) {
+			writePackageConfig(updateConfig, packageJsonIndent || defaultIndent);
+		} else {
+			writeDojoRcConfig(updateConfig, dojoRcIndent || defaultIndent);
+		}
 	}
 }
 
