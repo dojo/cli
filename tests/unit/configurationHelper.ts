@@ -360,5 +360,89 @@ registerSuite('Configuration Helper', {
 				assert.isFalse(mockFs.writeFileSync.called);
 			}
 		}
+	},
+	'package.json and .dojorc': {
+		beforeEach() {
+			configToIndent = {
+				dojo: {
+					test: {
+						hello: 'world'
+					},
+					'testGroupName-testCommandName': {
+						one: 'two',
+						hello: 'world'
+					}
+				}
+			};
+			sandbox = sinon.sandbox.create();
+			mockModule = new MockModule('../../src/configurationHelper', require);
+			mockModule.dependencies(['pkg-dir', 'fs', 'path', 'readline-sync', dojoRcPath]);
+			mockPkgDir = mockModule.getMock('pkg-dir');
+			mockPkgDir.ctor.sync = sandbox.stub().returns(packagePath);
+			mockFs = mockModule.getMock('fs');
+			mockFs.existsSync = sinon.stub().returns(true);
+			mockFs.readFileSync.onCall(0).returns(
+				JSON.stringify(
+					{
+						test: {
+							hello: 'world'
+						},
+						'testGroupName-testCommandName': {
+							one: 'two'
+						}
+					},
+					null,
+					'    '
+				)
+			);
+			mockFs.readFileSync.onCall(1).returns(
+				JSON.stringify(
+					{
+						dojo: {
+							test: {
+								hello: 'world'
+							},
+							'testGroupName-testCommandName': {
+								one: 'two'
+							}
+						}
+					},
+					null,
+					'    '
+				)
+			);
+			mockFs.writeFileSync = sinon.stub();
+			mockPath = mockModule.getMock('path');
+			mockPath.join = sinon
+				.stub()
+				.callsFake((...args) => (args.some((a) => a === 'package.json') ? packageJsonPath : dojoRcPath));
+			mockReadlineSync = mockModule.getMock('readline-sync');
+			mockReadlineSync.keyInYN = sinon.stub().returns(true);
+			moduleUnderTest = mockModule.getModuleUnderTest().default;
+			configurationHelper = moduleUnderTest;
+			consoleWarnStub = sandbox.stub(console, 'warn');
+		},
+		afterEach() {
+			sandbox.restore();
+			mockModule.destroy();
+		},
+		tests: {
+			'shows warning about having both ,dojorc and package.json during get'() {
+				assert.deepEqual(configurationHelper.sandbox('testGroupName', 'testCommandName').get(), {
+					one: 'two'
+				});
+				assert.isTrue(mockFs.existsSync.calledTwice, 'existsSync is called twice');
+				assert.isTrue(mockFs.readFileSync.calledTwice, 'readFileSync is called twice');
+				assert.isTrue(consoleWarnStub.calledOnce, 'console.warn is called once');
+			},
+			'shows warning about having both ,dojorc and package.json during set'() {
+				configurationHelper.sandbox('testGroupName', 'testCommandName').set({
+					hello: 'world'
+				});
+				assert.isTrue(mockFs.existsSync.calledTwice, 'existsSync is called twice');
+				assert.isTrue(mockFs.readFileSync.calledTwice, 'readFileSync is called twice');
+				assert.isTrue(consoleWarnStub.calledOnce, 'console.warn is called once');
+			}
+		}
 	}
 });

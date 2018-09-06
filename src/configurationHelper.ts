@@ -71,12 +71,30 @@ function writeDojoRcConfig(config: Config, indent: string | number) {
 
 export function getConfig(): Config | undefined {
 	const { packageJsonConfig, dojoRcConfig } = parseConfigs();
-
-	if (dojoRcConfig === undefined && typeof packageJsonConfig === 'object') {
+	const { hasDojoRcConfig, hasPackageConfig } = checkForMultiConfig(dojoRcConfig, packageJsonConfig);
+	if (!hasDojoRcConfig && hasPackageConfig) {
 		return packageJsonConfig;
 	} else {
 		return dojoRcConfig;
 	}
+}
+
+function checkForMultiConfig(dojoRcConfig: Config | undefined, packageJsonConfig: Config | undefined) {
+	const hasPackageConfig = typeof packageJsonConfig === 'object';
+	const hasDojoRcConfig = typeof dojoRcConfig === 'object';
+
+	if (hasPackageConfig && hasDojoRcConfig) {
+		console.warn(
+			chalk.yellow(
+				`Warning: Both a .dojorc configuration and a dojo configuration in your package.json were found. The .dojorc file will take precedent. It is recommended you stick to one configuration option.`
+			)
+		);
+	}
+
+	return {
+		hasPackageConfig,
+		hasDojoRcConfig
+	};
 }
 
 class SingleCommandConfigurationHelper implements ConfigurationHelper {
@@ -130,16 +148,7 @@ class SingleCommandConfigurationHelper implements ConfigurationHelper {
 		}
 
 		const { packageJsonConfig, packageJsonIndent, dojoRcConfig, dojoRcIndent } = parseConfigs();
-
-		const hasPackageConfig = typeof packageJsonConfig === 'object';
-		const hasDojoRcConfig = typeof dojoRcConfig === 'object';
-
-		if (hasPackageConfig && hasDojoRcConfig) {
-			console.warn(
-				chalk.yellow(`Warning: Both a .dojorc configuration and a dojo configuration were found.
-				The .dojorc file will take precedent. It is recommended you stick to one configuration option.`)
-			);
-		}
+		const { hasDojoRcConfig, hasPackageConfig } = checkForMultiConfig(dojoRcConfig, packageJsonConfig);
 
 		const updateConfig = dojoRcConfig || packageJsonConfig || {};
 
