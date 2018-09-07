@@ -99,15 +99,16 @@ function isBuiltInCommand(commandPath: string): boolean {
  * @returns {string}
  */
 function createOutput(myPackageDetails: PackageDetails, commandVersions: ModuleVersion[]) {
-	let output = '';
+	let output = versionCurrentVersion.replace('{version}', chalk.blue(myPackageDetails.version));
 	if (commandVersions.length) {
 		output += versionRegisteredCommands;
-		output += '\n' + commandVersions.map((command) => `${command.name}@${command.version}`).join('\n') + '\n';
+		output +=
+			'\n' +
+			commandVersions.map((command) => `  ▹  ${command.name}@${chalk.blue(command.version)}`).join('\n') +
+			'\n';
 	} else {
 		output += versionNoRegisteredCommands;
 	}
-
-	output += versionCurrentVersion.replace('{version}', chalk.blue(myPackageDetails.version));
 	return output;
 }
 
