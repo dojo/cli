@@ -49,7 +49,7 @@ function writePackageConfig(config: Config, indent: string | number) {
 	if (canWriteToPackageJson === undefined) {
 		canWriteToPackageJson = Boolean(
 			readlineSync.keyInYN(
-				'You are using a "dojo" configuration in your package.json. Saving the current settings will update your package.json. Continue? [ (N)o / (Y)OLO ]: ',
+				'You are using a "dojo" configuration in your package.json. Saving the current settings will update your package.json. Continue? [ (N)o / (Y)es ]: ',
 				{ guide: false }
 			)
 		);
