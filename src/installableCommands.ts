@@ -1,4 +1,4 @@
-import * as execa from 'execa';
+import search = require('libnpmsearch');
 import { join } from 'path';
 const spawn: any = require('cross-spawn');
 import { NpmPackageDetails, CommandWrapper, GroupMap } from './interfaces';
@@ -6,7 +6,6 @@ import * as Configstore from 'configstore';
 import { isEjected } from './loadCommands';
 import chalk from 'chalk';
 
-const INITIAL_TIMEOUT = 3000;
 const ONE_DAY = 1000 * 60 * 60 * 24;
 
 export default async function(name: string): Promise<NpmPackageDetails[]> {
@@ -30,7 +29,7 @@ export default async function(name: string): Promise<NpmPackageDetails[]> {
 
 export async function getLatestCommands(name: string): Promise<NpmPackageDetails[]> {
 	const conf = new Configstore(name);
-	const commands = await search(INITIAL_TIMEOUT);
+	const commands = await searchNpmForCommands();
 	if (commands && commands.length) {
 		conf.set('commands', commands);
 		conf.set('lastUpdated', Date.now());
@@ -38,17 +37,18 @@ export async function getLatestCommands(name: string): Promise<NpmPackageDetails
 	return commands || [];
 }
 
-async function search(timeout: number = 0): Promise<NpmPackageDetails[] | undefined> {
+async function searchNpmForCommands(): Promise<NpmPackageDetails[] | undefined> {
 	try {
-		const { stdout } = await execa('npm', ['search', '@dojo', 'cli-', '--json', '--searchstaleness', '0'], {
-			timeout
-		});
-		const commands = JSON.parse(stdout);
-		return commands.filter(({ name }: NpmPackageDetails) => {
-			return /^@dojo\/cli-/.test(name);
-		});
-	} catch (e) {
-		console.error('Invalid response from npm search');
+		const results = await search('@dojo/cli-');
+		return results
+			.filter((result) => {
+				return result.scope === 'dojo' && result.name !== '@dojo/cli';
+			})
+			.map(({ name, version, description }) => {
+				return { name, version, description };
+			});
+	} catch (error) {
+		console.error('There was an error searching npm: ', error.message || error);
 	}
 }
 
