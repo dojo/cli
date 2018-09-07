@@ -45,7 +45,7 @@ async function getLatestCommandVersions(): Promise<NpmPackageDetails[]> {
 	const packageJsonFilePath = join(packagePath, 'package.json');
 	const packageJson: PackageDetails = require(packageJsonFilePath);
 
-	console.log('Fetching latest version information...');
+	console.log(chalk.yellow('Fetching latest version information...'));
 
 	return await getLatestCommands(packageJson.name);
 }
