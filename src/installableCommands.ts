@@ -40,15 +40,13 @@ export async function getLatestCommands(name: string): Promise<NpmPackageDetails
 async function searchNpmForCommands(): Promise<NpmPackageDetails[] | undefined> {
 	try {
 		const results = await search('@dojo/cli-');
-		const filteredResults = results
+		return results
 			.filter((result) => {
 				return result.scope === 'dojo' && result.name !== '@dojo/cli';
 			})
-			.map((result) => {
-				const { name, version, description } = result;
+			.map(({ name, version, description }) => {
 				return { name, version, description };
 			});
-		return filteredResults;
 	} catch (error) {
 		console.error('There was an error searching npm: ', error.message || error);
 	}
