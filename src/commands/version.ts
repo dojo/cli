@@ -24,6 +24,7 @@ const INBUILT_COMMAND_VERSION = '__IN_BUILT_COMMAND__';
 interface ModuleVersion {
 	name: string;
 	version: string;
+	latest?: string;
 	group: string;
 }
 
@@ -44,7 +45,7 @@ async function getLatestCommandVersions(): Promise<NpmPackageDetails[]> {
 	const packageJsonFilePath = join(packagePath, 'package.json');
 	const packageJson: PackageDetails = require(packageJsonFilePath);
 
-	console.log('Fetching latest version information...');
+	console.log(chalk.yellow('Fetching latest version information...'));
 
 	return await getLatestCommands(packageJson.name);
 }
@@ -66,16 +67,8 @@ async function areCommandsOutdated(moduleVersions: ModuleVersion[]): Promise<any
 	}, {});
 
 	return moduleVersions.map(({ name, version, group }) => {
-		const latestVersion = latestVersions[name];
-		const canBeUpdated = version !== latestVersion;
-		const versionStr = canBeUpdated
-			? `${chalk.blue(version)} ${chalk.green(`(latest is ${latestVersion})`)}`
-			: chalk.blue(version);
-		return {
-			name: name,
-			version: versionStr,
-			group: group
-		};
+		const latest = latestVersions[name];
+		return { name, version, latest, group };
 	});
 }
 
@@ -99,15 +92,24 @@ function isBuiltInCommand(commandPath: string): boolean {
  * @returns {string}
  */
 function createOutput(myPackageDetails: PackageDetails, commandVersions: ModuleVersion[]) {
-	let output = '';
+	let output = versionCurrentVersion.replace('{version}', chalk.blue(myPackageDetails.version));
 	if (commandVersions.length) {
 		output += versionRegisteredCommands;
-		output += '\n' + commandVersions.map((command) => `${command.name}@${command.version}`).join('\n') + '\n';
+		output +=
+			'\n' +
+			commandVersions
+				.map((command) => {
+					return command.version === command.latest || command.latest === undefined
+						? `  ▹  ${command.name}@${chalk.blue(command.version)}`
+						: `  ▹  ${command.name}@${chalk.blue(command.version)} ${chalk.green(
+								`(latest is ${command.latest})`
+						  )}`;
+				})
+				.join('\n') +
+			'\n';
 	} else {
 		output += versionNoRegisteredCommands;
 	}
-
-	output += versionCurrentVersion.replace('{version}', chalk.blue(myPackageDetails.version));
 	return output;
 }
 
