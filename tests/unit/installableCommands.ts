@@ -85,7 +85,7 @@ describe('installableCommands', () => {
 		});
 	});
 
-	it('filters out none dojo scoped commands from search results', () => {
+	it('filters out non dojo scoped commands from search results', () => {
 		mockLibNpmSearch.ctor.resolves([
 			{
 				name: '@company/cli-build-app',

@@ -15,13 +15,13 @@ declare module 'libnpmsearch' {
 	}
 
 	interface NpmSearchOpts {
-		limit: number;
-		offset: number;
-		detailed: boolean;
-		sortBy: 'optimal' | 'quality' | 'maintenance' | 'popularity';
-		quality: number;
-		maintenance: number;
-		popularity: number;
+		limit?: number;
+		offset?: number;
+		detailed?: boolean;
+		sortBy?: 'optimal' | 'quality' | 'maintenance' | 'popularity';
+		quality?: number;
+		maintenance?: number;
+		popularity?: number;
 	}
 
 	function search(query: string | string[], opts?: NpmSearchOpts): Promise<NpmSearchResult[]>;
