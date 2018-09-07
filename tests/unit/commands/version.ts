@@ -12,9 +12,9 @@ import { getCommandWrapperWithConfiguration } from '../../support/testHelper';
 const validPackageInfo: any = require('../../support/valid-package/package.json');
 const anotherValidPackageInfo: any = require('../../support/another-valid-package/package.json');
 
-const outputPrefix = 'The currently installed commands are:\n';
-const noCommandsPrefix = 'There are no registered commands available.';
-const outputSuffix = '\nYou are currently running @dojo/cli@' + chalk.blue('1.0.0');
+const outputPrefix = 'You are currently running @dojo/cli@' + chalk.blue('1.0.0') + '\n\n';
+const outputSuffix = 'The currently installed commands are:\n';
+const outputSuffixNoCommands = 'There are no registered commands available.';
 
 describe('version command', () => {
 	let moduleUnderTest: any;
@@ -59,7 +59,7 @@ describe('version command', () => {
 	});
 
 	it(`should run and return 'no registered commands' when there are no installed commands`, () => {
-		const noCommandOutput = `${noCommandsPrefix}${outputSuffix}`;
+		const noCommandOutput = `${outputPrefix}${outputSuffixNoCommands}`;
 		const groupMap = new Map();
 
 		const helper = { command: 'version' };
@@ -75,7 +75,7 @@ describe('version command', () => {
 	});
 
 	it(`should run and return 'no registered commands' when passed an invalid path to an installed command`, () => {
-		const noCommandOutput = `${noCommandsPrefix}${outputSuffix}`;
+		const noCommandOutput = `${outputPrefix}${outputSuffixNoCommands}`;
 
 		const badCommandWrapper = getCommandWrapperWithConfiguration({
 			group: 'apple',
@@ -110,12 +110,6 @@ describe('version command', () => {
 			name: 'anotherTest',
 			path: join(__dirname, '../../support/another-valid-package')
 		});
-
-		const expectedOutput = `${outputPrefix}
-${validPackageInfo.name}@${validPackageInfo.version}
-${anotherValidPackageInfo.name}@${anotherValidPackageInfo.version}
-${outputSuffix}`;
-
 		const commandMap: CommandMap = new Map<string, CommandWrapper>([
 			['installedCommand1', installedCommandWrapper1],
 			['installedCommand2', installedCommandWrapper2]
@@ -123,6 +117,11 @@ ${outputSuffix}`;
 		const groupMap = new Map([['test', commandMap]]);
 		mockAllCommands.default = sandbox.stub().resolves(groupMap);
 		const helper = { command: 'version' };
+
+		const expectedOutput = `${outputPrefix}${outputSuffix}
+  ▹  ${validPackageInfo.name}@${chalk.blue(validPackageInfo.version)}
+  ▹  ${anotherValidPackageInfo.name}@${chalk.blue(anotherValidPackageInfo.version)}`;
+
 		return moduleUnderTest.run(helper, { outdated: false }).then(
 			() => {
 				assert.equal(logStub.firstCall.args[0].trim(), expectedOutput);
@@ -146,18 +145,17 @@ ${outputSuffix}`;
 			path: join(__dirname, '../../../src/commands/builtInCommand.js')
 		});
 
-		const expectedOutput = `${outputPrefix}
-${validPackageInfo.name}@${validPackageInfo.version}
-${outputSuffix}`;
-
 		const commandMap: CommandMap = new Map<string, CommandWrapper>([
 			['installedCommand1', installedCommandWrapper],
 			['builtInCommand1', builtInCommandWrapper]
 		]);
 		const groupMap = new Map([['test', commandMap]]);
 
-		const helper = { command: 'version' };
 		mockAllCommands.default = sandbox.stub().resolves(groupMap);
+		const helper = { command: 'version' };
+		const expectedOutput = `${outputPrefix}${outputSuffix}
+  ▹  ${validPackageInfo.name}@${chalk.blue(validPackageInfo.version)}`;
+
 		return moduleUnderTest.run(helper, { outdated: false }).then(
 			() => {
 				assert.equal(logStub.firstCall.args[0].trim(), expectedOutput);
@@ -182,9 +180,8 @@ ${outputSuffix}`;
 			path: join(__dirname, '../../support/valid-package')
 		});
 
-		const expectedOutput = `${outputPrefix}
-${validPackageInfo.name}@${chalk.blue(validPackageInfo.version)}
-${outputSuffix}`;
+		const expectedOutput = `${outputPrefix}${outputSuffix}
+  ▹  ${validPackageInfo.name}@${chalk.blue(validPackageInfo.version)}`;
 
 		const commandMap: CommandMap = new Map<string, CommandWrapper>([
 			['installedCommand1', installedCommandWrapper]
@@ -217,9 +214,8 @@ ${outputSuffix}`;
 			path: join(__dirname, '../../support/valid-package')
 		});
 
-		const expectedOutput = `${outputPrefix}
-${validPackageInfo.name}@${chalk.blue(validPackageInfo.version)} ${chalk.green('(latest is 1.2.3)')}
-${outputSuffix}`;
+		const expectedOutput = `${outputPrefix}${outputSuffix}
+  ▹  ${validPackageInfo.name}@${chalk.blue(validPackageInfo.version)} ${chalk.green('(latest is 1.2.3)')}`;
 
 		const commandMap: CommandMap = new Map<string, CommandWrapper>([
 			['installedCommand1', installedCommandWrapper]
