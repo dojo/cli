@@ -192,7 +192,7 @@ describe('version command', () => {
 		mockAllCommands.default = sandbox.stub().resolves(groupMap);
 		return moduleUnderTest.run(helper, { outdated: true }).then(
 			() => {
-				assert.isTrue(logStub.firstCall.calledWith('Fetching latest version information...'));
+				assert.isTrue(logStub.firstCall.calledWith(chalk.yellow('Fetching latest version information...')));
 				assert.equal(logStub.secondCall.args[0].trim(), expectedOutput);
 			},
 			() => {
@@ -226,7 +226,7 @@ describe('version command', () => {
 		mockAllCommands.default = sandbox.stub().resolves(groupMap);
 		return moduleUnderTest.run(helper, { outdated: true }).then(
 			() => {
-				assert.isTrue(logStub.firstCall.calledWith('Fetching latest version information...'));
+				assert.isTrue(logStub.firstCall.calledWith(chalk.yellow('Fetching latest version information...')));
 				assert.equal(logStub.secondCall.args[0].trim(), expectedOutput);
 			},
 			() => {
@@ -255,7 +255,7 @@ describe('version command', () => {
 		mockAllCommands.default = sandbox.stub().resolves(groupMap);
 		return moduleUnderTest.run(helper, { outdated: true }).then(
 			() => {
-				assert.isTrue(logStub.firstCall.calledWith('Fetching latest version information...'));
+				assert.isTrue(logStub.firstCall.calledWith(chalk.yellow('Fetching latest version information...')));
 				assert.isTrue(logStub.secondCall.calledWith(expectedOutput));
 			},
 			() => {
