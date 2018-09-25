@@ -41,7 +41,6 @@ function parseConfigs(): ConfigWrapper {
 			throw Error(chalk.red(`Could not parse the package.json file to get config: ${error}`));
 		}
 	}
-
 	return configWrapper;
 }
 
@@ -71,7 +70,9 @@ function writeDojoRcConfig(config: Config, indent: string | number) {
 
 export function getConfig(): Config | undefined {
 	const { packageJsonConfig, dojoRcConfig } = parseConfigs();
-	const { hasDojoRcConfig, hasPackageConfig } = checkForMultiConfig(dojoRcConfig, packageJsonConfig);
+	const hasPackageConfig = typeof packageJsonConfig === 'object';
+	const hasDojoRcConfig = typeof dojoRcConfig === 'object';
+
 	if (!hasDojoRcConfig && hasPackageConfig) {
 		return packageJsonConfig;
 	} else {
@@ -79,22 +80,18 @@ export function getConfig(): Config | undefined {
 	}
 }
 
-function checkForMultiConfig(dojoRcConfig: Config | undefined, packageJsonConfig: Config | undefined) {
+function warnAboutMultiConfig() {
+	const warning = `Warning: Both a .dojorc configuration and a dojo configuration in your package.json were found. The .dojorc file will take precedent. It is recommended you stick to one configuration option.`;
+	console.warn(chalk.yellow(warning));
+}
+
+export function checkForMultiConfig() {
+	const { dojoRcConfig, packageJsonConfig } = parseConfigs();
 	const hasPackageConfig = typeof packageJsonConfig === 'object';
 	const hasDojoRcConfig = typeof dojoRcConfig === 'object';
-
 	if (hasPackageConfig && hasDojoRcConfig) {
-		console.warn(
-			chalk.yellow(
-				`Warning: Both a .dojorc configuration and a dojo configuration in your package.json were found. The .dojorc file will take precedent. It is recommended you stick to one configuration option.`
-			)
-		);
+		warnAboutMultiConfig();
 	}
-
-	return {
-		hasPackageConfig,
-		hasDojoRcConfig
-	};
 }
 
 class SingleCommandConfigurationHelper implements ConfigurationHelper {
@@ -148,7 +145,8 @@ class SingleCommandConfigurationHelper implements ConfigurationHelper {
 		}
 
 		const { packageJsonConfig, packageJsonIndent, dojoRcConfig, dojoRcIndent } = parseConfigs();
-		const { hasDojoRcConfig, hasPackageConfig } = checkForMultiConfig(dojoRcConfig, packageJsonConfig);
+		const hasPackageConfig = typeof packageJsonConfig === 'object';
+		const hasDojoRcConfig = typeof dojoRcConfig === 'object';
 
 		const updateConfig = dojoRcConfig || packageJsonConfig || {};
 

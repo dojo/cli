@@ -17,6 +17,7 @@ let configurationHelper: any;
 let consoleErrorStub: sinon.SinonStub;
 let consoleWarnStub: sinon.SinonStub;
 let configToIndent: any;
+let mockcheckForMultiConfig: any;
 
 const packagePath = pathResolve(__dirname, '../support');
 const dojoRcPath = `${packagePath}/.dojorc`;
@@ -361,87 +362,42 @@ registerSuite('Configuration Helper', {
 			}
 		}
 	},
-	'package.json and .dojorc': {
+
+	checkForMultiConfig: {
 		beforeEach() {
-			configToIndent = {
-				dojo: {
-					test: {
-						hello: 'world'
-					},
-					'testGroupName-testCommandName': {
-						one: 'two',
-						hello: 'world'
-					}
-				}
-			};
 			sandbox = sinon.sandbox.create();
 			mockModule = new MockModule('../../src/configurationHelper', require);
-			mockModule.dependencies(['pkg-dir', 'fs', 'path', 'readline-sync', dojoRcPath]);
+			mockModule.dependencies(['pkg-dir', 'fs', 'path']);
 			mockPkgDir = mockModule.getMock('pkg-dir');
-			mockPkgDir.ctor.sync = sandbox.stub().returns(packagePath);
+			mockPkgDir.ctor.sync = sandbox.stub().returns(null);
 			mockFs = mockModule.getMock('fs');
-			mockFs.existsSync = sinon.stub().returns(true);
-			mockFs.readFileSync.onCall(0).returns(
-				JSON.stringify(
-					{
-						test: {
-							hello: 'world'
-						},
-						'testGroupName-testCommandName': {
-							one: 'two'
-						}
-					},
-					null,
-					'    '
-				)
-			);
-			mockFs.readFileSync.onCall(1).returns(
-				JSON.stringify(
-					{
-						dojo: {
-							test: {
-								hello: 'world'
-							},
-							'testGroupName-testCommandName': {
-								one: 'two'
-							}
-						}
-					},
-					null,
-					'    '
-				)
-			);
-			mockFs.writeFileSync = sinon.stub();
+			mockFs.existsSync = sandbox.stub().returns(true);
+			mockFs.readFileSync = sandbox.stub();
+			mockFs.readFileSync.onFirstCall().returns('{}');
+			mockFs.readFileSync.onSecondCall(1).returns('{ "dojo": {} }');
 			mockPath = mockModule.getMock('path');
-			mockPath.join = sinon
-				.stub()
-				.callsFake((...args) => (args.some((a) => a === 'package.json') ? packageJsonPath : dojoRcPath));
-			mockReadlineSync = mockModule.getMock('readline-sync');
-			mockReadlineSync.keyInYN = sinon.stub().returns(true);
-			moduleUnderTest = mockModule.getModuleUnderTest().default;
-			configurationHelper = moduleUnderTest;
+			mockPath.join = sandbox.stub();
 			consoleWarnStub = sandbox.stub(console, 'warn');
+			mockcheckForMultiConfig = mockModule.getModuleUnderTest().checkForMultiConfig;
+			configurationHelper = moduleUnderTest;
 		},
 		afterEach() {
 			sandbox.restore();
 			mockModule.destroy();
 		},
+
 		tests: {
-			'shows warning about having both ,dojorc and package.json during get'() {
-				assert.deepEqual(configurationHelper.sandbox('testGroupName', 'testCommandName').get(), {
-					one: 'two'
-				});
-				assert.isTrue(mockFs.existsSync.calledTwice, 'existsSync is called twice');
-				assert.isTrue(mockFs.readFileSync.calledTwice, 'readFileSync is called twice');
-				assert.isTrue(consoleWarnStub.calledOnce, 'console.warn is called once');
-			},
-			'shows warning about having both ,dojorc and package.json during set'() {
-				configurationHelper.sandbox('testGroupName', 'testCommandName').set({
-					hello: 'world'
-				});
-				assert.isTrue(mockFs.existsSync.calledTwice, 'existsSync is called twice');
-				assert.isTrue(mockFs.readFileSync.calledTwice, 'readFileSync is called twice');
-				assert.isTrue(consoleWarnStub.calledOnce, 'console.warn is called once');
+			'should warn about having multi configs'() {
+				mockcheckForMultiConfig();
+				assert.isTrue(mockFs.existsSync.calledTwice);
+				assert.isTrue(mockFs.readFileSync.calledTwice);
+				assert.equal(consoleWarnStub.callCount, 1);
+				assert.equal(
+					consoleWarnStub.firstCall.args[0],
+					chalk.yellow(
+						`Warning: Both a .dojorc configuration and a dojo configuration in your package.json were found. The .dojorc file will take precedent. It is recommended you stick to one configuration option.`
+					)
+				);
 			}
 		}
 	}
