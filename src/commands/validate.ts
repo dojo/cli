@@ -2,7 +2,7 @@ import { Argv } from 'yargs';
 import chalk from 'chalk';
 import { CommandWrapper, Helper, OptionsHelper, ValidationWrapper } from '../interfaces';
 import { loadExternalCommands } from '../allCommands';
-import configurationHelperFactory, { getConfigFile } from '../configurationHelper';
+import configurationHelperFactory, { getConfig } from '../configurationHelper';
 import { Validator } from 'jsonschema';
 import CommandHelper from '../CommandHelper';
 import HelperFactory from '../Helper';
@@ -95,7 +95,7 @@ export function builtInCommandValidation(validation: ValidationWrapper): Promise
 }
 
 function validateCommands(commands: Map<string, Map<string, CommandWrapper>>, helper: HelperFactory) {
-	const config = getConfigFile();
+	const config = getConfig();
 
 	const noConfig = config === undefined;
 	const emptyConfig = typeof config === 'object' && Object.keys(config).length === 0;

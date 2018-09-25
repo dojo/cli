@@ -206,7 +206,7 @@ describe('validate', () => {
 			const groupMap = new Map([['test', commandMap]]);
 
 			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves(groupMap);
-			mockConfigurationHelper.getConfigFile = sandbox.stub().returns(undefined);
+			mockConfigurationHelper.getConfig = sandbox.stub().returns(undefined);
 
 			const helper = getHelper();
 			return moduleUnderTest.run(helper, {}).then(
@@ -225,7 +225,7 @@ describe('validate', () => {
 			const groupMap = new Map([['test', commandMap]]);
 
 			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves(groupMap);
-			mockConfigurationHelper.getConfigFile = sandbox.stub().returns({});
+			mockConfigurationHelper.getConfig = sandbox.stub().returns({});
 
 			const helper = getHelper();
 			return moduleUnderTest.run(helper, {}).then(
@@ -247,12 +247,12 @@ describe('validate', () => {
 			const groupMap = new Map([['test', commandMap]]);
 
 			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves(groupMap);
-			mockConfigurationHelper.getConfigFile = sandbox.stub().returns({ ...matchedConfig });
+			mockConfigurationHelper.getConfig = sandbox.stub().returns({ ...matchedConfig });
 
 			const helper = getHelper();
 			return moduleUnderTest.run(helper, {}).then(
 				() => {
-					assert.isTrue(mockConfigurationHelper.getConfigFile.called);
+					assert.isTrue(mockConfigurationHelper.getConfig.called);
 					assert.isTrue(consoleLogStub.called);
 					assert.equal(
 						consoleLogStub.getCall(0).args[0],
@@ -266,7 +266,7 @@ describe('validate', () => {
 		});
 
 		it(`should return no validatable commands with no validatable commands`, () => {
-			mockConfigurationHelper.getConfigFile = sandbox.stub().returns({ foo: 'bar' });
+			mockConfigurationHelper.getConfig = sandbox.stub().returns({ foo: 'bar' });
 			const installedCommandWrapper = getCommandWrapperWithConfiguration({
 				group: 'command',
 				name: 'test'
@@ -294,7 +294,7 @@ describe('validate', () => {
 				name: 'test',
 				validate: sinon.stub().throws('A test error')
 			});
-			mockConfigurationHelper.getConfigFile = sandbox.stub().returns({
+			mockConfigurationHelper.getConfig = sandbox.stub().returns({
 				foo: 'bar'
 			});
 			const commandMap: CommandMap = new Map<string, CommandWrapper>([['command', installedCommandWrapper]]);
@@ -317,7 +317,7 @@ describe('validate', () => {
 		});
 
 		it(`should log out that there were no issues if all commands are valid`, () => {
-			mockConfigurationHelper.getConfigFile = sandbox.stub().returns({ foo: 'bar' });
+			mockConfigurationHelper.getConfig = sandbox.stub().returns({ foo: 'bar' });
 			const commandMap: CommandMap = new Map<string, CommandWrapper>([
 				[
 					'command',

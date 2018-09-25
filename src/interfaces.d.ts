@@ -16,9 +16,16 @@ export interface Config {
 	[key: string]: any;
 }
 
+export interface ConfigWrapper {
+	packageJsonConfig?: Config;
+	packageJsonIndent?: number | string;
+	dojoRcConfig?: Config;
+	dojoRcIndent?: number | string;
+}
+
 export interface ConfigurationHelper {
 	set(config: Config): void;
-	get(): {};
+	get(command?: string): {};
 }
 
 export type RenderFilesConfig = {

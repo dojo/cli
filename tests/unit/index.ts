@@ -4,6 +4,7 @@ const { assert } = intern.getPlugin('chai');
 import MockModule from '../support/MockModule';
 import * as sinon from 'sinon';
 import { join } from 'path';
+// import { resolve as pathResolve } from 'path';
 
 describe('cli main module', () => {
 	let mockModule: MockModule;
@@ -73,6 +74,7 @@ describe('cli main module', () => {
 			});
 		});
 	});
+
 	it('should catch runtime errors', () => {
 		describe('runtime error inner', () => {
 			const errMessage = 'ugh - oh noes';

@@ -4,6 +4,7 @@ import registerCommands from './registerCommands';
 import { join } from 'path';
 import commandLoader from './allCommands';
 import installableCommands, { mergeInstalledCommandsWithAvailableCommands } from './installableCommands';
+import { checkForMultiConfig } from './configurationHelper';
 const pkgDir = require('pkg-dir');
 
 export async function init() {
@@ -22,4 +23,8 @@ export async function init() {
 	} catch (err) {
 		console.log(`Commands are not available: ${err}`);
 	}
+
+	try {
+		checkForMultiConfig();
+	} catch {}
 }
