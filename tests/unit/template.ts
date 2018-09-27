@@ -8,7 +8,7 @@ let writeFileStub: SinonStub;
 let consoleStub: SinonStub;
 let ensureDirStub: SinonStub;
 const testEjsSrc = 'tests/support/template.ejs';
-const testDest = '/tmp/test/destination';
+const testDest = '/tmp/test/destination/file.ts';
 const value = 'testValue';
 
 registerSuite('template', {

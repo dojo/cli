@@ -1,5 +1,6 @@
 import { renderFile } from 'ejs';
 import { writeFile, ensureDir } from 'fs-extra';
+import * as path from 'path';
 import chalk from 'chalk';
 
 export function ejsRender(source: string, replacements: Object): Promise<string> {
@@ -15,7 +16,8 @@ export function ejsRender(source: string, replacements: Object): Promise<string>
 }
 
 export function writeRenderedFile(str: string, destination: string): Promise<void> {
-	return ensureDir(destination).then(() => {
+	const parsedPath = path.parse(destination);
+	return ensureDir(parsedPath.dir).then(() => {
 		return writeFile(destination, str);
 	});
 }
