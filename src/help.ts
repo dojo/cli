@@ -163,8 +163,18 @@ function formatCommandOptions(commandWrapper: CommandWrapper, isDefaultCommand =
 		}
 	}
 
+
+
 	register(formatOption, null as any);
 	formatOption('dojorc', { default: '.dojorc', type: 'string', description: 'The dojorc config file' });
+
+	if (!isDefaultCommand) {
+		commandOptionHelp = `${commandOptionHelp}\n  ${addOptionPrefix(chalk.greenBright('save'))} ${createPadding(
+			'--save',
+			20
+		)}Save any passed arguments that are configurable to your configuration file`;
+	}
+
 	return commandOptionHelp;
 }
 
