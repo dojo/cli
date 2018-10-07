@@ -93,18 +93,43 @@ registerSuite('registerCommands', {
 					help.reset();
 					yargsStub.command.lastCall.args[3]({ _: [], h: true });
 					assert.isTrue(help.calledOnce);
+					assert.isTrue(consoleLogStub.calledOnce);
 				},
 				'group help called'() {
 					const help = mockModule.getMock('./help').formatHelp;
 					help.reset();
 					yargsStub.command.firstCall.args[3]({ _: ['group'], h: true });
 					assert.isTrue(help.calledOnce);
+					assert.isTrue(consoleLogStub.calledOnce);
 				},
 				'command help called'() {
 					const help = mockModule.getMock('./help').formatHelp;
 					help.reset();
 					yargsStub.command.secondCall.args[3]({ _: ['group', 'command'], h: true });
 					assert.isTrue(help.calledOnce);
+					assert.isTrue(consoleLogStub.calledOnce);
+				},
+				'error if group help called on non existant group'() {
+					const help = mockModule.getMock('./help').formatHelp;
+					help.reset();
+					try {
+						yargsStub.command.lastCall.args[3]({ _: ['nonexistant'], h: true });
+						assert.fail(null, null, 'getting unknown group should throw an error');
+					} catch {
+						assert.isTrue(help.notCalled);
+						assert.isTrue(consoleLogStub.notCalled);
+					}
+				},
+				'error if group help called on non existant command'() {
+					const help = mockModule.getMock('./help').formatHelp;
+					help.reset();
+					try {
+						yargsStub.command.lastCall.args[3]({ _: ['group', 'nonexistant'], h: true });
+						assert.fail(null, null, 'getting unknown command should throw an error');
+					} catch {
+						assert.isTrue(help.notCalled);
+						assert.isTrue(consoleLogStub.notCalled);
+					}
 				}
 			}
 		},

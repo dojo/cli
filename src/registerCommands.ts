@@ -217,6 +217,13 @@ export default function(yargs: Argv, groupMap: GroupMap): void {
 				return dojoYargs;
 			},
 			(argv: any) => {
+				const isGroupCommand = argv._.length && argv._.length > 0;
+				if (isGroupCommand) {
+					const groupCommand = groupMap.get(argv._[0]);
+					if (!groupCommand || !groupCommand.get(argv._[1])) {
+						throw `Unable to find given command`;
+					}
+				}
 				console.log(formatHelp(argv, groupMap));
 			}
 		)
