@@ -109,7 +109,7 @@ registerSuite('registerCommands', {
 					assert.isTrue(help.calledOnce);
 					assert.isTrue(consoleLogStub.calledOnce);
 				},
-				'error if group help called on non existant group'() {
+				'error if help called on non existant group'() {
 					const help = mockModule.getMock('./help').formatHelp;
 					help.reset();
 					try {
@@ -120,7 +120,7 @@ registerSuite('registerCommands', {
 						assert.isTrue(consoleLogStub.notCalled);
 					}
 				},
-				'error if group help called on non existant command'() {
+				'error if help called on non existant command'() {
 					const help = mockModule.getMock('./help').formatHelp;
 					help.reset();
 					try {
