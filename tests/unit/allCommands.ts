@@ -4,6 +4,8 @@ const { assert } = intern.getPlugin('chai');
 import MockModule from '../support/MockModule';
 import * as sinon from 'sinon';
 
+import { combineGroupMaps } from '../../src/allCommands';
+
 describe('AllCommands', () => {
 	let moduleUnderTest: any;
 	let mockModule: MockModule;
@@ -57,5 +59,43 @@ describe('AllCommands', () => {
 			.catch(() => {
 				assert.fail(null, null, 'moduleUnderTest.run should not have rejected promise');
 			});
+	});
+
+	it('should combine group maps instead of overriding', () => {
+		const groupCCommandMapA = new Map()
+			.set('a', { name: 'a', group: 'c', path: 'as' })
+			.set('aa', { name: 'aa', group: 'c', path: 'aassA' });
+		const groupDCommandMap = new Map().set('b', { name: 'b', group: 'd', path: 'asas' });
+		const builtInCommands = new Map().set('c', groupCCommandMapA).set('d', groupDCommandMap);
+
+		const groupCCommandMapB = new Map().set('aa', { name: 'aa', group: 'c', path: 'aasB' });
+		const groupCCommandMapC = new Map().set('aaa', { name: 'aaa', group: 'c', path: 'aaasss' });
+		const groupECommandMap = new Map().set('e', { name: 'f', group: 'e', path: 'asasasas' });
+		const installedCommands = new Map()
+			.set('c', [...groupCCommandMapB, ...groupCCommandMapC])
+			.set('e', groupECommandMap);
+
+		const combinedGroupMap = new Map()
+			.set('c', new Map([...groupCCommandMapA, ...groupCCommandMapC]))
+			.set('d', groupDCommandMap)
+			.set('e', groupECommandMap);
+
+		assert.deepEqual(
+			combineGroupMaps(builtInCommands, installedCommands),
+			combinedGroupMap,
+			'should return a combined group map'
+		);
+
+		assert.deepEqual(
+			combineGroupMaps(builtInCommands, new Map()),
+			builtInCommands,
+			'should return the built in commands map'
+		);
+
+		assert.deepEqual(
+			combineGroupMaps(new Map(), installedCommands),
+			installedCommands,
+			'should return the installed commands map'
+		);
 	});
 });
