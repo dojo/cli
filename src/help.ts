@@ -170,7 +170,12 @@ function formatCommandOptions(commandWrapper: CommandWrapper, isDefaultCommand =
 
 function formatMainHelp(groupMap: GroupMap) {
 	return `${formatHeader()}
+${mainHelp(groupMap)}
+`;
+}
 
+function mainHelp(groupMap: GroupMap) {
+	return `
 ${chalk.bold('Global Commands:')}
 
 ${formatHelpOutput(groupMap, isGlobalCommand)}
@@ -182,6 +187,18 @@ ${formatHelpOutput(groupMap, isProjectCommand)}
 ${chalk.bold('Installable Commands:')}
 
 ${formatHelpOutput(groupMap, isNpmCommand)}
+`;
+}
+
+function formatMissingCommandHelp(groupMap: GroupMap, fullCommand: string) {
+	return `${formatHeader()}
+
+${chalk.bold(
+		chalk.red(`Specified command '`) +
+			chalk.redBright(fullCommand) +
+			chalk.red(`' does not exist, please see available commands below.`)
+	)}
+${mainHelp(groupMap)}
 `;
 }
 
@@ -207,10 +224,27 @@ ${formatCommandOptions(commandWrapper, false)}
 }
 
 export function formatHelp(argv: any, groupMap: GroupMap): string {
-	if (!argv._ || argv._.length === 0) {
+	const commands = argv._ && argv._.length > 0;
+
+	if (!commands) {
 		return formatMainHelp(groupMap);
-	} else if (argv._.length === 1) {
-		return formatGroupHelp(groupMap, argv._[0]);
 	}
-	return formatCommandHelp(groupMap, argv._[0], argv._[1]);
+
+	const isGroup = argv._.length === 1;
+	const [group, command] = argv._;
+	const hasGroup = groupMap.get(group);
+	const hasCommand = hasGroup && hasGroup.get(command);
+
+	if (isGroup) {
+		if (hasGroup) {
+			return formatGroupHelp(groupMap, group);
+		}
+		return formatMissingCommandHelp(groupMap, group);
+	}
+
+	if (hasGroup && hasCommand) {
+		return formatCommandHelp(groupMap, group, command);
+	}
+
+	return formatMissingCommandHelp(groupMap, `${group} ${command}`);
 }
