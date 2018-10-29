@@ -192,9 +192,9 @@ ${formatHelpOutput(groupMap, isNpmCommand)}
 
 function formatMissingCommandHelp(groupMap: GroupMap, fullCommand: string) {
 	const nonexistant = chalk.bold(
-		chalk.red("Specified command '") +
+		chalk.red(`Specified command '`) +
 			chalk.redBright(fullCommand) +
-			chalk.red("' does not exist, please see available commands below.")
+			chalk.red(`' does not exist, please see available commands below.`)
 	);
 	return `${formatHeader()}
 
