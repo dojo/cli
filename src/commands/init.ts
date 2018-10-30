@@ -18,7 +18,7 @@ async function run(helper: Helper, args: {}) {
 	const cwd = process.cwd();
 	let rootDir = pkgDir.sync(cwd);
 	if (!rootDir) {
-		console.warn(noPackageWarning);
+		helper.logging.warn(noPackageWarning);
 		rootDir = cwd;
 	}
 
@@ -32,7 +32,7 @@ async function run(helper: Helper, args: {}) {
 		json = JSON.parse(file);
 	}
 
-	const groupMap = await loadExternalCommands();
+	const groupMap = await loadExternalCommands(helper.logging);
 	const values = [];
 
 	for (let [, commandMap] of groupMap.entries()) {
@@ -46,7 +46,7 @@ async function run(helper: Helper, args: {}) {
 	}
 
 	writeFileSync(dojoRcPath, JSON.stringify(json, null, indent));
-	console.log(chalk.white(`Successfully wrote .dojorc to ${dojoRcPath}`));
+	helper.logging.log(chalk.white(`Successfully wrote .dojorc to ${dojoRcPath}`));
 }
 
 export default {

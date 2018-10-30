@@ -1,14 +1,14 @@
 import search = require('libnpmsearch');
 import { join } from 'path';
 const spawn: any = require('cross-spawn');
-import { NpmPackageDetails, CommandWrapper, GroupMap } from './interfaces';
+import { NpmPackageDetails, CommandWrapper, GroupMap, LoggingHelper, Helper } from './interfaces';
 import * as Configstore from 'configstore';
 import { isEjected } from './loadCommands';
 import chalk from 'chalk';
 
 const ONE_DAY = 1000 * 60 * 60 * 24;
 
-export default async function(name: string): Promise<NpmPackageDetails[]> {
+export default async function(name: string, logging: LoggingHelper): Promise<NpmPackageDetails[]> {
 	const conf = new Configstore(name);
 
 	let commands: NpmPackageDetails[] = conf.get('commands') || [];
@@ -21,15 +21,15 @@ export default async function(name: string): Promise<NpmPackageDetails[]> {
 			}).unref();
 		}
 	} else {
-		commands = await getLatestCommands(name);
+		commands = await getLatestCommands(name, logging);
 	}
 
 	return commands;
 }
 
-export async function getLatestCommands(name: string): Promise<NpmPackageDetails[]> {
+export async function getLatestCommands(name: string, logging: LoggingHelper): Promise<NpmPackageDetails[]> {
 	const conf = new Configstore(name);
-	const commands = await searchNpmForCommands();
+	const commands = await searchNpmForCommands(logging);
 	if (commands && commands.length) {
 		conf.set('commands', commands);
 		conf.set('lastUpdated', Date.now());
@@ -37,7 +37,7 @@ export async function getLatestCommands(name: string): Promise<NpmPackageDetails
 	return commands || [];
 }
 
-async function searchNpmForCommands(): Promise<NpmPackageDetails[] | undefined> {
+async function searchNpmForCommands(logging: LoggingHelper): Promise<NpmPackageDetails[] | undefined> {
 	try {
 		const results = await search('@dojo/cli-');
 		return results
@@ -48,13 +48,14 @@ async function searchNpmForCommands(): Promise<NpmPackageDetails[] | undefined> 
 				return { name, version, description };
 			});
 	} catch (error) {
-		console.error('There was an error searching npm: ', error.message || error);
+		logging.error('There was an error searching npm: ', error.message || error);
 	}
 }
 
 export function mergeInstalledCommandsWithAvailableCommands(
 	groupMap: GroupMap,
-	availableCommands: NpmPackageDetails[]
+	availableCommands: NpmPackageDetails[],
+	logging: LoggingHelper
 ): GroupMap {
 	const regEx = /@dojo\/cli-([^-]+)-(.+)/;
 
@@ -70,13 +71,13 @@ export function mergeInstalledCommandsWithAvailableCommands(
 			global: false,
 			installed: false,
 			register: () => {},
-			run: () => {
-				console.log(`\nTo install this command run ${chalk.green(installCommand)}\n`);
+			run: ({ logging }: Helper) => {
+				logging.log(`\nTo install this command run ${chalk.green(installCommand)}\n`);
 				return Promise.resolve();
 			}
 		};
 
-		if (!isEjected(group, name)) {
+		if (!isEjected(logging, group, name)) {
 			if (!groupMap.has(group)) {
 				commandWrapper.default = true;
 				groupMap.set(group, new Map());

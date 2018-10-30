@@ -5,9 +5,12 @@ import { join } from 'path';
 import commandLoader from './allCommands';
 import installableCommands, { mergeInstalledCommandsWithAvailableCommands } from './installableCommands';
 import { checkForMultiConfig } from './configurationHelper';
+import LoggingHelper from './LoggingHelper';
 const pkgDir = require('pkg-dir');
 
 export async function init() {
+	const loggingHelper = new LoggingHelper();
+
 	try {
 		const packagePath = pkgDir.sync(__dirname);
 		const packageJsonFilePath = join(packagePath, 'package.json');
@@ -15,16 +18,20 @@ export async function init() {
 
 		updateNotifier(packageJson);
 
-		const availableCommands = await installableCommands(packageJson.name);
-		const allCommands = await commandLoader();
-		const mergedCommands = mergeInstalledCommandsWithAvailableCommands(allCommands, availableCommands);
+		const availableCommands = await installableCommands(packageJson.name, loggingHelper);
+		const allCommands = await commandLoader(loggingHelper);
+		const mergedCommands = mergeInstalledCommandsWithAvailableCommands(
+			allCommands,
+			availableCommands,
+			loggingHelper
+		);
 
-		registerCommands(yargs, mergedCommands);
+		registerCommands(yargs, loggingHelper, mergedCommands);
 	} catch (err) {
-		console.log(`Commands are not available: ${err}`);
+		loggingHelper.error(`Commands are not available: ${err}`);
 	}
 
 	try {
-		checkForMultiConfig();
+		checkForMultiConfig(loggingHelper);
 	} catch {}
 }

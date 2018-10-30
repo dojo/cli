@@ -1,5 +1,5 @@
 import { CommandWrapper } from '../../src/interfaces';
-import { stub, spy } from 'sinon';
+import { stub, spy, SinonStub } from 'sinon';
 
 export type GroupDef = {
 	groupName: string;
@@ -125,4 +125,20 @@ export function getCommandWrapperWithConfiguration(config: CommandWrapperConfig)
 	}
 
 	return commandWrapper;
+}
+
+export interface LoggingStub {
+	info: SinonStub;
+	log: SinonStub;
+	warn: SinonStub;
+	error: SinonStub;
+}
+
+export function getLoggingStub(): LoggingStub {
+	return {
+		info: stub(),
+		log: stub(),
+		warn: stub(),
+		error: stub()
+	};
 }

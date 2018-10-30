@@ -25,6 +25,7 @@ export interface ConfigWrapper {
 
 export interface ConfigurationHelper {
 	set(config: Config): void;
+	set(config: Config, commandName: string): void;
 	get(command?: string): {};
 }
 
@@ -42,12 +43,19 @@ export type ValidationWrapper = {
 };
 
 export interface ValidateHelper {
-	validate(validateOpts: ValidationWrapper): Promise<any>;
+	validate(validateOpts: ValidationWrapper, logging: LoggingHelper): Promise<any>;
 }
 export interface CommandHelper {
 	run(group: string, commandName?: string, args?: Argv): Promise<any>;
 	exists(group: string, commandName?: string): boolean;
 	renderFiles(renderFilesConfig: RenderFilesConfig, renderData: object): void;
+}
+
+export interface LoggingHelper {
+	info(...args: any[]): void;
+	log(...args: any[]): void;
+	warn(...args: any[]): void;
+	error(...args: any[]): void;
 }
 
 export interface Helper {
@@ -56,6 +64,7 @@ export interface Helper {
 	context: any;
 	configuration: ConfigurationHelper;
 	validation: ValidateHelper;
+	logging: LoggingHelper;
 }
 
 export type OptionsHelper = (key: string, options: Options) => void;

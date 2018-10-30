@@ -26,7 +26,11 @@ export default class MockModule {
 		dependencies.forEach((dependencyName) => {
 			let dependency;
 			try {
-				dependency = require(resolvePath(this.basePath, dependencyName));
+				if (dependencyName.startsWith('.')) {
+					dependency = require(resolvePath(this.basePath, dependencyName));
+				} else {
+					dependency = require(dependencyName);
+				}
 			} catch (e) {
 				dependency = {};
 			}

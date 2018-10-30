@@ -7,6 +7,7 @@ import './index';
 import './installableCommands';
 import './help';
 import './loadCommands';
+import './LoggingHelper';
 import './npmInstall';
 import './registerCommands';
 import './template';

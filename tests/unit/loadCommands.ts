@@ -5,7 +5,7 @@ import { join } from 'path';
 import { stub, SinonStub, sandbox } from 'sinon';
 import { CliConfig } from '../../src/interfaces';
 import MockModule from '../support/MockModule';
-import { getCommandWrapper } from '../support/testHelper';
+import { getCommandWrapper, getLoggingStub, LoggingStub } from '../support/testHelper';
 import {
 	enumerateBuiltInCommands as enumBuiltInCommands,
 	enumerateInstalledCommands as enumInstalledCommands,
@@ -15,7 +15,7 @@ import {
 let loadStub: SinonStub;
 let commandWrapper1: any;
 let commandWrapper2: any;
-let consoleStub: SinonStub;
+let mockLoggingHelper: LoggingStub;
 let goodConfig: CliConfig;
 let mockModule: MockModule;
 let mockedLoadCommands: any;
@@ -39,14 +39,11 @@ function config(invalid = false): CliConfig {
 
 registerSuite('loadCommands', {
 	beforeEach() {
-		consoleStub = stub(console, 'error');
+		mockLoggingHelper = getLoggingStub();
 		commandWrapper1 = getCommandWrapper('command1');
 		commandWrapper2 = getCommandWrapper('command2');
 		loadStub = stub();
 		goodConfig = config();
-	},
-	afterEach() {
-		consoleStub.restore();
 	},
 
 	tests: {
@@ -91,7 +88,7 @@ registerSuite('loadCommands', {
 			tests: {
 				async 'Should set first loaded command of each group to be the default'() {
 					const installedPaths = await enumInstalledCommands(goodConfig);
-					const groupMap = await loadCommands(installedPaths, loadStub);
+					const groupMap = await loadCommands(installedPaths, loadStub, mockLoggingHelper);
 
 					assert.isTrue(loadStub.calledTwice);
 					assert.equal(groupMap.size, 1);
@@ -107,7 +104,7 @@ registerSuite('loadCommands', {
 					loadStub.onSecondCall().returns(commandWrapperDuplicate);
 
 					const installedPaths = await enumInstalledCommands(goodConfig);
-					const groupMap = await loadCommands(installedPaths, loadStub);
+					const groupMap = await loadCommands(installedPaths, loadStub, mockLoggingHelper);
 
 					assert.isTrue(loadStub.calledTwice);
 					const groupCommandSet = groupMap.get(duplicateGroupName);
@@ -127,7 +124,7 @@ registerSuite('loadCommands', {
 
 				loadStub.onFirstCall().throws();
 				try {
-					await loadCommands(installedPaths, loadStub);
+					await loadCommands(installedPaths, loadStub, mockLoggingHelper);
 				} catch (error) {
 					assert.isTrue(error instanceof Error);
 					assert.isTrue(error.message.indexOf('Failed to load module') > -1);

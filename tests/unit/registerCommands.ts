@@ -2,7 +2,7 @@ const { registerSuite } = intern.getInterface('object');
 const { assert } = intern.getPlugin('chai');
 
 import { stub, SinonStub } from 'sinon';
-import { getYargsStub, GroupDef, getGroupMap } from '../support/testHelper';
+import { getYargsStub, getLoggingStub, GroupDef, getGroupMap, LoggingStub } from '../support/testHelper';
 import MockModule from '../support/MockModule';
 import sinon = require('sinon');
 const groupDef: GroupDef = [
@@ -22,14 +22,15 @@ let groupMap: any;
 let yargsStub: {
 	[index: string]: SinonStub;
 };
-let consoleErrorStub: SinonStub;
-let consoleLogStub: SinonStub;
+let mockLoggingHelper: LoggingStub;
 let processExitStub: SinonStub;
 const errorMessage = 'test error message';
 let registerCommands: any;
 
 registerSuite('registerCommands', {
 	beforeEach() {
+		mockLoggingHelper = getLoggingStub();
+
 		sandbox = sinon.sandbox.create();
 		mockModule = new MockModule('../../src/registerCommands', require);
 		mockModule.dependencies(['./configurationHelper']);
@@ -52,41 +53,37 @@ registerSuite('registerCommands', {
 	tests: {
 		'Should setup correct yargs arguments'() {
 			const yargsArgs = ['demand', 'help', 'strict', 'check', 'command'];
-			registerCommands(yargsStub, new Map());
+			registerCommands(yargsStub, mockLoggingHelper, new Map());
 			yargsArgs.forEach((arg) => {
 				assert.isTrue(yargsStub[arg].calledOnce);
 			});
 		},
 		'Should call strict for all commands'() {
-			registerCommands(yargsStub, groupMap);
+			registerCommands(yargsStub, mockLoggingHelper, groupMap);
 			assert.equal(yargsStub.strict.callCount, 6);
 		},
 		'Should call yargs.command once for each yargsCommandName passed and once for the default command'() {
 			const { group } = groupMap.get('group1').get('command1');
-			registerCommands(yargsStub, groupMap);
+			registerCommands(yargsStub, mockLoggingHelper, groupMap);
 			assert.strictEqual(yargsStub.command.callCount, 6);
 			assert.isTrue(yargsStub.command.getCall(0).calledWith(group, false), 'First call is for parent');
 			assert.isTrue(yargsStub.command.getCall(1).calledWith('command1', false), 'Second call is sub-command');
 		},
 		'Should run the passed command when yargs called with group name and command'() {
 			const { run } = groupMap.get('group1').get('command1');
-			registerCommands(yargsStub, groupMap);
+			registerCommands(yargsStub, mockLoggingHelper, groupMap);
 			yargsStub.command.secondCall.args[3]({});
 			assert.isTrue(run.calledOnce);
 		},
 		'Should call into register method'() {
-			registerCommands(yargsStub, groupMap);
+			registerCommands(yargsStub, mockLoggingHelper, groupMap);
 			assert.isTrue(yargsStub.option.called);
 		},
 		help: {
 			beforeEach() {
-				registerCommands(yargsStub, groupMap);
-				consoleLogStub = stub(console, 'log');
+				registerCommands(yargsStub, mockLoggingHelper, groupMap);
 			},
 
-			afterEach() {
-				consoleLogStub.restore();
-			},
 			tests: {
 				'main help called'() {
 					const help = mockModule.getMock('./help').formatHelp;
@@ -128,7 +125,7 @@ registerSuite('registerCommands', {
 						};
 					}
 				};
-				registerCommands(yargsStub, groupMap);
+				registerCommands(yargsStub, mockLoggingHelper, groupMap);
 				yargsStub.command.secondCall.args[3]({ f: undefined });
 				assert.isTrue(run.calledOnce);
 				assert.deepEqual(run.firstCall.args[1], { foo: 'bar', f: 'bar', fo: 'bar' });
@@ -147,7 +144,7 @@ registerSuite('registerCommands', {
 						};
 					}
 				};
-				registerCommands(yargsStub, groupMap);
+				registerCommands(yargsStub, mockLoggingHelper, groupMap);
 				yargsStub.command.secondCall.args[3]({ foo: 'foo' });
 				assert.isTrue(run.calledOnce);
 				assert.deepEqual(run.firstCall.args[1], { foo: 'foo' });
@@ -171,7 +168,7 @@ registerSuite('registerCommands', {
 						};
 					}
 				};
-				registerCommands(yargsStub, groupMap);
+				registerCommands(yargsStub, mockLoggingHelper, groupMap);
 				yargsStub.command.secondCall.args[3]({ foo: 'foo', fo: 'foo', f: 'foo' });
 				assert.isTrue(run.calledOnce);
 				assert.deepEqual(run.firstCall.args[1], { foo: 'bar', fo: 'bar', f: 'bar' });
@@ -197,7 +194,7 @@ registerSuite('registerCommands', {
 						};
 					}
 				};
-				registerCommands(yargsStub, groupMap);
+				registerCommands(yargsStub, mockLoggingHelper, groupMap);
 				yargsStub.command.secondCall.args[3]({ f: 'foo', foo: 'foo' });
 				assert.isTrue(run.calledOnce);
 				assert.deepEqual(run.firstCall.args[1], { foo: 'foo', f: 'foo' });
@@ -222,7 +219,7 @@ registerSuite('registerCommands', {
 						};
 					}
 				};
-				registerCommands(yargsStub, groupMap);
+				registerCommands(yargsStub, mockLoggingHelper, groupMap);
 				yargsStub.command.secondCall.args[3]({ f: 'foo', foo: 'foo' });
 				assert.isTrue(run.calledOnce);
 				assert.deepEqual(run.firstCall.args[1], { foo: 'bar', f: 'bar' });
@@ -241,7 +238,7 @@ registerSuite('registerCommands', {
 						};
 					}
 				};
-				registerCommands(yargsStub, groupMap);
+				registerCommands(yargsStub, mockLoggingHelper, groupMap);
 				yargsStub.command.secondCall.args[3]({ f: 'foo', foo: 'foo' });
 				assert.isTrue(run.calledOnce);
 				assert.deepEqual(run.firstCall.args[1], { foo: 'foo', f: 'foo' });
@@ -250,12 +247,7 @@ registerSuite('registerCommands', {
 		'default command': {
 			beforeEach() {
 				groupMap = getGroupMap(groupDef);
-				registerCommands(yargsStub, groupMap);
-				consoleErrorStub = stub(console, 'error');
-			},
-
-			afterEach() {
-				consoleErrorStub.restore();
+				registerCommands(yargsStub, mockLoggingHelper, groupMap);
 			},
 
 			tests: {
@@ -292,11 +284,6 @@ registerSuite('registerCommands', {
 		'validating command': {
 			beforeEach() {
 				groupMap = getGroupMap(groupDef);
-				consoleErrorStub = stub(console, 'error');
-			},
-
-			afterEach() {
-				consoleErrorStub.restore();
 			},
 
 			tests: {
@@ -305,7 +292,7 @@ registerSuite('registerCommands', {
 					const command = groupMap.get('group1').get('command1');
 					command.validate = sinon.stub().returns(true);
 					const registerCommands = mockModule.getModuleUnderTest().default;
-					registerCommands(yargsStub, groupMap);
+					registerCommands(yargsStub, mockLoggingHelper, groupMap);
 					yargsStub.command.secondCall.args[3]({});
 					assert.isTrue(command.validate.called);
 					assert.isTrue(command.validate.returned(true));
@@ -316,7 +303,7 @@ registerSuite('registerCommands', {
 					const command = groupMap.get('group1').get('command1');
 					command.validate = sinon.stub().returns(false);
 					const registerCommands = mockModule.getModuleUnderTest().default;
-					registerCommands(yargsStub, groupMap);
+					registerCommands(yargsStub, mockLoggingHelper, groupMap);
 					yargsStub.command.secondCall.args[3]({});
 					assert.isTrue(command.validate.called);
 					assert.isTrue(command.validate.returned(false));
@@ -325,14 +312,6 @@ registerSuite('registerCommands', {
 			}
 		},
 		'handling errors': {
-			beforeEach() {
-				consoleErrorStub = stub(console, 'error');
-			},
-
-			afterEach() {
-				consoleErrorStub.restore();
-			},
-
 			tests: {
 				async 'Should show error message if the run command rejects'() {
 					groupMap = getGroupMap([
@@ -341,10 +320,10 @@ registerSuite('registerCommands', {
 							commands: [{ commandName: 'command1', fails: true }]
 						}
 					]);
-					registerCommands(yargsStub, groupMap);
+					registerCommands(yargsStub, mockLoggingHelper, groupMap);
 					await yargsStub.command.firstCall.args[3]({ _: ['group'] });
-					assert.isTrue(consoleErrorStub.calledOnce);
-					assert.isTrue(consoleErrorStub.firstCall.calledWithMatch(errorMessage));
+					assert.isTrue(mockLoggingHelper.error.calledOnce);
+					assert.isTrue(mockLoggingHelper.error.firstCall.calledWithMatch(errorMessage));
 					assert.isTrue(processExitStub.called);
 				},
 				async 'Should exit process with exitCode of 1 when no exitCode is returned'() {
@@ -354,7 +333,7 @@ registerSuite('registerCommands', {
 							commands: [{ commandName: 'command1', fails: true }]
 						}
 					]);
-					registerCommands(yargsStub, groupMap);
+					registerCommands(yargsStub, mockLoggingHelper, groupMap);
 					await yargsStub.command.firstCall.args[3]({ _: ['group'] });
 					assert.isTrue(processExitStub.calledOnce);
 					assert.isTrue(processExitStub.calledWith(1));
@@ -366,7 +345,7 @@ registerSuite('registerCommands', {
 							commands: [{ commandName: 'command1', fails: true, exitCode: 100 }]
 						}
 					]);
-					registerCommands(yargsStub, groupMap);
+					registerCommands(yargsStub, mockLoggingHelper, groupMap);
 					await yargsStub.command.firstCall.args[3]({ _: ['group'] });
 					assert.isTrue(processExitStub.calledOnce);
 					assert.isTrue(processExitStub.calledWith(100));

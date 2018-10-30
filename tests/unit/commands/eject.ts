@@ -6,21 +6,22 @@ import { join, resolve as pathResolve, sep } from 'path';
 import * as sinon from 'sinon';
 
 import { CommandMap, CommandWrapper } from '../../../src/interfaces';
+import eject from '../../../src/commands/eject';
 import MockModule from '../../support/MockModule';
-import { getCommandWrapperWithConfiguration } from '../../support/testHelper';
+import { getCommandWrapperWithConfiguration, getLoggingStub, LoggingStub } from '../../support/testHelper';
 
 const { yellow, underline } = chalk;
 
 describe('eject command', () => {
 	const ejectPackagePath = join(pathResolve(__dirname), '../../support/eject');
-	let moduleUnderTest: any;
+	let moduleUnderTest: typeof eject;
 	let mockModule: MockModule;
 	let mockPkgDir: any;
 	let mockFsExtra: any;
 	let mockInquirer: any;
 	let mockNpmInstall: any;
 	let mockAllExternalCommands: any;
-	let consoleLogStub: sinon.SinonStub;
+	let mockLoggingHelper: LoggingStub;
 	let sandbox: sinon.SinonSandbox;
 
 	function loadCommand(command: string): any {
@@ -33,7 +34,8 @@ describe('eject command', () => {
 			configuration: {
 				get: sandbox.stub().returns({}),
 				set: sandbox.stub()
-			}
+			},
+			logging: mockLoggingHelper
 		};
 
 		return Object.assign({}, basicHelper, config);
@@ -60,7 +62,7 @@ describe('eject command', () => {
 		mockInquirer.prompt = sandbox.stub().resolves({ eject: true });
 		mockAllExternalCommands = mockModule.getMock('../allCommands');
 		mockNpmInstall = mockModule.getMock('../npmInstall');
-		consoleLogStub = sandbox.stub(console, 'log');
+		mockLoggingHelper = getLoggingStub();
 		moduleUnderTest = mockModule.getModuleUnderTest().default;
 	});
 
@@ -76,7 +78,7 @@ describe('eject command', () => {
 		const helper = getHelper();
 		mockInquirer.prompt = sandbox.stub().resolves({ eject: false });
 		mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves({ commandsMap: commandMap });
-		return moduleUnderTest.run(helper, {}).then(
+		return moduleUnderTest.run(helper, {} as any).then(
 			() => {
 				assert.fail('The promise should not have resolved');
 			},
@@ -105,9 +107,9 @@ describe('eject command', () => {
 		const groupMap = new Map([['test', commandMap]]);
 		const helper = getHelper();
 		mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves(groupMap);
-		return moduleUnderTest.run(helper, {}).then(
+		return moduleUnderTest.run(helper, {} as any).then(
 			() => {
-				assert.equal(consoleLogStub.args[0][0], runOutput);
+				assert.equal(mockLoggingHelper.log.args[0][0], runOutput);
 			},
 			() => {
 				assert.fail(null, null, 'moduleUnderTest.run should not have rejected promise');
@@ -131,7 +133,7 @@ describe('eject command', () => {
 				set: setStub
 			});
 
-			return moduleUnderTest.run(helper, {}).then(
+			return moduleUnderTest.run(helper, {} as any).then(
 				() => {
 					assert.isTrue(setStub.calledOnce);
 					assert.isTrue(setStub.firstCall.calledWith({ ejected: true }));
@@ -151,7 +153,7 @@ describe('eject command', () => {
 			const groupMap = new Map([['test', commandMap]]);
 			const helper = getHelper();
 			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves(groupMap);
-			return moduleUnderTest.run(helper, {}).then(
+			return moduleUnderTest.run(helper, {} as any).then(
 				() => {
 					assert.isTrue(mockNpmInstall.installDependencies.calledOnce);
 					assert.isTrue(mockNpmInstall.installDevDependencies.calledOnce);
@@ -171,20 +173,20 @@ describe('eject command', () => {
 			const groupMap = new Map([['test', commandMap]]);
 			const helper = getHelper();
 			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves(groupMap);
-			return moduleUnderTest.run(helper, {}).then(
+			return moduleUnderTest.run(helper, {} as any).then(
 				() => {
 					assert.isTrue(
-						consoleLogStub.secondCall.calledWith(
+						mockLoggingHelper.log.secondCall.calledWith(
 							` ${yellow('creating')} .${sep}config${sep}test-group-test-eject${sep}file1`
 						)
 					);
 					assert.isTrue(
-						consoleLogStub.thirdCall.calledWith(
+						mockLoggingHelper.log.thirdCall.calledWith(
 							` ${yellow('creating')} .${sep}config${sep}test-group-test-eject${sep}file2`
 						)
 					);
 					assert.isTrue(
-						consoleLogStub
+						mockLoggingHelper.log
 							.getCall(3)
 							.calledWith(` ${yellow('creating')} .${sep}config${sep}test-group-test-eject${sep}file3`)
 					);
@@ -203,7 +205,7 @@ describe('eject command', () => {
 			const groupMap = new Map([['test', commandMap]]);
 			const helper = getHelper();
 			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves(groupMap);
-			return moduleUnderTest.run(helper, {}).then(
+			return moduleUnderTest.run(helper, {} as any).then(
 				() => {
 					assert.isTrue(mockFsExtra.copySync.notCalled);
 				},
@@ -222,17 +224,23 @@ describe('eject command', () => {
 			const groupMap = new Map([['test', commandMap]]);
 			const helper = getHelper();
 			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves(groupMap);
-			return moduleUnderTest.run(helper, {}).then(
+			return moduleUnderTest.run(helper, {} as any).then(
 				() => {
-					const logCallCount = consoleLogStub.callCount;
-					assert.isTrue(consoleLogStub.callCount > 3, '1');
+					const logCallCount = mockLoggingHelper.log.callCount;
+					assert.isTrue(mockLoggingHelper.log.callCount > 3, '1');
 					const hintsCall = logCallCount - 3;
 					assert.isTrue(
-						consoleLogStub.getCall(hintsCall).calledWith(underline('\nhints')),
+						mockLoggingHelper.log.getCall(hintsCall).calledWith(underline('\nhints')),
 						'should underline hints'
 					);
-					assert.isTrue(consoleLogStub.getCall(hintsCall + 1).calledWith(' hint 1'), 'should show hint1');
-					assert.isTrue(consoleLogStub.getCall(hintsCall + 2).calledWith(' hint 2'), 'should show hint2');
+					assert.isTrue(
+						mockLoggingHelper.log.getCall(hintsCall + 1).calledWith(' hint 1'),
+						'should show hint1'
+					);
+					assert.isTrue(
+						mockLoggingHelper.log.getCall(hintsCall + 2).calledWith(' hint 2'),
+						'should show hint2'
+					);
 				},
 				() => {
 					assert.fail(null, null, 'moduleUnderTest.run should not have rejected promise');

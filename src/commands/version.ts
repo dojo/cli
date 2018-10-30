@@ -1,4 +1,4 @@
-import { Helper, OptionsHelper, GroupMap, NpmPackageDetails } from '../interfaces';
+import { Helper, OptionsHelper, GroupMap, NpmPackageDetails, LoggingHelper } from '../interfaces';
 import { join } from 'path';
 import { Argv } from 'yargs';
 import chalk from 'chalk';
@@ -40,14 +40,14 @@ export interface VersionArgs extends Argv {
 	outdated: boolean;
 }
 
-async function getLatestCommandVersions(): Promise<NpmPackageDetails[]> {
+async function getLatestCommandVersions(logging: LoggingHelper): Promise<NpmPackageDetails[]> {
 	const packagePath = pkgDir.sync(__dirname);
 	const packageJsonFilePath = join(packagePath, 'package.json');
 	const packageJson: PackageDetails = require(packageJsonFilePath);
 
-	console.log(chalk.yellow('Fetching latest version information...'));
+	logging.log(chalk.yellow('Fetching latest version information...'));
 
-	return await getLatestCommands(packageJson.name);
+	return await getLatestCommands(packageJson.name, logging);
 }
 
 /**
@@ -57,10 +57,10 @@ async function getLatestCommandVersions(): Promise<NpmPackageDetails[]> {
  * @param {ModuleVersion[]} moduleVersions
  * @returns {{name, version, group}[]}
  */
-async function areCommandsOutdated(moduleVersions: ModuleVersion[]): Promise<any> {
+async function areCommandsOutdated(logging: LoggingHelper, moduleVersions: ModuleVersion[]): Promise<any> {
 	type VersionsMap = { [index: string]: string };
 
-	const latestCommands = await getLatestCommandVersions();
+	const latestCommands = await getLatestCommandVersions(logging);
 	const latestVersions: VersionsMap = latestCommands.reduce((versions: VersionsMap, { name, version }) => {
 		versions[name] = version;
 		return versions;
@@ -199,12 +199,12 @@ function buildVersions(groupMap: GroupMap): ModuleVersion[] {
  * @param {boolean} checkOutdated should we check if there is a later stable version available for the command
  * @returns {string} the stdout output
  */
-function createVersionsString(groupMap: GroupMap, checkOutdated: boolean): Promise<string> {
+function createVersionsString(logging: LoggingHelper, groupMap: GroupMap, checkOutdated: boolean): Promise<string> {
 	const packagePath = pkgDir.sync(__dirname);
 	const myPackageDetails = readPackageDetails(packagePath); // fetch the cli's package details
 	const versions: ModuleVersion[] = buildVersions(groupMap);
 	if (checkOutdated) {
-		return areCommandsOutdated(versions).then(
+		return areCommandsOutdated(logging, versions).then(
 			(commandVersions: ModuleVersion[]) => createOutput(myPackageDetails, commandVersions),
 			(err) => {
 				return `Something went wrong trying to fetch command versions: ${err.message}`;
@@ -216,11 +216,11 @@ function createVersionsString(groupMap: GroupMap, checkOutdated: boolean): Promi
 }
 
 function run(helper: Helper, args: VersionArgs): Promise<any> {
-	return allCommands()
+	return allCommands(helper.logging)
 		.then((groupMap) => {
-			return createVersionsString(groupMap, args.outdated);
+			return createVersionsString(helper.logging, groupMap, args.outdated);
 		})
-		.then(console.log);
+		.then(helper.logging.log);
 }
 
 export default {

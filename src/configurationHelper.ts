@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
-import { Config, ConfigurationHelper, ConfigWrapper } from './interfaces';
+import { Config, ConfigurationHelper, ConfigWrapper, LoggingHelper } from './interfaces';
 import * as readlineSync from 'readline-sync';
 import * as detectIndent from 'detect-indent';
 
@@ -80,24 +80,26 @@ export function getConfig(): Config | undefined {
 	}
 }
 
-function warnAboutMultiConfig() {
+function warnAboutMultiConfig(logging: LoggingHelper) {
 	const warning = `Warning: Both a .dojorc configuration and a dojo configuration in your package.json were found. The .dojorc file will take precedent. It is recommended you stick to one configuration option.`;
-	console.warn(chalk.yellow(warning));
+	logging.warn(warning);
 }
 
-export function checkForMultiConfig() {
+export function checkForMultiConfig(logging: LoggingHelper) {
 	const { dojoRcConfig, packageJsonConfig } = parseConfigs();
 	const hasPackageConfig = typeof packageJsonConfig === 'object';
 	const hasDojoRcConfig = typeof dojoRcConfig === 'object';
 	if (hasPackageConfig && hasDojoRcConfig) {
-		warnAboutMultiConfig();
+		warnAboutMultiConfig(logging);
 	}
 }
 
 class SingleCommandConfigurationHelper implements ConfigurationHelper {
+	private _logging: LoggingHelper;
 	private _configurationKey: string;
 
-	constructor(groupName: string, commandName?: string) {
+	constructor(logging: LoggingHelper, groupName: string, commandName?: string) {
+		this._logging = logging;
 		this._configurationKey = groupName;
 
 		if (commandName) {
@@ -140,7 +142,7 @@ class SingleCommandConfigurationHelper implements ConfigurationHelper {
 	set(config: Config, commandName: string): void;
 	set(config: Config, commandName?: string): void {
 		if (!dojoRcPath && !packageJsonPath) {
-			console.error(chalk.red('You cannot save a config outside of a project directory'));
+			this._logging.error(chalk.red('You cannot save a config outside of a project directory'));
 			return;
 		}
 
@@ -164,8 +166,8 @@ class SingleCommandConfigurationHelper implements ConfigurationHelper {
 }
 
 export class ConfigurationHelperFactory {
-	sandbox(groupName: string, commandName?: string): ConfigurationHelper {
-		return new SingleCommandConfigurationHelper(groupName, commandName);
+	sandbox(logging: LoggingHelper, groupName: string, commandName?: string): ConfigurationHelper {
+		return new SingleCommandConfigurationHelper(logging, groupName, commandName);
 	}
 }
 

@@ -1,24 +1,25 @@
 const { beforeEach, afterEach, describe, it } = intern.getInterface('bdd');
 const { assert } = intern.getPlugin('chai');
 
+import init from '../../../src/commands/init';
 import MockModule from '../../support/MockModule';
 import * as sinon from 'sinon';
 import chalk from 'chalk';
+import { getLoggingStub, LoggingStub } from '../../support/testHelper';
 
 describe('init command', () => {
 	let mockModule: MockModule;
+	let mockLoggingHelper: LoggingStub;
 	let sandbox: sinon.SinonSandbox;
 	let fs: any;
 	let pkgDir: any;
-	let warnStub: any;
 
 	beforeEach(() => {
 		sandbox = sinon.sandbox.create();
 		mockModule = new MockModule('../../../src/commands/init', require);
 		mockModule.dependencies(['fs', 'pkg-dir', '../allCommands']);
 
-		sandbox.stub(console, 'log');
-		warnStub = sandbox.stub(console, 'warn');
+		mockLoggingHelper = getLoggingStub();
 
 		pkgDir = mockModule.getMock('pkg-dir');
 		pkgDir.ctor.sync = sandbox.stub().returns('./');
@@ -54,12 +55,12 @@ describe('init command', () => {
 	it('shows a warning if no package.json file is found', async () => {
 		pkgDir.ctor.sync = sandbox.stub().returns(undefined);
 		fs.readFileSync = sandbox.stub().returns(undefined);
-		const moduleUnderTest = mockModule.getModuleUnderTest().default;
-		await moduleUnderTest.run();
+		const moduleUnderTest: typeof init = mockModule.getModuleUnderTest().default;
+		await moduleUnderTest.run({ logging: mockLoggingHelper } as any, {});
 		assert.isTrue(pkgDir.ctor.sync.calledOnce);
-		assert.isTrue(warnStub.calledOnce);
+		assert.isTrue(mockLoggingHelper.warn.calledOnce);
 		assert.isTrue(
-			warnStub.calledWith(
+			mockLoggingHelper.warn.calledWith(
 				chalk.yellow(`Warning: A root `) +
 					chalk.whiteBright.bold('package.json ') +
 					chalk.yellow(
@@ -72,24 +73,24 @@ describe('init command', () => {
 
 	it('creates a .dojorc with the available commands', async () => {
 		fs.readFileSync = sandbox.stub().returns(undefined);
-		const moduleUnderTest = mockModule.getModuleUnderTest().default;
-		await moduleUnderTest.run();
+		const moduleUnderTest: typeof init = mockModule.getModuleUnderTest().default;
+		await moduleUnderTest.run({ logging: mockLoggingHelper } as any, {});
 		const [, content] = fs.writeFileSync.firstCall.args;
 		assert.equal(content, JSON.stringify({ 'build-webpack': {}, 'test-intern': {} }, null, '\t'));
 	});
 
 	it('updates a .dojorc with the available commands', async () => {
 		fs.readFileSync = sandbox.stub().returns('{}');
-		const moduleUnderTest = mockModule.getModuleUnderTest().default;
-		await moduleUnderTest.run();
+		const moduleUnderTest: typeof init = mockModule.getModuleUnderTest().default;
+		await moduleUnderTest.run({ logging: mockLoggingHelper } as any, {});
 		const [, content] = fs.writeFileSync.firstCall.args;
 		assert.equal(content, JSON.stringify({ 'build-webpack': {}, 'test-intern': {} }, null, '\t'));
 	});
 
 	it('updates a .dojorc, but does not overwrite existing config', async () => {
 		fs.readFileSync = sandbox.stub().returns(JSON.stringify({ 'build-webpack': { foo: 'bar' } }, null, '\t'));
-		const moduleUnderTest = mockModule.getModuleUnderTest().default;
-		await moduleUnderTest.run();
+		const moduleUnderTest: typeof init = mockModule.getModuleUnderTest().default;
+		await moduleUnderTest.run({ logging: mockLoggingHelper } as any, {});
 		const [, content] = fs.writeFileSync.firstCall.args;
 		assert.equal(
 			content,
@@ -108,8 +109,8 @@ describe('init command', () => {
 
 	it('updates a .dojorc and keeps indent formatting', async () => {
 		fs.readFileSync = sandbox.stub().returns(JSON.stringify({ 'build-webpack': { foo: 'bar' } }, null, 2));
-		const moduleUnderTest = mockModule.getModuleUnderTest().default;
-		await moduleUnderTest.run();
+		const moduleUnderTest: typeof init = mockModule.getModuleUnderTest().default;
+		await moduleUnderTest.run({ logging: mockLoggingHelper } as any, {});
 		const [, content] = fs.writeFileSync.firstCall.args;
 		assert.equal(
 			content,

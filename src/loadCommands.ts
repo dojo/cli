@@ -1,10 +1,10 @@
 import * as globby from 'globby';
 import { resolve as pathResolve, join } from 'path';
-import { CliConfig, CommandWrapper, GroupMap } from './interfaces';
+import { CliConfig, CommandWrapper, GroupMap, LoggingHelper } from './interfaces';
 import configurationHelper from './configurationHelper';
 
-export function isEjected(groupName: string, command: string): boolean {
-	const config: any = configurationHelper.sandbox(groupName, command).get();
+export function isEjected(logging: LoggingHelper, groupName: string, command: string): boolean {
+	const config: any = configurationHelper.sandbox(logging, groupName, command).get();
 	return config && config['ejected'];
 }
 
@@ -45,7 +45,11 @@ export async function enumerateBuiltInCommands(config: CliConfig): Promise<strin
  * @returns Promise This function is async and returns a promise once all
  * of the commands have been loaded.
  */
-export async function loadCommands(paths: string[], load: (path: string) => CommandWrapper): Promise<GroupMap> {
+export async function loadCommands(
+	paths: string[],
+	load: (path: string) => CommandWrapper,
+	logging: LoggingHelper
+): Promise<GroupMap> {
 	return new Promise<GroupMap>((resolve, reject) => {
 		const specialCommandsMap: GroupMap = new Map();
 
@@ -54,7 +58,7 @@ export async function loadCommands(paths: string[], load: (path: string) => Comm
 				const commandWrapper = load(path);
 				const { group, name } = commandWrapper;
 
-				if (!isEjected(group, name)) {
+				if (!isEjected(logging, group, name)) {
 					if (!specialCommandsMap.has(group)) {
 						commandWrapper.default = true;
 						specialCommandsMap.set(group, new Map());

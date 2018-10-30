@@ -3,7 +3,7 @@ import { Argv, Options } from 'yargs';
 import CommandHelper from './CommandHelper';
 import configurationHelperFactory from './configurationHelper';
 import HelperFactory from './Helper';
-import { CommandError, CommandWrapper, GroupMap, CommandMap } from './interfaces';
+import { CommandError, CommandWrapper, GroupMap, CommandMap, LoggingHelper } from './interfaces';
 import { formatHelp } from './help';
 import { createOptionValidator } from './validation';
 import { getCommand } from './command';
@@ -17,13 +17,13 @@ const requireOptions = {
 	required: false
 };
 
-function reportError(error: CommandError) {
+function reportError(logging: LoggingHelper, error: CommandError) {
 	let exitCode = 1;
 	if (error.exitCode !== undefined) {
 		exitCode = error.exitCode;
 	}
 
-	console.error(chalk.red.bold(error.message));
+	logging.error(chalk.red.bold(error.message));
 	process.exit(exitCode);
 }
 
@@ -134,7 +134,7 @@ function registerGroups(yargs: Argv, helper: HelperFactory, groupName: string, c
 		(argv: any) => {
 			if (defaultCommand && argv._.length === 1) {
 				if (argv.h || argv.help) {
-					console.log(formatHelp(argv, groupMap));
+					helper.logging.log(formatHelp(argv, groupMap));
 					return Promise.resolve({});
 				}
 				const config = helper.sandbox(groupName, defaultCommand.name).configuration.get();
@@ -146,7 +146,9 @@ function registerGroups(yargs: Argv, helper: HelperFactory, groupName: string, c
 						return;
 					}
 				}
-				return defaultCommand.run(helper.sandbox(groupName, defaultCommand.name), args).catch(reportError);
+				return defaultCommand
+					.run(helper.sandbox(groupName, defaultCommand.name), args)
+					.catch(reportError.bind(null, helper.logging));
 			}
 		}
 	);
@@ -170,7 +172,7 @@ function registerCommands(yargs: Argv, helper: HelperFactory, groupName: string,
 			},
 			(argv: any) => {
 				if (argv.h || argv.help) {
-					console.log(formatHelp(argv, groupMap));
+					helper.logging.log(formatHelp(argv, groupMap));
 					return Promise.resolve({});
 				}
 
@@ -183,22 +185,23 @@ function registerCommands(yargs: Argv, helper: HelperFactory, groupName: string,
 						return;
 					}
 				}
-				return run(helper.sandbox(groupName, name), args).catch(reportError);
+				return run(helper.sandbox(groupName, name), args).catch(reportError.bind(null, helper.logging));
 			}
 		);
 	});
 }
 
-export default function(yargs: Argv, groupMap: GroupMap): void {
+export default function(yargs: Argv, loggingHelper: LoggingHelper, groupMap: GroupMap): void {
 	const helperContext = {};
-	const commandHelper = new CommandHelper(groupMap, helperContext, configurationHelperFactory);
+	const commandHelper = new CommandHelper(groupMap, helperContext, configurationHelperFactory, loggingHelper);
 	const validateHelper = { validate: builtInCommandValidation }; // Provide the default validation helper
 	const helperFactory = new HelperFactory(
 		commandHelper,
 		yargs,
 		helperContext,
 		configurationHelperFactory,
-		validateHelper
+		validateHelper,
+		loggingHelper
 	);
 
 	groupMap.forEach((commandMap, group) => {
@@ -217,7 +220,7 @@ export default function(yargs: Argv, groupMap: GroupMap): void {
 				return dojoYargs;
 			},
 			(argv: any) => {
-				console.log(formatHelp(argv, groupMap));
+				loggingHelper.log(formatHelp(argv, groupMap));
 			}
 		)
 		.check(createOptionValidator(groupMap), true)

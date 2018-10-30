@@ -4,6 +4,7 @@ const { assert } = intern.getPlugin('chai');
 import MockModule from '../support/MockModule';
 import * as sinon from 'sinon';
 import { join } from 'path';
+import { getLoggingStub, LoggingStub } from '../support/testHelper';
 // import { resolve as pathResolve } from 'path';
 
 describe('cli main module', () => {
@@ -15,6 +16,7 @@ describe('cli main module', () => {
 	let mockAllCommands: any;
 	let mockRegisterCommands: any;
 	let mergeStub: sinon.SinonStub;
+	let mockLoggingHelper: LoggingStub;
 	let init: any;
 
 	it('should run functions in order', () => {
@@ -28,7 +30,8 @@ describe('cli main module', () => {
 					'yargs',
 					'./allCommands',
 					'./registerCommands',
-					'./installableCommands'
+					'./installableCommands',
+					'./LoggingHelper'
 				]);
 
 				mockInstallableCommands = mockModule.getMock('./installableCommands');
@@ -50,7 +53,8 @@ describe('cli main module', () => {
 					yargsCommandNames: new Map([['key3', new Set(['a', 'b'])], ['key4', new Set(['d', 'e'])]])
 				});
 				mockRegisterCommands = mockModule.getMock('./registerCommands');
-				sandbox.stub(console, 'log');
+				mockLoggingHelper = getLoggingStub();
+				mockModule.getMock('./LoggingHelper').default.returns(mockLoggingHelper);
 				init = mockModule.getModuleUnderTest().init;
 			});
 
@@ -83,13 +87,16 @@ describe('cli main module', () => {
 			beforeEach(() => {
 				sandbox = sinon.sandbox.create();
 				mockModule = new MockModule('../../src/index', require);
-				mockModule.dependencies(['./updateNotifier', 'pkg-dir', 'yargs']);
+				mockModule.dependencies(['./updateNotifier', 'pkg-dir', 'yargs', './LoggingHelper']);
 				mockPkgDir = mockModule.getMock('pkg-dir');
 				mockPkgDir.ctor.sync = sandbox.stub().returns(join(__dirname, '..', 'support/valid-package'));
 
 				mockUpdate = mockModule.getMock('./updateNotifier');
 				mockUpdate.default = sandbox.stub().throws(expectedError);
-				sandbox.stub(console, 'log');
+
+				mockLoggingHelper = getLoggingStub();
+				mockModule.getMock('./LoggingHelper').default.returns(mockLoggingHelper);
+
 				init = mockModule.getModuleUnderTest().init;
 			});
 
@@ -102,10 +109,7 @@ describe('cli main module', () => {
 				await init();
 
 				assert.throw(mockUpdate.default, Error, errMessage);
-				assert.equal(
-					(console.log as sinon.SinonStub).args[0][0],
-					`Commands are not available: Error: ${errMessage}`
-				);
+				assert.equal(mockLoggingHelper.error.args[0][0], `Commands are not available: Error: ${errMessage}`);
 			});
 		});
 	});

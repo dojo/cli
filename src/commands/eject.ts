@@ -3,7 +3,15 @@ import { basename, isAbsolute, resolve } from 'path';
 import { Argv } from 'yargs';
 import chalk from 'chalk';
 import * as inquirer from 'inquirer';
-import { CommandWrapper, Helper, NpmPackage, OptionsHelper, EjectOutput, FileCopyConfig } from '../interfaces';
+import {
+	CommandWrapper,
+	Helper,
+	NpmPackage,
+	OptionsHelper,
+	EjectOutput,
+	FileCopyConfig,
+	LoggingHelper
+} from '../interfaces';
 import { loadExternalCommands } from '../allCommands';
 import { installDependencies, installDevDependencies } from '../npmInstall';
 import configurationHelper from '../configurationHelper';
@@ -24,7 +32,7 @@ function isEjectableCommandWrapper(object: CommandWrapper): object is EjectableC
 
 function register(options: OptionsHelper): void {}
 
-function copyFiles(commandName: string, { path, files }: FileCopyConfig): void {
+function copyFiles(commandName: string, { path, files }: FileCopyConfig, logging: LoggingHelper): void {
 	const cwd = process.cwd();
 	if (path && files && files.length > 0) {
 		files.forEach((fileName) => {
@@ -32,7 +40,7 @@ function copyFiles(commandName: string, { path, files }: FileCopyConfig): void {
 			const destFileName = isAbsolute(fileName) ? basename(fileName) : fileName;
 			const destPath = resolve(cwd, copiedFilesDir, commandName, destFileName);
 
-			console.log(` ${yellow('creating')} ${destPath.replace(cwd, '.')}`);
+			logging.log(` ${yellow('creating')} ${destPath.replace(cwd, '.')}`);
 			copySync(sourcePath, destPath);
 		});
 	}
@@ -50,7 +58,7 @@ async function run(helper: Helper, args: EjectArgs): Promise<any> {
 			if (!answer.eject) {
 				throw Error('Aborting eject');
 			}
-			return loadExternalCommands().then(async (commands) => {
+			return loadExternalCommands(helper.logging).then(async (commands) => {
 				let toEject = new Set<EjectableCommandWrapper>();
 				commands.forEach((commandMap, group) => {
 					toEject = [...commandMap.values()].reduce((toEject, command) => {
@@ -69,35 +77,37 @@ async function run(helper: Helper, args: EjectArgs): Promise<any> {
 					const allHints: string[] = [];
 					[...toEject].forEach((command) => {
 						const commandKey = `${command.group}-${command.name}`;
-						console.log(green('\nejecting ') + commandKey);
+						helper.logging.log(green('\nejecting ') + commandKey);
 
 						const { npm = {}, copy = false, hints = false } = command.eject(helper);
 
 						npmPackages.dependencies = { ...npmPackages.dependencies, ...npm.dependencies };
 						npmPackages.devDependencies = { ...npmPackages.devDependencies, ...npm.devDependencies };
-						copy && copyFiles(commandKey, copy);
+						copy && copyFiles(commandKey, copy, helper.logging);
 						hints && allHints.push(...hints);
-						configurationHelper.sandbox(command.group, command.name).set({ [ejectedKey]: true });
+						configurationHelper
+							.sandbox(helper.logging, command.group, command.name)
+							.set({ [ejectedKey]: true });
 					});
 
 					if (Object.keys(npmPackages.dependencies || {}).length) {
-						console.log(underline('\nrunning npm install dependencies...'));
+						helper.logging.log(underline('\nrunning npm install dependencies...'));
 						await installDependencies(npmPackages);
 					}
 
 					if (Object.keys(npmPackages.devDependencies || {}).length) {
-						console.log(underline('\nrunning npm install devDependencies...'));
+						helper.logging.log(underline('\nrunning npm install devDependencies...'));
 						await installDevDependencies(npmPackages);
 					}
 
 					if (allHints.length > 0) {
-						console.log(underline('\nhints'));
+						helper.logging.log(underline('\nhints'));
 						allHints.forEach((hint) => {
-							console.log(' ' + hint);
+							helper.logging.log(' ' + hint);
 						});
 					}
 				} else {
-					console.log('There are no commands that can be ejected');
+					helper.logging.log('There are no commands that can be ejected');
 				}
 			});
 		});

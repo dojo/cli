@@ -3,12 +3,14 @@ const { assert } = intern.getPlugin('chai');
 import chalk from 'chalk';
 
 import { NpmPackageDetails } from '../../src/interfaces';
+import * as installableCommands from '../../src/installableCommands';
 
 import MockModule from '../support/MockModule';
+import { getLoggingStub, LoggingStub } from '../support/testHelper';
 import * as sinon from 'sinon';
 
 describe('installableCommands', () => {
-	let moduleUnderTest: any;
+	let moduleUnderTest: typeof installableCommands;
 	let mockModule: MockModule;
 	let sandbox: sinon.SinonSandbox;
 	let mockConfigStore: any;
@@ -18,6 +20,7 @@ describe('installableCommands', () => {
 	let configHelperGetStub: sinon.SinonStub;
 	let mockCrossSpawn: any;
 	let mockLibNpmSearch: any;
+	let mockLoggingHelper: LoggingStub;
 
 	const ONE_DAY = 1000 * 60 * 60 * 24;
 	const testCommandDetails = {
@@ -61,8 +64,7 @@ describe('installableCommands', () => {
 		});
 
 		moduleUnderTest = mockModule.getModuleUnderTest();
-		sandbox.stub(console, 'log');
-		sandbox.stub(console, 'error');
+		mockLoggingHelper = getLoggingStub();
 	});
 
 	afterEach(() => {
@@ -71,7 +73,7 @@ describe('installableCommands', () => {
 	});
 
 	it('should check for installable commands if the config store is empty', () => {
-		return moduleUnderTest.default('testName').then((commands: NpmPackageDetails[]) => {
+		return moduleUnderTest.default('testName', mockLoggingHelper).then((commands: NpmPackageDetails[]) => {
 			assert.isTrue(mockConfigStoreGet.calledWith('commands'), 'checks for stored commands');
 			assert.isTrue(mockLibNpmSearch.ctor.calledWith('@dojo/cli-'), 'calls npm search');
 		});
@@ -79,7 +81,7 @@ describe('installableCommands', () => {
 
 	it('does not await check for installable commands if config store contains commands', () => {
 		mockConfigStoreGet.withArgs('commands').returns([testCommandDetails]);
-		return moduleUnderTest.default('testName').then((commands: NpmPackageDetails[]) => {
+		return moduleUnderTest.default('testName', mockLoggingHelper).then((commands: NpmPackageDetails[]) => {
 			assert.isTrue(mockConfigStoreGet.calledWith('commands'), 'checks for stored commands');
 			assert.isTrue(mockLibNpmSearch.ctor.notCalled, 'does not call npm search');
 		});
@@ -100,7 +102,7 @@ describe('installableCommands', () => {
 				description: 'CLI command to build Dojo applications'
 			}
 		]);
-		return moduleUnderTest.default('testName').then((commands: NpmPackageDetails[]) => {
+		return moduleUnderTest.default('testName', mockLoggingHelper).then((commands: NpmPackageDetails[]) => {
 			assert.equal(commands.length, 1);
 			assert.equal(commands[0].name, '@dojo/cli-build-app');
 		});
@@ -121,7 +123,7 @@ describe('installableCommands', () => {
 				description: 'CLI command to build Dojo applications'
 			}
 		]);
-		return moduleUnderTest.default('testName').then((commands: NpmPackageDetails[]) => {
+		return moduleUnderTest.default('testName', mockLoggingHelper).then((commands: NpmPackageDetails[]) => {
 			assert.equal(commands.length, 1);
 			assert.equal(commands[0].name, '@dojo/cli-build-app');
 		});
@@ -130,45 +132,55 @@ describe('installableCommands', () => {
 	it('alerts the user if something went wrong in the search', async () => {
 		const error = new Error('Test error');
 		mockLibNpmSearch.ctor.rejects(error);
-		await moduleUnderTest.default('testName');
-		assert.equal((console.error as sinon.SinonStub).getCall(0).args[0], 'There was an error searching npm: ');
-		assert.equal((console.error as sinon.SinonStub).getCall(0).args[1], 'Test error');
+		await moduleUnderTest.default('testName', mockLoggingHelper);
+		assert.equal(mockLoggingHelper.error.getCall(0).args[0], 'There was an error searching npm: ');
+		assert.equal(mockLoggingHelper.error.getCall(0).args[1], 'Test error');
 	});
 
 	it('creates installable command prompts', () => {
-		const groupMap = moduleUnderTest.mergeInstalledCommandsWithAvailableCommands(new Map(), [
-			testCommandDetails,
-			testCommandDetails2
-		]);
+		const groupMap = moduleUnderTest.mergeInstalledCommandsWithAvailableCommands(
+			new Map(),
+			[testCommandDetails, testCommandDetails2],
+			mockLoggingHelper
+		);
 		assert.equal(groupMap.size, 2);
 
-		assert.equal(groupMap.get('test').get('command').name, 'command');
-		assert.equal(groupMap.get('other').get('foo').name, 'foo');
+		assert.equal(groupMap!.get('test')!.get('command')!.name, 'command');
+		assert.equal(groupMap!.get('other')!.get('foo')!.name, 'foo');
 	});
 
 	it('does not generate duplicate command prompts', () => {
-		const groupMap = moduleUnderTest.mergeInstalledCommandsWithAvailableCommands(new Map(), [
-			testCommandDetails,
-			testCommandDetails
-		]);
+		const groupMap = moduleUnderTest.mergeInstalledCommandsWithAvailableCommands(
+			new Map(),
+			[testCommandDetails, testCommandDetails],
+			mockLoggingHelper
+		);
 		assert.equal(groupMap.size, 1);
-		assert.equal(groupMap.get('test').size, 1);
+		assert.equal(groupMap!.get('test')!.size, 1);
 	});
 
 	it('does not create command prompts for ejected commands', () => {
 		configHelperGetStub.returns({ ejected: true });
-		const groupMap = moduleUnderTest.mergeInstalledCommandsWithAvailableCommands(new Map(), [testCommandDetails]);
+		const groupMap = moduleUnderTest.mergeInstalledCommandsWithAvailableCommands(
+			new Map(),
+			[testCommandDetails],
+			mockLoggingHelper
+		);
 		assert.equal(groupMap.size, 0);
 	});
 
 	it('shows installation instructions for installable commands', () => {
-		const groupMap = moduleUnderTest.mergeInstalledCommandsWithAvailableCommands(new Map(), [testCommandDetails]);
-		return groupMap
-			.get('test')
-			.get('command')
-			.run()
+		const groupMap = moduleUnderTest.mergeInstalledCommandsWithAvailableCommands(
+			new Map(),
+			[testCommandDetails],
+			mockLoggingHelper
+		);
+		return groupMap!
+			.get('test')!
+			.get('command')!
+			.run({ logging: mockLoggingHelper } as any)
 			.then(() => {
-				(console.log as sinon.SinonStub).calledWith(
+				mockLoggingHelper.log.calledWith(
 					`\nTo install this command run ${chalk.green('npm i @dojo/cli-test-command')}\n`
 				);
 			});
@@ -179,7 +191,7 @@ describe('installableCommands', () => {
 		const commandMap = new Map();
 		groupMap.set('test', commandMap);
 		commandMap.set('installed', {});
-		moduleUnderTest.mergeInstalledCommandsWithAvailableCommands(groupMap, [testCommandDetails]);
+		moduleUnderTest.mergeInstalledCommandsWithAvailableCommands(groupMap, [testCommandDetails], mockLoggingHelper);
 
 		assert.equal(groupMap.size, 1);
 		assert.equal(groupMap.get('test').size, 2);

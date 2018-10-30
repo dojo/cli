@@ -2,7 +2,7 @@ import * as yargs from 'yargs';
 import { ConfigurationHelperFactory } from './configurationHelper';
 import HelperFactory from './Helper';
 import template from './template';
-import { CommandHelper, GroupMap } from './interfaces';
+import { CommandHelper, GroupMap, LoggingHelper } from './interfaces';
 import { getCommand } from './command';
 import { builtInCommandValidation } from './commands/validate';
 
@@ -19,16 +19,23 @@ export class SingleCommandHelper implements CommandHelper {
 	private _groupMap: GroupMap;
 	private _configurationFactory: ConfigurationHelperFactory;
 	private _context: any;
+	private _loggingHelper: LoggingHelper;
 
-	constructor(commandsMap: GroupMap, context: any, configurationHelperFactory: ConfigurationHelperFactory) {
+	constructor(
+		commandsMap: GroupMap,
+		context: any,
+		configurationHelperFactory: ConfigurationHelperFactory,
+		loggingHelper: LoggingHelper
+	) {
 		this._groupMap = commandsMap;
 		this._context = context;
 		this._configurationFactory = configurationHelperFactory;
+		this._loggingHelper = loggingHelper;
 	}
 
 	renderFiles(renderFilesConfig: RenderFilesConfig, renderData: any) {
 		renderFilesConfig.forEach(({ src, dest }) => {
-			template(src, dest, renderData);
+			template(src, dest, renderData, this._loggingHelper);
 		});
 	}
 
@@ -42,7 +49,8 @@ export class SingleCommandHelper implements CommandHelper {
 					yargs,
 					this._context,
 					this._configurationFactory,
-					validateHelper
+					validateHelper,
+					this._loggingHelper
 				);
 				return command.run(helper.sandbox(group, command.name), args);
 			} else {

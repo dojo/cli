@@ -7,8 +7,9 @@ import chalk from 'chalk';
 
 import { join } from 'path';
 
+import version from '../../../src/commands/version';
 import { CommandMap, CommandWrapper } from '../../../src/interfaces';
-import { getCommandWrapperWithConfiguration } from '../../support/testHelper';
+import { getCommandWrapperWithConfiguration, getLoggingStub, LoggingStub } from '../../support/testHelper';
 const validPackageInfo: any = require('../../support/valid-package/package.json');
 const anotherValidPackageInfo: any = require('../../support/another-valid-package/package.json');
 
@@ -17,13 +18,13 @@ const outputSuffix = 'The currently installed commands are:\n';
 const outputSuffixNoCommands = 'There are no registered commands available.';
 
 describe('version command', () => {
-	let moduleUnderTest: any;
+	let moduleUnderTest: typeof version;
 	let mockModule: MockModule;
 	let mockPkgDir: any;
 	let mockAllCommands: any;
 	let mockInstallableCommands: any;
+	let mockLoggingHelper: LoggingStub;
 	let sandbox: sinon.SinonSandbox;
-	let logStub: sinon.SinonStub;
 
 	beforeEach(() => {
 		sandbox = sinon.sandbox.create();
@@ -34,7 +35,7 @@ describe('version command', () => {
 		mockAllCommands = mockModule.getMock('../allCommands');
 		mockInstallableCommands = mockModule.getMock('../installableCommands');
 		mockInstallableCommands.getLatestCommands = sandbox.stub().resolves([]);
-		logStub = sandbox.stub(console, 'log');
+		mockLoggingHelper = getLoggingStub();
 		moduleUnderTest = mockModule.getModuleUnderTest().default;
 	});
 
@@ -62,11 +63,11 @@ describe('version command', () => {
 		const noCommandOutput = `${outputPrefix}${outputSuffixNoCommands}`;
 		const groupMap = new Map();
 
-		const helper = { command: 'version' };
+		const helper = { command: 'version', logging: mockLoggingHelper };
 		mockAllCommands.default = sandbox.stub().resolves(groupMap);
-		return moduleUnderTest.run(helper, { outdated: false }).then(
+		return moduleUnderTest.run(helper as any, { outdated: false } as any).then(
 			() => {
-				assert.equal(logStub.firstCall.args[0].trim(), noCommandOutput);
+				assert.equal(mockLoggingHelper.log.firstCall.args[0].trim(), noCommandOutput);
 			},
 			() => {
 				assert.fail(null, null, 'moduleUnderTest.run should not have rejected promise');
@@ -87,11 +88,11 @@ describe('version command', () => {
 		const groupMap = new Map([['apple', commandMap]]);
 		mockAllCommands.default = sandbox.stub().resolves(groupMap);
 
-		const helper = { command: 'version' };
-		return moduleUnderTest.run(helper, { outdated: false }).then(
+		const helper = { command: 'version', logging: mockLoggingHelper };
+		return moduleUnderTest.run(helper as any, { outdated: false } as any).then(
 			() => {
 				// assert.isTrue(mockDavid.getUpdatedDependencies.notCalled);
-				assert.equal(logStub.firstCall.args[0].trim(), noCommandOutput);
+				assert.equal(mockLoggingHelper.log.firstCall.args[0].trim(), noCommandOutput);
 			},
 			() => {
 				assert.fail(null, null, 'moduleUnderTest.run should not have rejected promise');
@@ -116,15 +117,15 @@ describe('version command', () => {
 		]);
 		const groupMap = new Map([['test', commandMap]]);
 		mockAllCommands.default = sandbox.stub().resolves(groupMap);
-		const helper = { command: 'version' };
+		const helper = { command: 'version', logging: mockLoggingHelper };
 
 		const expectedOutput = `${outputPrefix}${outputSuffix}
   ▹  ${validPackageInfo.name}@${chalk.blue(validPackageInfo.version)}
   ▹  ${anotherValidPackageInfo.name}@${chalk.blue(anotherValidPackageInfo.version)}`;
 
-		return moduleUnderTest.run(helper, { outdated: false }).then(
+		return moduleUnderTest.run(helper as any, { outdated: false } as any).then(
 			() => {
-				assert.equal(logStub.firstCall.args[0].trim(), expectedOutput);
+				assert.equal(mockLoggingHelper.log.firstCall.args[0].trim(), expectedOutput);
 			},
 			() => {
 				assert.fail(null, null, 'moduleUnderTest.run should not have rejected promise');
@@ -152,13 +153,13 @@ describe('version command', () => {
 		const groupMap = new Map([['test', commandMap]]);
 
 		mockAllCommands.default = sandbox.stub().resolves(groupMap);
-		const helper = { command: 'version' };
+		const helper = { command: 'version', logging: mockLoggingHelper };
 		const expectedOutput = `${outputPrefix}${outputSuffix}
   ▹  ${validPackageInfo.name}@${chalk.blue(validPackageInfo.version)}`;
 
-		return moduleUnderTest.run(helper, { outdated: false }).then(
+		return moduleUnderTest.run(helper as any, { outdated: false } as any).then(
 			() => {
-				assert.equal(logStub.firstCall.args[0].trim(), expectedOutput);
+				assert.equal(mockLoggingHelper.log.firstCall.args[0].trim(), expectedOutput);
 			},
 			() => {
 				assert.fail(null, null, 'moduleUnderTest.run should not have rejected promise');
@@ -188,12 +189,14 @@ describe('version command', () => {
 		]);
 		const groupMap = new Map([['test', commandMap]]);
 
-		const helper = { command: 'version' };
+		const helper = { command: 'version', logging: mockLoggingHelper };
 		mockAllCommands.default = sandbox.stub().resolves(groupMap);
-		return moduleUnderTest.run(helper, { outdated: true }).then(
+		return moduleUnderTest.run(helper as any, { outdated: true } as any).then(
 			() => {
-				assert.isTrue(logStub.firstCall.calledWith(chalk.yellow('Fetching latest version information...')));
-				assert.equal(logStub.secondCall.args[0].trim(), expectedOutput);
+				assert.isTrue(
+					mockLoggingHelper.log.firstCall.calledWith(chalk.yellow('Fetching latest version information...'))
+				);
+				assert.equal(mockLoggingHelper.log.secondCall.args[0].trim(), expectedOutput);
 			},
 			() => {
 				assert.fail(null, null, 'moduleUnderTest.run should not have rejected promise');
@@ -222,12 +225,14 @@ describe('version command', () => {
 		]);
 		const groupMap = new Map([['test', commandMap]]);
 
-		const helper = { command: 'version' };
+		const helper = { command: 'version', logging: mockLoggingHelper };
 		mockAllCommands.default = sandbox.stub().resolves(groupMap);
-		return moduleUnderTest.run(helper, { outdated: true }).then(
+		return moduleUnderTest.run(helper as any, { outdated: true } as any).then(
 			() => {
-				assert.isTrue(logStub.firstCall.calledWith(chalk.yellow('Fetching latest version information...')));
-				assert.equal(logStub.secondCall.args[0].trim(), expectedOutput);
+				assert.isTrue(
+					mockLoggingHelper.log.firstCall.calledWith(chalk.yellow('Fetching latest version information...'))
+				);
+				assert.equal(mockLoggingHelper.log.secondCall.args[0].trim(), expectedOutput);
 			},
 			() => {
 				assert.fail(null, null, 'moduleUnderTest.run should not have rejected promise');
@@ -251,12 +256,14 @@ describe('version command', () => {
 		]);
 		const groupMap = new Map([['test', commandMap]]);
 
-		const helper = { command: 'version' };
+		const helper = { command: 'version', logging: mockLoggingHelper };
 		mockAllCommands.default = sandbox.stub().resolves(groupMap);
-		return moduleUnderTest.run(helper, { outdated: true }).then(
+		return moduleUnderTest.run(helper as any, { outdated: true } as any).then(
 			() => {
-				assert.isTrue(logStub.firstCall.calledWith(chalk.yellow('Fetching latest version information...')));
-				assert.isTrue(logStub.secondCall.calledWith(expectedOutput));
+				assert.isTrue(
+					mockLoggingHelper.log.firstCall.calledWith(chalk.yellow('Fetching latest version information...'))
+				);
+				assert.isTrue(mockLoggingHelper.log.secondCall.calledWith(expectedOutput));
 			},
 			() => {
 				assert.fail(null, null, 'moduleUnderTest.run should not have rejected promise');

@@ -3,21 +3,21 @@ const { assert, expect } = intern.getPlugin('chai');
 
 import chalk from 'chalk';
 import * as sinon from 'sinon';
-import { getValidationErrors, builtInCommandValidation } from '../../../src/commands/validate';
+import validate, { getValidationErrors, builtInCommandValidation } from '../../../src/commands/validate';
 
 import MockModule from '../../support/MockModule';
 import { ValidationWrapper, CommandMap, CommandWrapper } from '../../../src/interfaces';
-import { getCommandWrapperWithConfiguration } from '../../support/testHelper';
+import { getLoggingStub, getCommandWrapperWithConfiguration, LoggingStub } from '../../support/testHelper';
 
-const { green, yellow, red } = chalk;
+const { green } = chalk;
 
 describe('validate', () => {
-	let moduleUnderTest: any;
+	let moduleUnderTest: typeof validate;
 	let mockModule: MockModule;
 	let mockAllExternalCommands: any;
 	let sandbox: sinon.SinonSandbox;
 	let mockConfigurationHelper: any;
-	let consoleLogStub: any;
+	let mockLoggingHelper: LoggingStub;
 
 	const validateableCommandWrapper: ValidationWrapper = {
 		commandGroup: 'testGroup',
@@ -54,7 +54,7 @@ describe('validate', () => {
 
 	beforeEach(() => {
 		sandbox = sinon.sandbox.create();
-		consoleLogStub = sandbox.stub(console, 'log');
+		mockLoggingHelper = getLoggingStub();
 	});
 
 	afterEach(() => {
@@ -106,44 +106,39 @@ describe('validate', () => {
 		});
 
 		describe('builtInCommandValidation', () => {
-			beforeEach(() => {
-				consoleLogStub.reset();
-			});
-
 			it(`should fail on validating a command with empty config and a valid schema`, async () => {
 				expect(builtInCommandValidation).to.not.be.undefined;
 				validateableCommandWrapper.commandConfig = {};
 				validateableCommandWrapper.commandSchema = { ...detailedSchema };
-				const valid = await builtInCommandValidation(validateableCommandWrapper);
+				const valid = await builtInCommandValidation(validateableCommandWrapper, mockLoggingHelper);
 				expect(valid).to.be.false;
-				expect(consoleLogStub.callCount).to.equal(2);
-				expect(consoleLogStub.getCall(0).args[0]).to.equal(
-					red('Config is invalid! The following issues were found: ')
+				expect(mockLoggingHelper.error.callCount).to.equal(2);
+				expect(mockLoggingHelper.error.getCall(0).args[0]).to.equal(
+					'Config is invalid! The following issues were found: '
 				);
 			});
 			it(`should fail on validating a command with mismatching config and schema`, async () => {
 				expect(builtInCommandValidation).to.not.be.undefined;
 				validateableCommandWrapper.commandConfig = { ...mismatchedConfig };
 				validateableCommandWrapper.commandSchema = { ...detailedSchema };
-				const valid = await builtInCommandValidation(validateableCommandWrapper);
+				const valid = await builtInCommandValidation(validateableCommandWrapper, mockLoggingHelper);
 				expect(valid).to.be.false;
-				expect(consoleLogStub.callCount).to.equal(2);
-				expect(consoleLogStub.getCall(0).args[0]).to.equal(
-					red('Config is invalid! The following issues were found: ')
+				expect(mockLoggingHelper.error.callCount).to.equal(2);
+				expect(mockLoggingHelper.error.getCall(0).args[0]).to.equal(
+					'Config is invalid! The following issues were found: '
 				);
-				expect(consoleLogStub.getCall(1).args[0]).to.equal(
-					red('testGroup-testCommand config.foo.bar is not one of expected values: foobar')
+				expect(mockLoggingHelper.error.getCall(1).args[0]).to.equal(
+					'testGroup-testCommand config.foo.bar is not one of expected values: foobar'
 				);
 			});
 			it(`should fail on validating a command with undefined config`, async () => {
-				consoleLogStub.reset();
 				expect(builtInCommandValidation).to.not.be.undefined;
 				validateableCommandWrapper.commandConfig = undefined;
 				validateableCommandWrapper.commandSchema = { ...detailedSchema };
-				const valid = await builtInCommandValidation(validateableCommandWrapper);
-				expect(consoleLogStub.callCount).to.equal(1);
-				expect(consoleLogStub.getCall(0).args[0]).to.equal(
-					red(".dojorc config does not have the top level command property 'testGroup-testCommand'")
+				const valid = await builtInCommandValidation(validateableCommandWrapper, mockLoggingHelper);
+				expect(mockLoggingHelper.error.callCount).to.equal(1);
+				expect(mockLoggingHelper.error.getCall(0).args[0]).to.equal(
+					".dojorc config does not have the top level command property 'testGroup-testCommand'"
 				);
 				expect(valid).to.be.false;
 			});
@@ -151,11 +146,11 @@ describe('validate', () => {
 				expect(builtInCommandValidation).to.not.be.undefined;
 				validateableCommandWrapper.commandConfig = { ...matchedConfig };
 				validateableCommandWrapper.commandSchema = { ...detailedSchema };
-				const valid = await builtInCommandValidation(validateableCommandWrapper);
-				expect(consoleLogStub.getCall(0).args[0]).to.equal(
+				const valid = await builtInCommandValidation(validateableCommandWrapper, mockLoggingHelper);
+				expect(mockLoggingHelper.log.getCall(0).args[0]).to.equal(
 					green('testGroup-testCommand config validation was successful!')
 				);
-				expect(consoleLogStub.callCount).to.equal(1);
+				expect(mockLoggingHelper.log.callCount).to.equal(1);
 				expect(valid).to.be.true;
 			});
 			it(`should pass on validating a valid command silently`, async () => {
@@ -163,8 +158,8 @@ describe('validate', () => {
 				validateableCommandWrapper.silentSuccess = true;
 				validateableCommandWrapper.commandConfig = { ...matchedConfig };
 				validateableCommandWrapper.commandSchema = { ...detailedSchema };
-				const valid = await builtInCommandValidation(validateableCommandWrapper);
-				expect(consoleLogStub.callCount).to.equal(0);
+				const valid = await builtInCommandValidation(validateableCommandWrapper, mockLoggingHelper);
+				expect(mockLoggingHelper.log.callCount).to.equal(0);
 				expect(valid).to.be.true;
 			});
 		});
@@ -177,7 +172,8 @@ describe('validate', () => {
 				configuration: {
 					get: sandbox.stub().returns({}),
 					set: sandbox.stub()
-				}
+				},
+				logging: mockLoggingHelper
 			};
 
 			return Object.assign({}, basicHelper, config);
@@ -209,10 +205,10 @@ describe('validate', () => {
 			mockConfigurationHelper.getConfig = sandbox.stub().returns(undefined);
 
 			const helper = getHelper();
-			return moduleUnderTest.run(helper, {}).then(
+			return moduleUnderTest.run(helper, {} as any).then(
 				() => {
-					assert.isTrue(consoleLogStub.called);
-					assert.equal(consoleLogStub.getCall(0).args[0], yellow(`No config has been detected`));
+					assert.isTrue(mockLoggingHelper.warn.called);
+					assert.equal(mockLoggingHelper.warn.getCall(0).args[0], `No config has been detected`);
 				},
 				(error: { message: string }) => {
 					assert.fail(null, null, 'no config route should be taken which should be error free');
@@ -228,12 +224,12 @@ describe('validate', () => {
 			mockConfigurationHelper.getConfig = sandbox.stub().returns({});
 
 			const helper = getHelper();
-			return moduleUnderTest.run(helper, {}).then(
+			return moduleUnderTest.run(helper, {} as any).then(
 				() => {
-					assert.isTrue(consoleLogStub.called);
+					assert.isTrue(mockLoggingHelper.warn.called);
 					assert.equal(
-						consoleLogStub.getCall(0).args[0],
-						yellow(`A config was found, but it has no properties`)
+						mockLoggingHelper.warn.getCall(0).args[0],
+						`A config was found, but it has no properties`
 					);
 				},
 				(error: { message: string }) => {
@@ -250,12 +246,12 @@ describe('validate', () => {
 			mockConfigurationHelper.getConfig = sandbox.stub().returns({ ...matchedConfig });
 
 			const helper = getHelper();
-			return moduleUnderTest.run(helper, {}).then(
+			return moduleUnderTest.run(helper, {} as any).then(
 				() => {
 					assert.isTrue(mockConfigurationHelper.getConfig.called);
-					assert.isTrue(consoleLogStub.called);
+					assert.isTrue(mockLoggingHelper.log.called);
 					assert.equal(
-						consoleLogStub.getCall(0).args[0],
+						mockLoggingHelper.log.getCall(0).args[0],
 						green(`There were no commands to validate against`)
 					);
 				},
@@ -275,10 +271,10 @@ describe('validate', () => {
 			const groupMap = new Map([['test', commandMap]]);
 			const helper = getHelper();
 			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves(groupMap);
-			return moduleUnderTest.run(helper, {}).then(
+			return moduleUnderTest.run(helper, {} as any).then(
 				() => {
 					assert.equal(
-						consoleLogStub.getCall(0).args[0],
+						mockLoggingHelper.log.getCall(0).args[0],
 						green(`There were no commands to validate against`)
 					);
 				},
@@ -301,13 +297,13 @@ describe('validate', () => {
 			const groupMap = new Map([['test', commandMap]]);
 			const helper = getHelper();
 			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves(groupMap);
-			return moduleUnderTest.run(helper, {}).then(
+			return moduleUnderTest.run(helper, {} as any).then(
 				() => {
 					assert.isTrue((installedCommandWrapper.validate as sinon.SinonStub).called);
 					assert.isTrue((installedCommandWrapper.validate as sinon.SinonStub).threw());
 					assert.equal(
-						consoleLogStub.getCall(0).args[0],
-						red(`The validation function for this command threw an error: A test error`)
+						mockLoggingHelper.error.getCall(0).args[0],
+						`The validation function for this command threw an error: A test error`
 					);
 				},
 				(error: { message: string }) => {
@@ -339,9 +335,12 @@ describe('validate', () => {
 			const groupMap = new Map([['test', commandMap]]);
 			const helper = getHelper();
 			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves(groupMap);
-			return moduleUnderTest.run(helper, {}).then(
+			return moduleUnderTest.run(helper, {} as any).then(
 				() => {
-					assert.equal(consoleLogStub.getCall(0).args[0], green(`There were no issues with your config!`));
+					assert.equal(
+						mockLoggingHelper.log.getCall(0).args[0],
+						green(`There were no issues with your config!`)
+					);
 				},
 				(error: { message: string }) => {
 					assert.fail(null, null, 'no config route should be taken which should be error free');

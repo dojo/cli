@@ -2,6 +2,7 @@ import { renderFile } from 'ejs';
 import { writeFile, ensureDir } from 'fs-extra';
 import * as path from 'path';
 import chalk from 'chalk';
+import { LoggingHelper } from './interfaces';
 
 export function ejsRender(source: string, replacements: Object): Promise<string> {
 	return new Promise<string>((resolve, reject) => {
@@ -22,8 +23,13 @@ export function writeRenderedFile(str: string, destination: string): Promise<voi
 	});
 }
 
-export default async function(source: string, destination: string, replacements: Object): Promise<void> {
-	console.info(chalk.green.bold(' create ') + destination);
+export default async function(
+	source: string,
+	destination: string,
+	replacements: Object,
+	logging: LoggingHelper
+): Promise<void> {
+	logging.info(chalk.bold(' create ') + destination);
 	const str = await ejsRender(source, replacements);
 	await writeRenderedFile(str, destination);
 }

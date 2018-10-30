@@ -5,6 +5,8 @@ import { resolve as pathResolve } from 'path';
 import * as sinon from 'sinon';
 import MockModule from '../support/MockModule';
 import chalk from 'chalk';
+import { ConfigurationHelperFactory, checkForMultiConfig } from '../../src/configurationHelper';
+import { getLoggingStub, LoggingStub } from '../support/testHelper';
 
 let sandbox: any;
 let mockModule: MockModule;
@@ -12,12 +14,10 @@ let mockPkgDir: any;
 let mockFs: any;
 let mockPath: any;
 let mockReadlineSync: any;
-let moduleUnderTest: any;
-let configurationHelper: any;
-let consoleErrorStub: sinon.SinonStub;
-let consoleWarnStub: sinon.SinonStub;
+let configurationHelper: ConfigurationHelperFactory;
+let mockLoggingHelper: LoggingStub;
 let configToIndent: any;
-let mockcheckForMultiConfig: any;
+let mockcheckForMultiConfig: typeof checkForMultiConfig;
 
 const packagePath = pathResolve(__dirname, '../support');
 const dojoRcPath = `${packagePath}/.dojorc`;
@@ -39,10 +39,8 @@ registerSuite('Configuration Helper', {
 			mockPath.join = sinon.stub().returns(dojoRcPath);
 			mockReadlineSync = mockModule.getMock('readline-sync');
 			mockReadlineSync.isInKeyYN = sinon.stub().returns(true);
-			moduleUnderTest = mockModule.getModuleUnderTest().default;
-			configurationHelper = moduleUnderTest;
-			consoleWarnStub = sandbox.stub(console, 'warn');
-			consoleErrorStub = sandbox.stub(console, 'error');
+			configurationHelper = mockModule.getModuleUnderTest().default;
+			mockLoggingHelper = getLoggingStub();
 		},
 		afterEach() {
 			sandbox.restore();
@@ -53,8 +51,8 @@ registerSuite('Configuration Helper', {
 			'Should write new config to file when save called'() {
 				const newConfig = { foo: 'bar' };
 				mockFs.readFileSync = sinon.stub().returns(JSON.stringify({ 'testGroupName-testCommandName': {} }));
-				configurationHelper.sandbox('testGroupName', 'testCommandName').set(newConfig);
-				assert.isTrue(consoleWarnStub.notCalled);
+				configurationHelper.sandbox(mockLoggingHelper, 'testGroupName', 'testCommandName').set(newConfig);
+				assert.isTrue(mockLoggingHelper.warn.notCalled);
 				assert.isTrue(mockFs.writeFileSync.calledOnce);
 				assert.equal(mockFs.writeFileSync.firstCall.args[0], dojoRcPath);
 				assert.equal(
@@ -65,8 +63,8 @@ registerSuite('Configuration Helper', {
 			'Should write new config to file when save called without commandName'() {
 				const newConfig = { foo: 'bar' };
 				mockFs.readFileSync = sinon.stub().returns(JSON.stringify({ testGroupName: {} }));
-				configurationHelper.sandbox('testGroupName').set(newConfig);
-				assert.isTrue(consoleWarnStub.notCalled);
+				configurationHelper.sandbox(mockLoggingHelper, 'testGroupName').set(newConfig);
+				assert.isTrue(mockLoggingHelper.warn.notCalled);
 				assert.isTrue(mockFs.writeFileSync.calledOnce);
 				assert.equal(mockFs.writeFileSync.firstCall.args[0], dojoRcPath);
 				assert.equal(
@@ -80,9 +78,9 @@ registerSuite('Configuration Helper', {
 				const mergedConfigs = Object.assign(existingConfig, newConfig);
 
 				mockFs.readFileSync.returns(JSON.stringify({ 'testGroupName-testCommandName': existingConfig }));
-				configurationHelper.sandbox('testGroupName', 'testCommandName').set(newConfig);
-				assert.isTrue(consoleErrorStub.notCalled);
-				assert.isTrue(consoleWarnStub.notCalled);
+				configurationHelper.sandbox(mockLoggingHelper, 'testGroupName', 'testCommandName').set(newConfig);
+				assert.isTrue(mockLoggingHelper.error.notCalled);
+				assert.isTrue(mockLoggingHelper.warn.notCalled);
 				assert.isTrue(mockFs.writeFileSync.calledOnce);
 				assert.equal(
 					mockFs.writeFileSync.firstCall.args[1],
@@ -94,9 +92,9 @@ registerSuite('Configuration Helper', {
 				assert.isTrue(mockFs.readFileSync.notCalled);
 
 				const newConfig = { foo: 'bar' };
-				configurationHelper.sandbox('testGroupName', 'testCommandName').set(newConfig);
-				assert.isTrue(consoleErrorStub.notCalled);
-				assert.isTrue(consoleWarnStub.notCalled);
+				configurationHelper.sandbox(mockLoggingHelper, 'testGroupName', 'testCommandName').set(newConfig);
+				assert.isTrue(mockLoggingHelper.error.notCalled);
+				assert.isTrue(mockLoggingHelper.warn.notCalled);
 				assert.isTrue(mockFs.writeFileSync.calledOnce);
 				assert.equal(mockFs.writeFileSync.firstCall.args[0], dojoRcPath);
 				assert.equal(
@@ -108,9 +106,9 @@ registerSuite('Configuration Helper', {
 				const newConfig = { foo: 'bar' };
 				const existingConfig = { existing: 'config' };
 				mockFs.readFileSync.returns(JSON.stringify({ existingCommandName: existingConfig }));
-				configurationHelper.sandbox('testGroupName', 'testCommandName').set(newConfig);
-				assert.isTrue(consoleErrorStub.notCalled);
-				assert.isTrue(consoleWarnStub.notCalled);
+				configurationHelper.sandbox(mockLoggingHelper, 'testGroupName', 'testCommandName').set(newConfig);
+				assert.isTrue(mockLoggingHelper.error.notCalled);
+				assert.isTrue(mockLoggingHelper.warn.notCalled);
 				assert.isTrue(mockFs.writeFileSync.calledOnce);
 				assert.equal(mockFs.writeFileSync.firstCall.args[0], dojoRcPath);
 				assert.deepEqual(
@@ -132,9 +130,9 @@ registerSuite('Configuration Helper', {
 					.onCall(0)
 					.returns(JSON.stringify({ existingCommandName: existingConfig }, null, '    '));
 				mockFs.readFileSync.onCall(1).returns('{}');
-				configurationHelper.sandbox('testGroupName', 'testCommandName').set(newConfig);
-				assert.isTrue(consoleWarnStub.notCalled);
-				assert.isTrue(consoleErrorStub.notCalled);
+				configurationHelper.sandbox(mockLoggingHelper, 'testGroupName', 'testCommandName').set(newConfig);
+				assert.isTrue(mockLoggingHelper.warn.notCalled);
+				assert.isTrue(mockLoggingHelper.error.notCalled);
 				assert.equal(
 					mockFs.writeFileSync.firstCall.args[1],
 					JSON.stringify(
@@ -154,9 +152,9 @@ registerSuite('Configuration Helper', {
 					.onCall(0)
 					.returns(JSON.stringify({ existingCommandName: existingConfig }, null, '  '));
 				mockFs.readFileSync.onCall(1).returns('{}');
-				configurationHelper.sandbox('testGroupName', 'testCommandName').set(newConfig);
-				assert.isTrue(consoleWarnStub.notCalled);
-				assert.isTrue(consoleErrorStub.notCalled);
+				configurationHelper.sandbox(mockLoggingHelper, 'testGroupName', 'testCommandName').set(newConfig);
+				assert.isTrue(mockLoggingHelper.warn.notCalled);
+				assert.isTrue(mockLoggingHelper.error.notCalled);
 				assert.equal(
 					mockFs.writeFileSync.firstCall.args[1],
 					JSON.stringify(
@@ -171,7 +169,7 @@ registerSuite('Configuration Helper', {
 			},
 			'Should return undefined command config when no dojorc config for command exists'() {
 				mockFs.existsSync.returns(false);
-				const config = configurationHelper.sandbox('testGroupName', 'testCommandName').get();
+				const config = configurationHelper.sandbox(mockLoggingHelper, 'testGroupName', 'testCommandName').get();
 				assert.isTrue(mockFs.readFileSync.notCalled);
 				assert.equal(config, undefined);
 			},
@@ -180,7 +178,7 @@ registerSuite('Configuration Helper', {
 				mockFs.existsSync.onCall(0).returns(true);
 				mockFs.existsSync.onCall(1).returns(false);
 				mockFs.readFileSync.returns(JSON.stringify({ 'testGroupName-testCommandName': existingConfig }));
-				const config = configurationHelper.sandbox('testGroupName', 'testCommandName').get();
+				const config = configurationHelper.sandbox(mockLoggingHelper, 'testGroupName', 'testCommandName').get();
 				assert.isTrue(mockFs.readFileSync.calledOnce);
 				assert.equal(mockFs.readFileSync.firstCall.args[0], dojoRcPath);
 				assert.deepEqual(config, existingConfig);
@@ -188,7 +186,9 @@ registerSuite('Configuration Helper', {
 			'Should accept and ignore commandName parameter'() {
 				const newConfig = { foo: 'bar' };
 				mockFs.readFileSync = sinon.stub().returns(JSON.stringify({ 'testGroupName-testCommandName': {} }));
-				configurationHelper.sandbox('testGroupName', 'testCommandName').set(newConfig, 'invalid name');
+				configurationHelper
+					.sandbox(mockLoggingHelper, 'testGroupName', 'testCommandName')
+					.set(newConfig, 'invalid name');
 
 				assert.isTrue(mockFs.writeFileSync.calledOnce);
 				assert.equal(mockFs.writeFileSync.firstCall.args[0], dojoRcPath);
@@ -202,7 +202,8 @@ registerSuite('Configuration Helper', {
 				mockFs.readFileSync = sinon.stub();
 				mockFs.readFileSync.onCall(0).returns('{}');
 				mockFs.readFileSync.onCall(1).returns('{]');
-				const test = () => configurationHelper.sandbox('testGroupName', 'testCommandName').get();
+				const test = () =>
+					configurationHelper.sandbox(mockLoggingHelper, 'testGroupName', 'testCommandName').get();
 
 				assert.throws(
 					test,
@@ -227,9 +228,8 @@ registerSuite('Configuration Helper', {
 			mockFs.writeFileSync = sandbox.stub();
 			mockPath = mockModule.getMock('path');
 			mockPath.join = sandbox.stub();
-			consoleErrorStub = sandbox.stub(console, 'error');
-			moduleUnderTest = mockModule.getModuleUnderTest().default;
-			configurationHelper = moduleUnderTest;
+			mockLoggingHelper = getLoggingStub();
+			configurationHelper = mockModule.getModuleUnderTest().default;
 		},
 		afterEach() {
 			sandbox.restore();
@@ -240,14 +240,14 @@ registerSuite('Configuration Helper', {
 			'Should return undefined config when pkgdir returns null'() {
 				mockFs.readFileSync = sinon.stub();
 				mockFs.readFileSync.onCall(0).returns('{}');
-				const config = configurationHelper.sandbox('testGroupName', 'testCommandName').get();
+				const config = configurationHelper.sandbox(mockLoggingHelper, 'testGroupName', 'testCommandName').get();
 				assert.isFalse(mockPath.join.called);
 				assert.equal(config, undefined);
 			},
 			'Should warn user when config save called outside of a pkgdir'() {
-				configurationHelper.sandbox('testGroupName', 'testCommandName').set({});
+				configurationHelper.sandbox(mockLoggingHelper, 'testGroupName', 'testCommandName').set({});
 				assert.isFalse(mockFs.writeFileSync.called);
-				assert.isTrue(consoleErrorStub.calledOnce);
+				assert.isTrue(mockLoggingHelper.error.calledOnce);
 			}
 		}
 	},
@@ -295,8 +295,8 @@ registerSuite('Configuration Helper', {
 				.callsFake((...args) => (args.some((a) => a === 'package.json') ? packageJsonPath : dojoRcPath));
 			mockReadlineSync = mockModule.getMock('readline-sync');
 			mockReadlineSync.keyInYN = sinon.stub().returns(true);
-			moduleUnderTest = mockModule.getModuleUnderTest().default;
-			configurationHelper = moduleUnderTest;
+			mockLoggingHelper = getLoggingStub();
+			configurationHelper = mockModule.getModuleUnderTest().default;
 		},
 		afterEach() {
 			sandbox.restore();
@@ -304,23 +304,29 @@ registerSuite('Configuration Helper', {
 		},
 		tests: {
 			'reads config from package.json if available'() {
-				assert.deepEqual(configurationHelper.sandbox('testGroupName', 'testCommandName').get(), {
-					one: 'two'
-				});
+				assert.deepEqual(
+					configurationHelper.sandbox(mockLoggingHelper, 'testGroupName', 'testCommandName').get(),
+					{
+						one: 'two'
+					}
+				);
 
-				assert.deepEqual(configurationHelper.sandbox('testGroupName', 'testCommandName').get('test'), {
-					hello: 'world'
-				});
+				assert.deepEqual(
+					configurationHelper.sandbox(mockLoggingHelper, 'testGroupName', 'testCommandName').get('test'),
+					{
+						hello: 'world'
+					}
+				);
 			},
 
 			'confirms writing config to package.json'() {
-				configurationHelper.sandbox('testGroupName', 'testCommandName').set({
+				configurationHelper.sandbox(mockLoggingHelper, 'testGroupName', 'testCommandName').set({
 					hello: 'world'
 				});
 
 				assert.isTrue(mockReadlineSync.keyInYN.called, 'yes/no is called');
 
-				configurationHelper.sandbox('testGroupName', 'testCommandName').set({
+				configurationHelper.sandbox(mockLoggingHelper, 'testGroupName', 'testCommandName').set({
 					hello: 'world'
 				});
 
@@ -330,7 +336,7 @@ registerSuite('Configuration Helper', {
 			},
 
 			'writes package.json with current package.json identation of 4 spaces'() {
-				configurationHelper.sandbox('testGroupName', 'testCommandName').set({
+				configurationHelper.sandbox(mockLoggingHelper, 'testGroupName', 'testCommandName').set({
 					hello: 'world'
 				});
 				const indentFour = '    ';
@@ -344,7 +350,7 @@ registerSuite('Configuration Helper', {
 				const indentedConfig = JSON.stringify(configToIndent, null, indentTwo);
 				mockFs.readFileSync = sinon.stub().returns(indentedConfig);
 
-				configurationHelper.sandbox('testGroupName', 'testCommandName').set({
+				configurationHelper.sandbox(mockLoggingHelper, 'testGroupName', 'testCommandName').set({
 					hello: 'world'
 				});
 
@@ -354,7 +360,7 @@ registerSuite('Configuration Helper', {
 			'does not write to package.json if no answered'() {
 				mockReadlineSync.keyInYN = sinon.stub().returns(false);
 
-				configurationHelper.sandbox('testGroupName', 'testCommandName').set({
+				configurationHelper.sandbox(mockLoggingHelper, 'testGroupName', 'testCommandName').set({
 					hello: 'world'
 				});
 
@@ -377,9 +383,8 @@ registerSuite('Configuration Helper', {
 			mockFs.readFileSync.onSecondCall(1).returns('{ "dojo": {} }');
 			mockPath = mockModule.getMock('path');
 			mockPath.join = sandbox.stub();
-			consoleWarnStub = sandbox.stub(console, 'warn');
+			mockLoggingHelper = getLoggingStub();
 			mockcheckForMultiConfig = mockModule.getModuleUnderTest().checkForMultiConfig;
-			configurationHelper = moduleUnderTest;
 		},
 		afterEach() {
 			sandbox.restore();
@@ -388,15 +393,13 @@ registerSuite('Configuration Helper', {
 
 		tests: {
 			'should warn about having multi configs'() {
-				mockcheckForMultiConfig();
+				mockcheckForMultiConfig(mockLoggingHelper);
 				assert.isTrue(mockFs.existsSync.calledTwice);
 				assert.isTrue(mockFs.readFileSync.calledTwice);
-				assert.equal(consoleWarnStub.callCount, 1);
+				assert.equal(mockLoggingHelper.warn.callCount, 1);
 				assert.equal(
-					consoleWarnStub.firstCall.args[0],
-					chalk.yellow(
-						`Warning: Both a .dojorc configuration and a dojo configuration in your package.json were found. The .dojorc file will take precedent. It is recommended you stick to one configuration option.`
-					)
+					mockLoggingHelper.warn.firstCall.args[0],
+					`Warning: Both a .dojorc configuration and a dojo configuration in your package.json were found. The .dojorc file will take precedent. It is recommended you stick to one configuration option.`
 				);
 			}
 		}
