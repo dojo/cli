@@ -31,17 +31,17 @@ registerSuite('template', {
 			await template(testEjsSrc, testDest, { value }, mockLoggingHelper);
 			assert.isTrue(ensureDirStub.called);
 			assert.strictEqual(ensureDirStub.firstCall.args[0], '/tmp/test/destination');
-			assert.strictEqual(mockLoggingHelper.info.getCall(0).args[0], chalk.bold(' create ') + testDest);
+			assert.strictEqual(mockLoggingHelper.info.getCall(0).args[0], chalk.green.bold(' create ') + testDest);
 		},
 		async 'can render ejs file'() {
 			await template(testEjsSrc, testDest, { value }, mockLoggingHelper);
 			assert.strictEqual(writeFileStub.firstCall.args[1].trim(), value);
-			assert.strictEqual(mockLoggingHelper.info.getCall(0).args[0], chalk.bold(' create ') + testDest);
+			assert.strictEqual(mockLoggingHelper.info.getCall(0).args[0], chalk.green.bold(' create ') + testDest);
 		},
 		async 'write file is called with dest path'() {
 			await template(testEjsSrc, testDest, { value }, mockLoggingHelper);
 			assert.strictEqual(writeFileStub.firstCall.args[0], testDest);
-			assert.strictEqual(mockLoggingHelper.info.getCall(0).args[0], chalk.bold(' create ') + testDest);
+			assert.strictEqual(mockLoggingHelper.info.getCall(0).args[0], chalk.green.bold(' create ') + testDest);
 		}
 	}
 });

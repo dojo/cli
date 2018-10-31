@@ -29,7 +29,7 @@ export default async function(
 	replacements: Object,
 	logging: LoggingHelper
 ): Promise<void> {
-	logging.info(chalk.bold(' create ') + destination);
+	logging.info(chalk.green.bold(' create ') + destination);
 	const str = await ejsRender(source, replacements);
 	await writeRenderedFile(str, destination);
 }

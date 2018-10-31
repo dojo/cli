@@ -39,7 +39,7 @@ describe('LoggingHelper', () => {
 
 	it('should call info and wrap args in green', () => {
 		loggingHelper.info('one', 'two', 'three');
-		assert.isTrue(infoStub.alwaysCalledWithExactly(chalk.green('one two three')));
+		assert.isTrue(infoStub.alwaysCalledWithExactly('one', 'two', 'three'));
 	});
 
 	it('should call warn and wrap args in yellow', () => {

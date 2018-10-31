@@ -3,7 +3,7 @@ import { LoggingHelper as LoggingHelperInterface } from './interfaces';
 
 export class LoggingHelper implements LoggingHelperInterface {
 	info(...args: any[]) {
-		console.info(chalk.green(args.join(' ')));
+		console.info(...args);
 	}
 
 	log(...args: any[]) {
