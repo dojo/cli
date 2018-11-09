@@ -292,7 +292,7 @@ describe('validate', () => {
 			const installedCommandWrapper = getCommandWrapperWithConfiguration({
 				group: 'command',
 				name: 'test',
-				validate: sinon.stub().throws('A test error')
+				validate: sinon.stub().rejects('A test error')
 			});
 			mockConfigurationHelper.getConfig = sandbox.stub().returns({
 				foo: 'bar'
@@ -303,8 +303,11 @@ describe('validate', () => {
 			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves(groupMap);
 			return moduleUnderTest.run(helper, {}).then(
 				() => {
-					assert.isTrue((installedCommandWrapper.validate as sinon.SinonStub).called);
-					assert.isTrue((installedCommandWrapper.validate as sinon.SinonStub).threw());
+					assert.isTrue(
+						(installedCommandWrapper.validate as sinon.SinonStub).called,
+						'validate should be called'
+					);
+					assert.isTrue(consoleLogStub.called, 'error log should be called');
 					assert.equal(
 						consoleLogStub.getCall(0).args[0],
 						red(`The validation function for this command threw an error: A test error`)
@@ -312,6 +315,41 @@ describe('validate', () => {
 				},
 				(error: { message: string }) => {
 					assert.fail(null, null, 'validate should handle error throws gracefully');
+				}
+			);
+		});
+
+		it(`should handle case with successful and failure validate functions gracefully`, () => {
+			mockConfigurationHelper.getConfig = sandbox.stub().returns({ foo: 'bar' });
+			const command1 = getCommandWrapperWithConfiguration({
+				group: 'command1',
+				name: 'test',
+				validate: sinon.stub().resolves(true)
+			});
+			const command2 = getCommandWrapperWithConfiguration({
+				group: 'command2',
+				name: 'test',
+				validate: sinon.stub().rejects('A test error')
+			});
+			const commandMap: CommandMap = new Map<string, CommandWrapper>([
+				['command1', command1],
+				['command2', command2]
+			]);
+			const groupMap = new Map([['test', commandMap]]);
+			const helper = getHelper();
+			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves(groupMap);
+			return moduleUnderTest.run(helper, {}).then(
+				() => {
+					assert.isTrue((command1.validate as sinon.SinonStub).called, 'validate should be called');
+					assert.isTrue((command2.validate as sinon.SinonStub).called, 'validate should be called');
+					assert.equal(consoleLogStub.callCount, 1, 'error log should be called');
+					assert.equal(
+						consoleLogStub.getCall(0).args[0],
+						red(`The validation function for this command threw an error: A test error`)
+					);
+				},
+				(error: { message: string }) => {
+					assert.fail(null, null, 'no config route should be taken which should be error free');
 				}
 			);
 		});
