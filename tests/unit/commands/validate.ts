@@ -324,7 +324,7 @@ describe('validate', () => {
 					getCommandWrapperWithConfiguration({
 						group: 'command',
 						name: 'test',
-						validate: sinon.stub().returns(true)
+						validate: sinon.stub().resolves(true)
 					})
 				],
 				[
@@ -332,7 +332,7 @@ describe('validate', () => {
 					getCommandWrapperWithConfiguration({
 						group: 'command1',
 						name: 'test1',
-						validate: sinon.stub().returns(true)
+						validate: sinon.stub().resolves(true)
 					})
 				]
 			]);

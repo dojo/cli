@@ -42,7 +42,7 @@ export type ValidationWrapper = {
 };
 
 export interface ValidateHelper {
-	validate(validateOpts: ValidationWrapper): Promise<any>;
+	validate(validateOpts: ValidationWrapper): Promise<boolean>;
 }
 export interface CommandHelper {
 	run(group: string, commandName?: string, args?: Argv): Promise<any>;
@@ -103,7 +103,7 @@ export interface Command<T = any> {
 	register(options: OptionsHelper, helper: Helper): void;
 	run(helper: Helper, args?: T): Promise<any>;
 	eject?(helper: Helper): EjectOutput;
-	validate?: (helper: Helper) => boolean;
+	validate?: (helper: Helper) => Promise<boolean>;
 	name?: string;
 	group?: string;
 	alias?: Alias[] | Alias;

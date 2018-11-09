@@ -94,7 +94,7 @@ export function builtInCommandValidation(validation: ValidationWrapper): Promise
 	});
 }
 
-function validateCommands(commands: Map<string, Map<string, CommandWrapper>>, helper: HelperFactory) {
+async function validateCommands(commands: Map<string, Map<string, CommandWrapper>>, helper: HelperFactory) {
 	const config = getConfig();
 
 	const noConfig = config === undefined;
@@ -114,21 +114,21 @@ function validateCommands(commands: Map<string, Map<string, CommandWrapper>>, he
 		return;
 	}
 
-	let noMismatches = true;
-
-	[...toValidate].forEach((command) => {
-		try {
-			const valid = !!command.validate && command.validate(helper.sandbox(command.group, command.name));
-			noMismatches = valid && noMismatches;
-		} catch (error) {
-			logValidateFunctionFailed(error);
-			noMismatches = false;
+	return Promise.all(
+		[...toValidate].map(async (command) => {
+			try {
+				return !!command.validate && (await command.validate(helper.sandbox(command.group, command.name)));
+			} catch (error) {
+				logValidateFunctionFailed(error);
+				return false;
+			}
+		})
+	).then((validations) => {
+		const noMismatches = validations.every((validation: boolean) => validation);
+		if (noMismatches) {
+			logConfigValidateSuccess();
 		}
 	});
-
-	if (noMismatches) {
-		logConfigValidateSuccess();
-	}
 }
 
 function run(helper: Helper, args: ValidateArgs): Promise<any> {
@@ -144,7 +144,7 @@ function run(helper: Helper, args: ValidateArgs): Promise<any> {
 			validateHelper
 		);
 
-		validateCommands(commands, helperFactory);
+		return validateCommands(commands, helperFactory);
 	});
 }
 

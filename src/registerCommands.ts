@@ -131,7 +131,7 @@ function registerGroups(yargs: Argv, helper: HelperFactory, groupName: string, c
 				.showHelpOnFail(false, formatHelp({ _: [groupName] }, groupMap))
 				.strict();
 		},
-		(argv: any) => {
+		async (argv: any) => {
 			if (defaultCommand && argv._.length === 1) {
 				if (argv.h || argv.help) {
 					console.log(formatHelp(argv, groupMap));
@@ -141,7 +141,7 @@ function registerGroups(yargs: Argv, helper: HelperFactory, groupName: string, c
 				const args = getOptions(aliases, config, argv);
 
 				if (typeof defaultCommand.validate === 'function') {
-					const valid = defaultCommand.validate(helper.sandbox(groupName, defaultCommand.name));
+					const valid = await defaultCommand.validate(helper.sandbox(groupName, defaultCommand.name));
 					if (!valid) {
 						return;
 					}
@@ -168,7 +168,7 @@ function registerCommands(yargs: Argv, helper: HelperFactory, groupName: string,
 
 				return optionsYargs.showHelpOnFail(false, formatHelp({ _: [groupName, name] }, groupMap)).strict();
 			},
-			(argv: any) => {
+			async (argv: any) => {
 				if (argv.h || argv.help) {
 					console.log(formatHelp(argv, groupMap));
 					return Promise.resolve({});
@@ -178,7 +178,7 @@ function registerCommands(yargs: Argv, helper: HelperFactory, groupName: string,
 				const args = getOptions(aliases, config, argv);
 
 				if (typeof command.validate === 'function') {
-					const valid = command.validate(helper.sandbox(groupName, command.name));
+					const valid = await command.validate(helper.sandbox(groupName, command.name));
 					if (!valid) {
 						return;
 					}
