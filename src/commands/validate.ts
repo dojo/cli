@@ -94,44 +94,50 @@ export function builtInCommandValidation(validation: ValidationWrapper): Promise
 	});
 }
 
-async function validateCommands(commands: Map<string, Map<string, CommandWrapper>>, helper: HelperFactory) {
+async function validateCommands(
+	commands: Map<string, Map<string, CommandWrapper>>,
+	helper: HelperFactory
+): Promise<boolean> {
 	const config = getConfig();
 
 	const noConfig = config === undefined;
 	const emptyConfig = typeof config === 'object' && Object.keys(config).length === 0;
 	if (noConfig) {
 		logNoConfig();
-		return;
+		return true;
 	} else if (emptyConfig) {
 		logEmptyConfig();
-		return;
+		return true;
 	}
 
-	const toValidate = createValidationCommandSet(commands);
-
-	if (toValidate.size === 0) {
+	const commandsToValidate = [...createValidationCommandSet(commands)];
+	if (commandsToValidate.length === 0) {
 		logNoValidatableCommands();
-		return;
+		return true;
 	}
 
-	return Promise.all(
-		[...toValidate].map(async (command) => {
-			try {
-				return !!command.validate && (await command.validate(helper.sandbox(command.group, command.name)));
-			} catch (error) {
+	const commandValidations = commandsToValidate.map((command) => {
+		if (command.validate) {
+			return command.validate(helper.sandbox(command.group, command.name)).catch((error) => {
 				logValidateFunctionFailed(error);
 				return false;
-			}
-		})
-	).then((validations) => {
-		const noMismatches = validations.every((validation: boolean) => validation);
-		if (noMismatches) {
+			});
+		} else {
+			return true;
+		}
+	});
+
+	// Wait for all validations to resolve and check if all commands are valid
+	return Promise.all(commandValidations).then((validations) => {
+		const allValid = validations.every((validation) => validation);
+		if (allValid) {
 			logConfigValidateSuccess();
 		}
+		return allValid;
 	});
 }
 
-function run(helper: Helper, args: ValidateArgs): Promise<any> {
+function run(helper: Helper, args: ValidateArgs): Promise<boolean> {
 	return loadExternalCommands().then((commands) => {
 		const helperContext = {};
 		const commandHelper = new CommandHelper(commands, helperContext, configurationHelperFactory);

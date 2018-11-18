@@ -314,7 +314,7 @@ describe('validate', () => {
 					);
 				},
 				(error: { message: string }) => {
-					assert.fail(null, null, 'validate should handle error throws gracefully');
+					assert.fail(null, null, 'validate should handle error throws gracefully, got error:' + error);
 				}
 			);
 		});
