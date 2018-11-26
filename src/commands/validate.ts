@@ -55,7 +55,7 @@ export function getValidationErrors(commandKey: string, commandConfig: any, comm
 	return errors;
 }
 
-function createValidationCommandSet(commandMaps: Map<string, Map<string, CommandWrapper>>) {
+function getValdatableCommands(commandMaps: Map<string, Map<string, CommandWrapper>>) {
 	let toValidate = new Set<CommandWrapper>();
 	commandMaps.forEach((commandMap) => {
 		[...commandMap.values()].forEach((command) => {
@@ -64,7 +64,7 @@ function createValidationCommandSet(commandMaps: Map<string, Map<string, Command
 			}
 		});
 	});
-	return toValidate;
+	return [...toValidate];
 }
 
 export function builtInCommandValidation(validation: ValidationWrapper): Promise<any> {
@@ -110,21 +110,18 @@ async function validateCommands(
 		return true;
 	}
 
-	const commandsToValidate = [...createValidationCommandSet(commands)];
+	const commandsToValidate = getValdatableCommands(commands);
 	if (commandsToValidate.length === 0) {
 		logNoValidatableCommands();
 		return true;
 	}
 
 	const commandValidations = commandsToValidate.map((command) => {
-		if (command.validate) {
-			return command.validate(helper.sandbox(command.group, command.name)).catch((error) => {
-				logValidateFunctionFailed(error);
-				return false;
-			});
-		} else {
-			return true;
-		}
+		const validate = command.validate as (helper: Helper) => Promise<boolean>;
+		return validate(helper.sandbox(command.group, command.name)).catch((error) => {
+			logValidateFunctionFailed(error);
+			return false;
+		});
 	});
 
 	// Wait for all validations to resolve and check if all commands are valid
