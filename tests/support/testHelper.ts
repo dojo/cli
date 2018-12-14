@@ -19,7 +19,7 @@ export interface CommandWrapperConfig {
 	eject?: boolean;
 	installed?: boolean;
 	global?: boolean;
-	validate?: () => boolean;
+	validate?: () => Promise<boolean>;
 }
 
 export function getGroupMap(groupDef: GroupDef, registerMock?: Function, validate?: boolean) {
