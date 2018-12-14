@@ -148,16 +148,18 @@ function registerGroups(yargs: Argv, helper: HelperFactory, groupName: string, c
 		},
 		async (argv: any) => {
 			if (defaultCommand && argv._.length === 1) {
-				if (argv.h || argv.help) {
-					console.log(formatHelp(argv, groupMap));
+				const { h, help, save, ...args } = argv;
+
+				if (h || help) {
+					console.log(formatHelp(args, groupMap));
 					return Promise.resolve({});
 				}
 
 				const configurationHelper = helper.sandbox(groupName, defaultCommand.name).configuration;
 				const config = configurationHelper.get();
-				const combinedArgs = getOptions(aliases, config, argv);
+				const combinedArgs = getOptions(aliases, config, args);
 
-				if (argv.save) {
+				if (save) {
 					saveCommandLineOptions(configurationHelper, combinedArgs);
 				}
 
@@ -195,16 +197,18 @@ function registerCommands(yargs: Argv, helper: HelperFactory, groupName: string,
 					.strict();
 			},
 			async (argv: any) => {
-				if (argv.h || argv.help) {
-					console.log(formatHelp(argv, groupMap));
+				const { h, help, save, ...args } = argv;
+
+				if (h || help) {
+					console.log(formatHelp(args, groupMap));
 					return Promise.resolve({});
 				}
 
 				const configurationHelper = helper.sandbox(groupName, name).configuration;
 				const config = configurationHelper.get();
-				const combinedArgs = getOptions(aliases, config, argv);
+				const combinedArgs = getOptions(aliases, config, args);
 
-				if (argv.save) {
+				if (save) {
 					saveCommandLineOptions(configurationHelper, combinedArgs);
 				}
 
