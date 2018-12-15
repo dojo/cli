@@ -258,7 +258,6 @@ registerSuite('registerCommands', {
 					})
 				};
 				groupMap = getGroupMap(groupDef);
-				registerCommands(yargsStub, groupMap);
 				consoleErrorStub = stub(console, 'error');
 			},
 
@@ -276,6 +275,16 @@ registerSuite('registerCommands', {
 					assert.deepEqual(run.firstCall.args[1], { bar: 'bar', foo: 'foo' });
 					assert.isTrue(setStub.calledOnce);
 					assert.deepEqual(setStub.firstCall.args[0], { foo: 'foo' });
+				},
+				'should write all feature arguments to dojorc when save is passed'() {
+					process.argv = ['-f'];
+					const { run } = groupMap.get('group1').get('command1');
+					registerCommands(yargsStub, groupMap);
+					yargsStub.command.secondCall.args[3]({ f: { feature1: 'foo', feature2: 'bar' }, save: true });
+					assert.isTrue(run.calledOnce);
+					assert.deepEqual(run.firstCall.args[1], { f: { feature1: 'foo', feature2: 'bar' } });
+					assert.isTrue(setStub.calledOnce);
+					assert.deepEqual(setStub.firstCall.args[0], { f: { feature1: 'foo', feature2: 'bar' } });
 				}
 			}
 		},
