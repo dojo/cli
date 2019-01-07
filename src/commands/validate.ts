@@ -3,9 +3,9 @@ import chalk from 'chalk';
 import { CommandWrapper, Helper, OptionsHelper, ValidationWrapper } from '../interfaces';
 import { loadExternalCommands } from '../allCommands';
 import configurationHelperFactory, { getConfig } from '../configurationHelper';
-import { Validator } from 'jsonschema';
 import CommandHelper from '../CommandHelper';
 import HelperFactory from '../Helper';
+import Ajv = require('ajv');
 
 const { red, green, yellow } = chalk;
 
@@ -42,15 +42,14 @@ export function logNoValidatableCommands() {
 }
 
 export function getValidationErrors(commandKey: string, commandConfig: any, commandSchema: any): string[] {
-	const validator = new Validator();
-	const result = validator.validate(commandConfig, commandSchema);
+	const ajv = new Ajv({ allErrors: true });
+	const validate = ajv.compile(commandSchema);
+	validate(commandConfig);
 
-	const errors = result.errors.map((err: any) => {
-		let message = err.stack;
-		message = message.replace(' enum ', ' expected ');
-		message = message.replace('instance', `${commandKey} config`);
-		return message;
-	});
+	let errors = [];
+	if (ajv.errors) {
+		errors = ajv.errors.map((err: any) => err.message);
+	}
 
 	return errors;
 }
