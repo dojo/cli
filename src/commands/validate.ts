@@ -43,12 +43,19 @@ export function logNoValidatableCommands() {
 
 export function getValidationErrors(commandKey: string, commandConfig: any, commandSchema: any): string[] {
 	const ajv = new Ajv({ allErrors: true });
+
 	const validate = ajv.compile(commandSchema);
 	validate(commandConfig);
 
-	let errors = [];
-	if (ajv.errors) {
-		errors = ajv.errors.map((err: any) => err.message);
+	let errors: string[] = [];
+	if (validate.errors) {
+		errors = validate.errors.map((err: any) => {
+			let message = `${commandKey} - config${err.dataPath} ${err.message}`;
+			if (err.keyword === 'enum') {
+				return `${message}: ${err.params.allowedValues.join(', ')}`;
+			}
+			return message;
+		});
 	}
 
 	return errors;

@@ -44,8 +44,16 @@ describe('validate', () => {
 		required: ['foo']
 	};
 
-	const mismatchedConfig = {
+	const nonEnumConfig = {
 		foo: { bar: 'foo' }
+	};
+
+	const missingRequiredConfig = {
+		foo: { foobar: 'foo' }
+	};
+
+	const wrongTypeConfig = {
+		foo: { bar: 1 }
 	};
 
 	const matchedConfig = {
@@ -99,7 +107,7 @@ describe('validate', () => {
 					},
 					required: ['foo']
 				};
-				const config = { ...mismatchedConfig };
+				const config = { ...nonEnumConfig };
 				const errors = getValidationErrors('create-app', config, mockSchema);
 				expect(errors).to.be.lengthOf(2);
 			});
@@ -121,9 +129,10 @@ describe('validate', () => {
 					red('Config is invalid! The following issues were found: ')
 				);
 			});
-			it(`should fail on validating a command with mismatching config and schema`, async () => {
+
+			it(`should fail on validating a command where config value is not in schema enum`, async () => {
 				expect(builtInCommandValidation).to.not.be.undefined;
-				validateableCommandWrapper.commandConfig = { ...mismatchedConfig };
+				validateableCommandWrapper.commandConfig = { ...nonEnumConfig };
 				validateableCommandWrapper.commandSchema = { ...detailedSchema };
 				const valid = await builtInCommandValidation(validateableCommandWrapper);
 				expect(valid).to.be.false;
@@ -132,9 +141,40 @@ describe('validate', () => {
 					red('Config is invalid! The following issues were found: ')
 				);
 				expect(consoleLogStub.getCall(1).args[0]).to.equal(
-					red('testGroup-testCommand config.foo.bar is not one of expected values: foobar')
+					red('testGroup-testCommand - config.foo.bar should be equal to one of the allowed values: foobar')
 				);
 			});
+
+			it(`should fail on validating a command where config value is required`, async () => {
+				expect(builtInCommandValidation).to.not.be.undefined;
+				validateableCommandWrapper.commandConfig = { ...missingRequiredConfig };
+				validateableCommandWrapper.commandSchema = { ...detailedSchema };
+				const valid = await builtInCommandValidation(validateableCommandWrapper);
+				expect(valid).to.be.false;
+				expect(consoleLogStub.callCount).to.equal(2);
+				expect(consoleLogStub.getCall(0).args[0]).to.equal(
+					red('Config is invalid! The following issues were found: ')
+				);
+				expect(consoleLogStub.getCall(1).args[0]).to.equal(
+					red(`testGroup-testCommand - config.foo should have required property 'bar'`)
+				);
+			});
+
+			it(`should fail on validating a command where config value is the wrong type`, async () => {
+				expect(builtInCommandValidation).to.not.be.undefined;
+				validateableCommandWrapper.commandConfig = { ...wrongTypeConfig };
+				validateableCommandWrapper.commandSchema = { ...detailedSchema };
+				const valid = await builtInCommandValidation(validateableCommandWrapper);
+				expect(valid).to.be.false;
+				expect(consoleLogStub.callCount).to.equal(3);
+				expect(consoleLogStub.getCall(0).args[0]).to.equal(
+					red('Config is invalid! The following issues were found: ')
+				);
+				expect(consoleLogStub.getCall(1).args[0]).to.equal(
+					red('testGroup-testCommand - config.foo.bar should be string')
+				);
+			});
+
 			it(`should fail on validating a command with undefined config`, async () => {
 				consoleLogStub.reset();
 				expect(builtInCommandValidation).to.not.be.undefined;
@@ -147,6 +187,7 @@ describe('validate', () => {
 				);
 				expect(valid).to.be.false;
 			});
+
 			it(`should pass on validating a valid command logging success`, async () => {
 				expect(builtInCommandValidation).to.not.be.undefined;
 				validateableCommandWrapper.commandConfig = { ...matchedConfig };
@@ -158,6 +199,7 @@ describe('validate', () => {
 				expect(consoleLogStub.callCount).to.equal(1);
 				expect(valid).to.be.true;
 			});
+
 			it(`should pass on validating a valid command silently`, async () => {
 				expect(builtInCommandValidation).to.not.be.undefined;
 				validateableCommandWrapper.silentSuccess = true;
