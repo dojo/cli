@@ -28,6 +28,20 @@ describe('validate', () => {
 	};
 
 	const detailedSchema = {
+		definitions: {
+			foo: {
+				type: 'object',
+				properties: {
+					bar: { type: 'string' },
+					qux: { type: 'number' }
+				},
+				required: ['bar', 'qux']
+			},
+			bar: {
+				type: 'number',
+				maximum: 10
+			}
+		},
 		type: 'object',
 		properties: {
 			foo: {
@@ -35,11 +49,76 @@ describe('validate', () => {
 				required: ['bar'],
 				properties: {
 					bar: {
-						enum: ['foobar'],
+						enum: ['foobar']
+					}
+				}
+			},
+			additional: {
+				type: 'object',
+				additionalProperties: false,
+				properties: {
+					prop: {
 						type: 'string'
 					}
 				}
+			},
+			ref: {
+				type: 'object',
+				properties: {
+					first: { $ref: '#/definitions/foo' },
+					second: { $ref: '#/definitions/foo' }
+				}
+			},
+			str: {
+				type: 'string'
+			},
+			strMinLength: {
+				type: 'string',
+				minLength: 1
+			},
+			strMinLengthFive: {
+				type: 'string',
+				minLength: 5
+			},
+			arr: {
+				type: 'array'
+			},
+			boolean: {
+				type: 'boolean'
+			},
+			num: {
+				type: 'number',
+				maximum: 3,
+				minimum: 1
+			},
+			arrUnique: {
+				uniqueItems: true
+			},
+			arrMinItems: {
+				minItems: 1
+			},
+			arrMaxItems: {
+				maxItems: 2
+			},
+			numOneOf: {
+				type: 'number',
+				oneOf: [{ maximum: 3 }, { type: 'integer' }]
+			},
+			numAllOf: {
+				type: 'number',
+				allOf: [{ maximum: 3 }, { type: 'integer' }]
+			},
+			numAnyOf: {
+				type: 'number',
+				anyOf: [{ maximum: 3 }, { type: 'integer' }]
 			}
+			// refOneOf: {
+			// 	$ref: "#/definitions/bar",
+			// 	oneOf: [
+			// 		{ minimum: 5 },
+			// 		{ type: "integer" }
+			// 	]
+			// },
 		},
 		required: ['foo']
 	};
@@ -48,12 +127,18 @@ describe('validate', () => {
 		foo: { bar: 'foo' }
 	};
 
-	const missingRequiredConfig = {
-		foo: { foobar: 'foo' }
+	const maximumExceededConfig = {
+		foo: { bar: 'foobar' },
+		num: 4
 	};
 
-	const wrongTypeConfig = {
-		foo: { bar: 1 }
+	const minimumExceededConfig = {
+		foo: { bar: 'foobar' },
+		num: -1
+	};
+
+	const missingRequiredConfig = {
+		foo: { foobar: 'foo' }
 	};
 
 	const matchedConfig = {
@@ -83,7 +168,7 @@ describe('validate', () => {
 					},
 					required: ['command']
 				};
-				const errors = getValidationErrors('create-app', { command: 'foo' }, mockSchema);
+				const errors = getValidationErrors({ command: 'foo' }, mockSchema);
 				expect(errors).to.be.lengthOf(0);
 			});
 
@@ -108,7 +193,7 @@ describe('validate', () => {
 					required: ['foo']
 				};
 				const config = { ...nonEnumConfig };
-				const errors = getValidationErrors('create-app', config, mockSchema);
+				const errors = getValidationErrors(config, mockSchema);
 				expect(errors).to.be.lengthOf(2);
 			});
 		});
@@ -119,65 +204,351 @@ describe('validate', () => {
 			});
 
 			it(`should fail on validating a command with empty config and a valid schema`, async () => {
-				expect(builtInCommandValidation).to.not.be.undefined;
 				validateableCommandWrapper.commandConfig = {};
 				validateableCommandWrapper.commandSchema = { ...detailedSchema };
 				const valid = await builtInCommandValidation(validateableCommandWrapper);
 				expect(valid).to.be.false;
 				expect(consoleLogStub.callCount).to.equal(2);
 				expect(consoleLogStub.getCall(0).args[0]).to.equal(
-					red('Config is invalid! The following issues were found: ')
+					red('testGroup-testCommand config is invalid! The following issues were found: ')
+				);
+				expect(consoleLogStub.getCall(1).args[0]).to.equal(red(`configuration misses the property 'foo'.`));
+			});
+
+			it(`should fail on validating a command where config value has additional property`, async () => {
+				validateableCommandWrapper.commandConfig = {
+					foo: { bar: 'foobar' },
+					additional: {
+						prop: 'foo',
+						unexpected: 'unexpected'
+					}
+				};
+				validateableCommandWrapper.commandSchema = { ...detailedSchema };
+				const valid = await builtInCommandValidation(validateableCommandWrapper);
+				expect(valid).to.be.false;
+				expect(consoleLogStub.callCount).to.equal(2);
+				expect(consoleLogStub.getCall(0).args[0]).to.equal(
+					red('testGroup-testCommand config is invalid! The following issues were found: ')
+				);
+				expect(consoleLogStub.getCall(1).args[0]).to.equal(
+					red(`configuration.additional has an unknown property 'unexpected'.`)
 				);
 			});
 
+			it(`should fail on validating a command where config value is wrong type (object)`, async () => {
+				validateableCommandWrapper.commandConfig = {
+					foo: 'string'
+				};
+				validateableCommandWrapper.commandSchema = { ...detailedSchema };
+				const valid = await builtInCommandValidation(validateableCommandWrapper);
+				expect(valid).to.be.false;
+				expect(consoleLogStub.callCount).to.equal(2);
+				expect(consoleLogStub.getCall(0).args[0]).to.equal(
+					red('testGroup-testCommand config is invalid! The following issues were found: ')
+				);
+				expect(consoleLogStub.getCall(1).args[0]).to.equal(red('configuration.foo should be an object.'));
+			});
+
+			it(`should fail on validating a command where config value is wrong type (string)`, async () => {
+				validateableCommandWrapper.commandConfig = {
+					foo: { bar: 'foobar' },
+					str: 1
+				};
+				validateableCommandWrapper.commandSchema = { ...detailedSchema };
+				const valid = await builtInCommandValidation(validateableCommandWrapper);
+				expect(valid).to.be.false;
+				expect(consoleLogStub.callCount).to.equal(2);
+				expect(consoleLogStub.getCall(0).args[0]).to.equal(
+					red('testGroup-testCommand config is invalid! The following issues were found: ')
+				);
+				expect(consoleLogStub.getCall(1).args[0]).to.equal(red('configuration.str should be a string.'));
+			});
+
+			it(`should fail on validating a command where config value is wrong type (number)`, async () => {
+				validateableCommandWrapper.commandConfig = {
+					foo: { bar: 'foobar' },
+					num: 'string'
+				};
+				validateableCommandWrapper.commandSchema = { ...detailedSchema };
+				const valid = await builtInCommandValidation(validateableCommandWrapper);
+				expect(valid).to.be.false;
+				expect(consoleLogStub.callCount).to.equal(2);
+				expect(consoleLogStub.getCall(0).args[0]).to.equal(
+					red('testGroup-testCommand config is invalid! The following issues were found: ')
+				);
+				expect(consoleLogStub.getCall(1).args[0]).to.equal(red('configuration.num should be a number.'));
+			});
+
+			it(`should fail on validating a command where config value is wrong type (boolean)`, async () => {
+				validateableCommandWrapper.commandConfig = {
+					foo: { bar: 'foobar' },
+					boolean: 'string'
+				};
+				validateableCommandWrapper.commandSchema = { ...detailedSchema };
+				const valid = await builtInCommandValidation(validateableCommandWrapper);
+				expect(valid).to.be.false;
+				expect(consoleLogStub.callCount).to.equal(2);
+				expect(consoleLogStub.getCall(0).args[0]).to.equal(
+					red('testGroup-testCommand config is invalid! The following issues were found: ')
+				);
+				expect(consoleLogStub.getCall(1).args[0]).to.equal(red('configuration.boolean should be a boolean.'));
+			});
+
+			it(`should fail on validating a command where config value is wrong type (array)`, async () => {
+				validateableCommandWrapper.commandConfig = {
+					foo: { bar: 'foobar' },
+					arr: 'string'
+				};
+				validateableCommandWrapper.commandSchema = { ...detailedSchema };
+				const valid = await builtInCommandValidation(validateableCommandWrapper);
+				expect(valid).to.be.false;
+				expect(consoleLogStub.callCount).to.equal(2);
+				expect(consoleLogStub.getCall(0).args[0]).to.equal(
+					red('testGroup-testCommand config is invalid! The following issues were found: ')
+				);
+				expect(consoleLogStub.getCall(1).args[0]).to.equal(red('configuration.arr should be an array.'));
+			});
+
 			it(`should fail on validating a command where config value is not in schema enum`, async () => {
-				expect(builtInCommandValidation).to.not.be.undefined;
 				validateableCommandWrapper.commandConfig = { ...nonEnumConfig };
 				validateableCommandWrapper.commandSchema = { ...detailedSchema };
 				const valid = await builtInCommandValidation(validateableCommandWrapper);
 				expect(valid).to.be.false;
 				expect(consoleLogStub.callCount).to.equal(2);
 				expect(consoleLogStub.getCall(0).args[0]).to.equal(
-					red('Config is invalid! The following issues were found: ')
+					red('testGroup-testCommand config is invalid! The following issues were found: ')
+				);
+				expect(consoleLogStub.getCall(1).args[0]).to.equal(red('configuration.foo.bar should be "foobar"'));
+			});
+
+			it(`should fail on validating a command where string is length of 1 with error as string can't be empty`, async () => {
+				validateableCommandWrapper.commandConfig = { ...nonEnumConfig };
+				validateableCommandWrapper.commandConfig = {
+					foo: { bar: 'foobar' },
+					strMinLength: ''
+				};
+				const valid = await builtInCommandValidation(validateableCommandWrapper);
+				expect(valid).to.be.false;
+				expect(consoleLogStub.callCount).to.equal(2);
+				expect(consoleLogStub.getCall(0).args[0]).to.equal(
+					red('testGroup-testCommand config is invalid! The following issues were found: ')
 				);
 				expect(consoleLogStub.getCall(1).args[0]).to.equal(
-					red('testGroup-testCommand - config.foo.bar should be equal to one of the allowed values: foobar')
+					red('configuration.strMinLength should not be empty.')
 				);
 			});
 
+			it(`should fail on validating a command where string is length greater than 1 with appropriate error`, async () => {
+				validateableCommandWrapper.commandConfig = { ...nonEnumConfig };
+				validateableCommandWrapper.commandConfig = {
+					foo: { bar: 'foobar' },
+					strMinLengthFive: 'four'
+				};
+				const valid = await builtInCommandValidation(validateableCommandWrapper);
+				expect(valid).to.be.false;
+				expect(consoleLogStub.callCount).to.equal(2);
+				expect(consoleLogStub.getCall(0).args[0]).to.equal(
+					red('testGroup-testCommand config is invalid! The following issues were found: ')
+				);
+				expect(consoleLogStub.getCall(1).args[0]).to.equal(
+					red('configuration.strMinLengthFive should NOT be shorter than 5 characters')
+				);
+			});
+
+			it(`should fail on validating a command where config property exceeds maximum`, async () => {
+				validateableCommandWrapper.commandConfig = { ...maximumExceededConfig };
+				validateableCommandWrapper.commandSchema = { ...detailedSchema };
+				const valid = await builtInCommandValidation(validateableCommandWrapper);
+				expect(valid).to.be.false;
+				expect(consoleLogStub.callCount).to.equal(2);
+				expect(consoleLogStub.getCall(0).args[0]).to.equal(
+					red('testGroup-testCommand config is invalid! The following issues were found: ')
+				);
+				expect(consoleLogStub.getCall(1).args[0]).to.equal(red(`configuration.num should be <= 3.`));
+			});
+
+			it(`should fail on validating a command with none unique array items where uniqueItems is present`, async () => {
+				validateableCommandWrapper.commandConfig = {
+					foo: { bar: 'foobar' },
+					arrUnique: ['foo', 'foo']
+				};
+				validateableCommandWrapper.commandSchema = { ...detailedSchema };
+				const valid = await builtInCommandValidation(validateableCommandWrapper);
+				expect(valid).to.be.false;
+				expect(consoleLogStub.callCount).to.equal(2);
+				expect(consoleLogStub.getCall(0).args[0]).to.equal(
+					red('testGroup-testCommand config is invalid! The following issues were found: ')
+				);
+				expect(consoleLogStub.getCall(1).args[0]).to.equal(
+					red(`configuration.arrUnique should not contain the item 'foo' twice.`)
+				);
+			});
+
+			it(`should fail on validating a command with array that goes over maximum number of items`, async () => {
+				validateableCommandWrapper.commandConfig = {
+					foo: { bar: 'foobar' },
+					arrMaxItems: ['foo', 'bar', 'qux']
+				};
+				validateableCommandWrapper.commandSchema = { ...detailedSchema };
+				const valid = await builtInCommandValidation(validateableCommandWrapper);
+				expect(valid).to.be.false;
+				expect(consoleLogStub.callCount).to.equal(2);
+				expect(consoleLogStub.getCall(0).args[0]).to.equal(
+					red('testGroup-testCommand config is invalid! The following issues were found: ')
+				);
+				expect(consoleLogStub.getCall(1).args[0]).to.equal(
+					red(`configuration.arrMaxItems should NOT have more than 2 items`)
+				);
+			});
+
+			it(`should fail on validating a command with array that is under the minimum number of items`, async () => {
+				validateableCommandWrapper.commandConfig = {
+					foo: { bar: 'foobar' },
+					arrMinItems: []
+				};
+				validateableCommandWrapper.commandSchema = { ...detailedSchema };
+				const valid = await builtInCommandValidation(validateableCommandWrapper);
+				expect(valid).to.be.false;
+				expect(consoleLogStub.callCount).to.equal(2);
+				expect(consoleLogStub.getCall(0).args[0]).to.equal(
+					red('testGroup-testCommand config is invalid! The following issues were found: ')
+				);
+				expect(consoleLogStub.getCall(1).args[0]).to.equal(
+					red(`configuration.arrMinItems should not be empty.`)
+				);
+			});
+
+			it(`should fail on validating a command where config has property is less than minimum `, async () => {
+				validateableCommandWrapper.commandConfig = { ...minimumExceededConfig };
+				validateableCommandWrapper.commandSchema = { ...detailedSchema };
+				const valid = await builtInCommandValidation(validateableCommandWrapper);
+				expect(valid).to.be.false;
+				expect(consoleLogStub.callCount).to.equal(2);
+				expect(consoleLogStub.getCall(0).args[0]).to.equal(
+					red('testGroup-testCommand config is invalid! The following issues were found: ')
+				);
+				expect(consoleLogStub.getCall(1).args[0]).to.equal(red(`configuration.num should be >= 1.`));
+			});
+
+			it(`should fail on validating a command where oneOf is not met`, async () => {
+				validateableCommandWrapper.commandConfig = validateableCommandWrapper.commandConfig = {
+					foo: { bar: 'foobar' },
+					numOneOf: 2 // Must be integer OR max 3
+				};
+				validateableCommandWrapper.commandSchema = { ...detailedSchema };
+				const valid = await builtInCommandValidation(validateableCommandWrapper);
+				expect(valid).to.be.false;
+				expect(consoleLogStub.callCount).to.equal(2);
+				expect(consoleLogStub.getCall(0).args[0]).to.equal(
+					red('testGroup-testCommand config is invalid! The following issues were found: ')
+				);
+				expect(consoleLogStub.getCall(1).args[0]).to.equal(
+					red(
+						`configuration.numOneOf should be one of these:
+{
+  "maximum": 3
+} | {
+  "type": "integer"
+}`
+					)
+				);
+			});
+
+			it(`should fail on validating a command where allOf is not met`, async () => {
+				validateableCommandWrapper.commandConfig = validateableCommandWrapper.commandConfig = {
+					foo: { bar: 'foobar' },
+					numAllOf: 2.5 // Must be integer AND max 3
+				};
+				validateableCommandWrapper.commandSchema = { ...detailedSchema };
+				const valid = await builtInCommandValidation(validateableCommandWrapper);
+				expect(valid).to.be.false;
+				expect(consoleLogStub.callCount).to.equal(2);
+				expect(consoleLogStub.getCall(0).args[0]).to.equal(
+					red('testGroup-testCommand config is invalid! The following issues were found: ')
+				);
+				expect(consoleLogStub.getCall(1).args[0]).to.equal(red(`configuration.numAllOf should be integer`));
+			});
+
+			it(`should fail on validating a command where anyOf is not met`, async () => {
+				validateableCommandWrapper.commandConfig = validateableCommandWrapper.commandConfig = {
+					foo: { bar: 'foobar' },
+					numAnyOf: 3.5 // Must be integer AND max 3
+				};
+				validateableCommandWrapper.commandSchema = { ...detailedSchema };
+				const valid = await builtInCommandValidation(validateableCommandWrapper);
+				expect(valid).to.be.false;
+				expect(consoleLogStub.callCount).to.equal(2);
+				expect(consoleLogStub.getCall(0).args[0]).to.equal(
+					red('testGroup-testCommand config is invalid! The following issues were found: ')
+				);
+				expect(consoleLogStub.getCall(1).args[0]).to.equal(
+					red(
+						`configuration.numAnyOf should be one of these:
+{
+  "maximum": 3
+} | {
+  "type": "integer"
+}`
+					)
+				);
+			});
+
+			it(`should handle $ref in schemas correctly`, async () => {
+				validateableCommandWrapper.commandConfig = validateableCommandWrapper.commandConfig = {
+					foo: { bar: 'foobar' },
+					ref: {
+						first: { bar: 'foobar' },
+						second: { qux: 'foobar' }
+					}
+				};
+				validateableCommandWrapper.commandSchema = { ...detailedSchema };
+				const valid = await builtInCommandValidation(validateableCommandWrapper);
+				expect(valid).to.be.false;
+				expect(consoleLogStub.callCount).to.equal(4);
+				expect(consoleLogStub.getCall(0).args[0]).to.equal(
+					red('testGroup-testCommand config is invalid! The following issues were found: ')
+				);
+				expect(consoleLogStub.getCall(1).args[0]).to.equal(
+					red("configuration.ref.first misses the property 'qux'.")
+				);
+				expect(consoleLogStub.getCall(2).args[0]).to.equal(
+					red("configuration.ref.second misses the property 'bar'.")
+				);
+			});
+
+			// it(`should handle $ref parentSchemas correctly`, async () => {
+			// 	validateableCommandWrapper.commandConfig = validateableCommandWrapper.commandConfig = {
+			// 		foo: { bar: 'foobar' },
+			// 		refOneOf: 4.5
+			// 	};
+			// 	validateableCommandWrapper.commandSchema = { ...detailedSchema };
+			// 	const valid = await builtInCommandValidation(validateableCommandWrapper);
+			// 	expect(valid).to.be.false;
+			// 	expect(consoleLogStub.callCount).to.equal(2);
+			// 	expect(consoleLogStub.getCall(0).args[0]).to.equal(
+			// 		red('testGroup-testCommand config is invalid! The following issues were found: ')
+			// 	);
+			// 	expect(consoleLogStub.getCall(1).args[0]).to.equal(
+			// 		red("configuration.ref.first misses the property 'qux'.")
+			// 	);
+			// 	expect(consoleLogStub.getCall(2).args[0]).to.equal(
+			// 		red("configuration.ref.second misses the property 'bar'.")
+			// 	);
+			// });
+
 			it(`should fail on validating a command where config value is required`, async () => {
-				expect(builtInCommandValidation).to.not.be.undefined;
 				validateableCommandWrapper.commandConfig = { ...missingRequiredConfig };
 				validateableCommandWrapper.commandSchema = { ...detailedSchema };
 				const valid = await builtInCommandValidation(validateableCommandWrapper);
 				expect(valid).to.be.false;
 				expect(consoleLogStub.callCount).to.equal(2);
 				expect(consoleLogStub.getCall(0).args[0]).to.equal(
-					red('Config is invalid! The following issues were found: ')
+					red('testGroup-testCommand config is invalid! The following issues were found: ')
 				);
-				expect(consoleLogStub.getCall(1).args[0]).to.equal(
-					red(`testGroup-testCommand - config.foo should have required property 'bar'`)
-				);
-			});
-
-			it(`should fail on validating a command where config value is the wrong type`, async () => {
-				expect(builtInCommandValidation).to.not.be.undefined;
-				validateableCommandWrapper.commandConfig = { ...wrongTypeConfig };
-				validateableCommandWrapper.commandSchema = { ...detailedSchema };
-				const valid = await builtInCommandValidation(validateableCommandWrapper);
-				expect(valid).to.be.false;
-				expect(consoleLogStub.callCount).to.equal(3);
-				expect(consoleLogStub.getCall(0).args[0]).to.equal(
-					red('Config is invalid! The following issues were found: ')
-				);
-				expect(consoleLogStub.getCall(1).args[0]).to.equal(
-					red('testGroup-testCommand - config.foo.bar should be string')
-				);
+				expect(consoleLogStub.getCall(1).args[0]).to.equal(red(`configuration.foo misses the property 'bar'.`));
 			});
 
 			it(`should fail on validating a command with undefined config`, async () => {
-				consoleLogStub.reset();
-				expect(builtInCommandValidation).to.not.be.undefined;
 				validateableCommandWrapper.commandConfig = undefined;
 				validateableCommandWrapper.commandSchema = { ...detailedSchema };
 				const valid = await builtInCommandValidation(validateableCommandWrapper);
@@ -189,7 +560,6 @@ describe('validate', () => {
 			});
 
 			it(`should pass on validating a valid command logging success`, async () => {
-				expect(builtInCommandValidation).to.not.be.undefined;
 				validateableCommandWrapper.commandConfig = { ...matchedConfig };
 				validateableCommandWrapper.commandSchema = { ...detailedSchema };
 				const valid = await builtInCommandValidation(validateableCommandWrapper);
@@ -201,7 +571,6 @@ describe('validate', () => {
 			});
 
 			it(`should pass on validating a valid command silently`, async () => {
-				expect(builtInCommandValidation).to.not.be.undefined;
 				validateableCommandWrapper.silentSuccess = true;
 				validateableCommandWrapper.commandConfig = { ...matchedConfig };
 				validateableCommandWrapper.commandSchema = { ...detailedSchema };
