@@ -44,7 +44,7 @@ describe('validate', () => {
 		},
 		type: 'object',
 		properties: {
-			foo: {
+			simple: {
 				type: 'object',
 				required: ['bar'],
 				properties: {
@@ -157,29 +157,7 @@ describe('validate', () => {
 				}
 			}
 		},
-		required: ['foo']
-	};
-
-	const nonEnumConfig = {
-		foo: { bar: 'foo' }
-	};
-
-	const maximumExceededConfig = {
-		foo: { bar: 'foobar' },
-		num: 4
-	};
-
-	const minimumExceededConfig = {
-		foo: { bar: 'foobar' },
-		num: -1
-	};
-
-	const missingRequiredConfig = {
-		foo: { foobar: 'foo' }
-	};
-
-	const matchedConfig = {
-		foo: { bar: 'foobar' }
+		required: ['simple']
 	};
 
 	beforeEach(() => {
@@ -215,7 +193,7 @@ describe('validate', () => {
 				const mockSchema = {
 					type: 'object',
 					properties: {
-						foo: {
+						simple: {
 							enum: ['baz', 'bar'],
 							type: 'object',
 							required: ['bar'],
@@ -227,9 +205,11 @@ describe('validate', () => {
 							}
 						}
 					},
-					required: ['foo']
+					required: ['simple']
 				};
-				const config = { ...nonEnumConfig };
+				const config = {
+					simple: { bar: 'foo' }
+				};
 				const errors = getValidationErrors(config, mockSchema);
 				expect(errors).to.be.lengthOf(2);
 			});
@@ -250,13 +230,13 @@ describe('validate', () => {
 					red('testGroup-testCommand config is invalid! The following issues were found: ')
 				);
 				expect(consoleLogStub.getCall(1).args[0]).to.equal(
-					red(`configuration misses the property 'foo', which is of type { bar, qux? }.`)
+					red(`configuration misses the property 'simple', which is of type { bar, qux? }.`)
 				);
 			});
 
 			it(`should fail on validating a command where config value has additional property`, async () => {
 				validateableCommandWrapper.commandConfig = {
-					foo: { bar: 'foobar' },
+					simple: { bar: 'foobar' },
 					additional: {
 						prop: 'foo',
 						unexpected: 'unexpected'
@@ -276,7 +256,7 @@ describe('validate', () => {
 
 			it(`should fail on validating a command where config value is wrong type (object)`, async () => {
 				validateableCommandWrapper.commandConfig = {
-					foo: 'string'
+					simple: 'string'
 				};
 				validateableCommandWrapper.commandSchema = { ...detailedSchema };
 				const valid = await builtInCommandValidation(validateableCommandWrapper);
@@ -286,13 +266,13 @@ describe('validate', () => {
 					red('testGroup-testCommand config is invalid! The following issues were found: ')
 				);
 				expect(consoleLogStub.getCall(1).args[0]).to.equal(
-					red('configuration.foo should be an object with following properties: { bar, qux? }.')
+					red('configuration.simple should be an object with following properties: { bar, qux? }.')
 				);
 			});
 
 			it(`should fail on validating a command where config value is wrong type object with additional properties`, async () => {
 				validateableCommandWrapper.commandConfig = {
-					foo: { bar: 'foobar' },
+					simple: { bar: 'foobar' },
 					additionalTrue: {
 						additional: 2
 					}
@@ -311,7 +291,7 @@ describe('validate', () => {
 
 			it(`should fail on validating a command where config value is wrong type (object - complex)`, async () => {
 				validateableCommandWrapper.commandConfig = {
-					foo: { bar: 'foobar' },
+					simple: { bar: 'foobar' },
 					complex: {
 						first: 'first',
 						second: '2',
@@ -339,7 +319,7 @@ describe('validate', () => {
 
 			it(`should fail on validating a command where config value is wrong type (string)`, async () => {
 				validateableCommandWrapper.commandConfig = {
-					foo: { bar: 'foobar' },
+					simple: { bar: 'foobar' },
 					str: 1
 				};
 				validateableCommandWrapper.commandSchema = { ...detailedSchema };
@@ -354,7 +334,7 @@ describe('validate', () => {
 
 			it(`should fail on validating a command where config value is wrong type (number)`, async () => {
 				validateableCommandWrapper.commandConfig = {
-					foo: { bar: 'foobar' },
+					simple: { bar: 'foobar' },
 					num: 'string'
 				};
 				validateableCommandWrapper.commandSchema = { ...detailedSchema };
@@ -369,7 +349,7 @@ describe('validate', () => {
 
 			it(`should fail on validating a command where config value is wrong type (boolean)`, async () => {
 				validateableCommandWrapper.commandConfig = {
-					foo: { bar: 'foobar' },
+					simple: { bar: 'foobar' },
 					boolean: 'string'
 				};
 				validateableCommandWrapper.commandSchema = { ...detailedSchema };
@@ -384,7 +364,7 @@ describe('validate', () => {
 
 			it(`should fail on validating a command where config value is wrong type (array)`, async () => {
 				validateableCommandWrapper.commandConfig = {
-					foo: { bar: 'foobar' },
+					simple: { bar: 'foobar' },
 					arr: 'string'
 				};
 				validateableCommandWrapper.commandSchema = { ...detailedSchema };
@@ -398,7 +378,9 @@ describe('validate', () => {
 			});
 
 			it(`should fail on validating a command where config value is not in schema enum`, async () => {
-				validateableCommandWrapper.commandConfig = { ...nonEnumConfig };
+				validateableCommandWrapper.commandConfig = {
+					simple: { bar: 'foo' }
+				};
 				validateableCommandWrapper.commandSchema = { ...detailedSchema };
 				const valid = await builtInCommandValidation(validateableCommandWrapper);
 				expect(valid).to.be.false;
@@ -406,13 +388,12 @@ describe('validate', () => {
 				expect(consoleLogStub.getCall(0).args[0]).to.equal(
 					red('testGroup-testCommand config is invalid! The following issues were found: ')
 				);
-				expect(consoleLogStub.getCall(1).args[0]).to.equal(red('configuration.foo.bar should be "foobar"'));
+				expect(consoleLogStub.getCall(1).args[0]).to.equal(red('configuration.simple.bar should be "foobar"'));
 			});
 
 			it(`should fail on validating a command where string is length of 1 with error as string can't be empty`, async () => {
-				validateableCommandWrapper.commandConfig = { ...nonEnumConfig };
 				validateableCommandWrapper.commandConfig = {
-					foo: { bar: 'foobar' },
+					simple: { bar: 'foobar' },
 					strMinLength: ''
 				};
 				const valid = await builtInCommandValidation(validateableCommandWrapper);
@@ -427,9 +408,8 @@ describe('validate', () => {
 			});
 
 			it(`should fail on validating a command where string is length greater than 1 with appropriate error`, async () => {
-				validateableCommandWrapper.commandConfig = { ...nonEnumConfig };
 				validateableCommandWrapper.commandConfig = {
-					foo: { bar: 'foobar' },
+					simple: { bar: 'foobar' },
 					strMinLengthFive: 'four'
 				};
 				const valid = await builtInCommandValidation(validateableCommandWrapper);
@@ -444,7 +424,10 @@ describe('validate', () => {
 			});
 
 			it(`should fail on validating a command where config property exceeds maximum`, async () => {
-				validateableCommandWrapper.commandConfig = { ...maximumExceededConfig };
+				validateableCommandWrapper.commandConfig = {
+					simple: { bar: 'foobar' },
+					num: 4
+				};
 				validateableCommandWrapper.commandSchema = { ...detailedSchema };
 				const valid = await builtInCommandValidation(validateableCommandWrapper);
 				expect(valid).to.be.false;
@@ -457,7 +440,7 @@ describe('validate', () => {
 
 			it(`should fail on validating a command with none unique array items where uniqueItems is present`, async () => {
 				validateableCommandWrapper.commandConfig = {
-					foo: { bar: 'foobar' },
+					simple: { bar: 'foobar' },
 					arrUnique: ['foo', 'foo']
 				};
 				validateableCommandWrapper.commandSchema = { ...detailedSchema };
@@ -474,7 +457,7 @@ describe('validate', () => {
 
 			it(`should fail on validating a command with array that goes over maximum number of items`, async () => {
 				validateableCommandWrapper.commandConfig = {
-					foo: { bar: 'foobar' },
+					simple: { bar: 'foobar' },
 					arrMaxItems: ['foo', 'bar', 'qux']
 				};
 				validateableCommandWrapper.commandSchema = { ...detailedSchema };
@@ -491,7 +474,7 @@ describe('validate', () => {
 
 			it(`should fail on validating a command with array that is under the minimum number of items`, async () => {
 				validateableCommandWrapper.commandConfig = {
-					foo: { bar: 'foobar' },
+					simple: { bar: 'foobar' },
 					arrMinItems: []
 				};
 				validateableCommandWrapper.commandSchema = { ...detailedSchema };
@@ -507,7 +490,10 @@ describe('validate', () => {
 			});
 
 			it(`should fail on validating a command where config has property is less than minimum `, async () => {
-				validateableCommandWrapper.commandConfig = { ...minimumExceededConfig };
+				validateableCommandWrapper.commandConfig = {
+					simple: { bar: 'foobar' },
+					num: -1
+				};
 				validateableCommandWrapper.commandSchema = { ...detailedSchema };
 				const valid = await builtInCommandValidation(validateableCommandWrapper);
 				expect(valid).to.be.false;
@@ -520,7 +506,7 @@ describe('validate', () => {
 
 			it(`should fail on validating a command where oneOf is not met`, async () => {
 				validateableCommandWrapper.commandConfig = validateableCommandWrapper.commandConfig = {
-					foo: { bar: 'foobar' },
+					simple: { bar: 'foobar' },
 					numOneOf: 2 // Must be integer OR max 3
 				};
 				validateableCommandWrapper.commandSchema = { ...detailedSchema };
@@ -542,7 +528,7 @@ describe('validate', () => {
 
 			it(`should fail on validating a command where complex oneOf is not met`, async () => {
 				validateableCommandWrapper.commandConfig = validateableCommandWrapper.commandConfig = {
-					foo: { bar: 'foobar' },
+					simple: { bar: 'foobar' },
 					complexOneOf: {}
 				};
 				validateableCommandWrapper.commandSchema = { ...detailedSchema };
@@ -560,7 +546,7 @@ string (min length 5) | non-empty string | boolean | integer`)
 
 			it(`should fail on validating a command where allOf is not met`, async () => {
 				validateableCommandWrapper.commandConfig = validateableCommandWrapper.commandConfig = {
-					foo: { bar: 'foobar' },
+					simple: { bar: 'foobar' },
 					numAllOf: 4.5 // Must be integer AND max 3
 				};
 				validateableCommandWrapper.commandSchema = { ...detailedSchema };
@@ -576,7 +562,7 @@ string (min length 5) | non-empty string | boolean | integer`)
 
 			it(`should fail on validating a command where anyOf is not met`, async () => {
 				validateableCommandWrapper.commandConfig = validateableCommandWrapper.commandConfig = {
-					foo: { bar: 'foobar' },
+					simple: { bar: 'foobar' },
 					numAnyOf: 3.5 // Must be integer AND max 3
 				};
 				validateableCommandWrapper.commandSchema = { ...detailedSchema };
@@ -598,7 +584,7 @@ string (min length 5) | non-empty string | boolean | integer`)
 
 			it(`should handle $ref in schemas correctly`, async () => {
 				validateableCommandWrapper.commandConfig = validateableCommandWrapper.commandConfig = {
-					foo: { bar: 'foobar' },
+					simple: { bar: 'foobar' },
 					ref: {
 						first: { bar: 'foobar' },
 						second: { qux: 'foobar' }
@@ -621,7 +607,7 @@ string (min length 5) | non-empty string | boolean | integer`)
 
 			it(`should handle recursive properties with an invalid property correctly`, async () => {
 				validateableCommandWrapper.commandConfig = validateableCommandWrapper.commandConfig = {
-					foo: { bar: 'foobar' },
+					simple: { bar: 'foobar' },
 					recursive: [[[[{}]]]]
 				};
 				validateableCommandWrapper.commandSchema = { ...detailedSchema };
@@ -638,7 +624,7 @@ string (min length 5) | non-empty string | boolean | integer`)
 
 			it(`should handle pattern properties`, async () => {
 				validateableCommandWrapper.commandConfig = validateableCommandWrapper.commandConfig = {
-					foo: { bar: 'foobar' },
+					simple: { bar: 'foobar' },
 					pattern: 2
 				};
 				validateableCommandWrapper.commandSchema = { ...detailedSchema };
@@ -658,7 +644,9 @@ string (min length 5) | non-empty string | boolean | integer`)
 			});
 
 			it(`should fail on validating a command where config value is required`, async () => {
-				validateableCommandWrapper.commandConfig = { ...missingRequiredConfig };
+				validateableCommandWrapper.commandConfig = {
+					simple: { foobar: 'foo' }
+				};
 				validateableCommandWrapper.commandSchema = { ...detailedSchema };
 				const valid = await builtInCommandValidation(validateableCommandWrapper);
 				expect(valid).to.be.false;
@@ -667,7 +655,7 @@ string (min length 5) | non-empty string | boolean | integer`)
 					red('testGroup-testCommand config is invalid! The following issues were found: ')
 				);
 				expect(consoleLogStub.getCall(1).args[0]).to.equal(
-					red(`configuration.foo misses the property 'bar', which is of type "foobar".`)
+					red(`configuration.simple misses the property 'bar', which is of type "foobar".`)
 				);
 			});
 
@@ -683,7 +671,9 @@ string (min length 5) | non-empty string | boolean | integer`)
 			});
 
 			it(`should pass on validating a valid command logging success`, async () => {
-				validateableCommandWrapper.commandConfig = { ...matchedConfig };
+				validateableCommandWrapper.commandConfig = {
+					simple: { bar: 'foobar' }
+				};
 				validateableCommandWrapper.commandSchema = { ...detailedSchema };
 				const valid = await builtInCommandValidation(validateableCommandWrapper);
 				expect(consoleLogStub.getCall(0).args[0]).to.equal(
@@ -695,7 +685,9 @@ string (min length 5) | non-empty string | boolean | integer`)
 
 			it(`should pass on validating a valid command silently`, async () => {
 				validateableCommandWrapper.silentSuccess = true;
-				validateableCommandWrapper.commandConfig = { ...matchedConfig };
+				validateableCommandWrapper.commandConfig = {
+					simple: { bar: 'foobar' }
+				};
 				validateableCommandWrapper.commandSchema = { ...detailedSchema };
 				const valid = await builtInCommandValidation(validateableCommandWrapper);
 				expect(consoleLogStub.callCount).to.equal(0);
@@ -781,7 +773,9 @@ string (min length 5) | non-empty string | boolean | integer`)
 			const groupMap = new Map([['test', commandMap]]);
 
 			mockAllExternalCommands.loadExternalCommands = sandbox.stub().resolves(groupMap);
-			mockConfigurationHelper.getConfig = sandbox.stub().returns({ ...matchedConfig });
+			mockConfigurationHelper.getConfig = sandbox.stub().returns({
+				simple: { bar: 'foobar' }
+			});
 
 			const helper = getHelper();
 			return moduleUnderTest.run(helper, {}).then(

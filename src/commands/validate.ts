@@ -47,7 +47,7 @@ export function getValidationErrors(commandConfig: any, commandSchema: any): str
 	const validate = ajv.compile(commandSchema);
 	validate(commandConfig);
 
-	let errors = [];
+	let errors: string[] = [];
 
 	if (validate.errors) {
 		errors = filterErrors(validate.errors).map((error) => {
@@ -60,7 +60,7 @@ export function getValidationErrors(commandConfig: any, commandSchema: any): str
 
 // anyOf and oneOf will also list the individual errors
 // allOf is decomposed into it's individual errors so we do not need to filter
-function filterCompound(errors: any[], compound: 'anyOf' | 'oneOf') {
+function filterCompound(errors: Ajv.ErrorObject[], compound: 'anyOf' | 'oneOf') {
 	let anyOfPath: string;
 	const hasAnyOf = errors.some((err) => {
 		if (err.keyword === compound) {
@@ -80,13 +80,13 @@ function filterCompound(errors: any[], compound: 'anyOf' | 'oneOf') {
 		: errors;
 }
 
-function filterErrors(errors: any[]) {
+function filterErrors(errors: Ajv.ErrorObject[]) {
 	errors = filterCompound(errors, 'oneOf');
 	errors = filterCompound(errors, 'anyOf');
 	return errors;
 }
 
-function formatSchema(schemaToFormat: any): any {
+function formatSchema(schemaToFormat: any): string {
 	if (schemaToFormat.oneOf) {
 		return schemaToFormat.oneOf.map(formatSchema).join(' | ');
 	}
@@ -135,7 +135,7 @@ function formatSchema(schemaToFormat: any): any {
 	return JSON.stringify(schemaToFormat, null, 2);
 }
 
-function formatValidationErrors(commandSchema: any, err: any): any {
+function formatValidationErrors(commandSchema: any, err: any): string {
 	const dataPath = `configuration${err.dataPath}`;
 
 	if (err.keyword === 'additionalProperties') {
@@ -185,7 +185,7 @@ function formatValidationErrors(commandSchema: any, err: any): any {
 	}
 }
 
-function getValdatableCommands(commandMaps: Map<string, Map<string, CommandWrapper>>) {
+function getValidateable(commandMaps: Map<string, Map<string, CommandWrapper>>) {
 	let toValidate = new Set<CommandWrapper>();
 	commandMaps.forEach((commandMap) => {
 		[...commandMap.values()].forEach((command) => {
@@ -240,7 +240,7 @@ async function validateCommands(
 		return true;
 	}
 
-	const commandsToValidate = getValdatableCommands(commands);
+	const commandsToValidate = getValidateable(commands);
 	if (commandsToValidate.length === 0) {
 		logNoValidatableCommands();
 		return true;
