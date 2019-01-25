@@ -58,11 +58,12 @@ export function getValidationErrors(commandConfig: any, commandSchema: any): str
 	return errors;
 }
 
-// anyOf will also list the individual erros, we need to account for this
-function filterAnyOf(errors: any[]) {
+// anyOf and oneOf will also list the individual errors
+// allOf is decomposed into it's individual errors so we do not need to filter
+function filterCompound(errors: any[], compound: 'anyOf' | 'oneOf') {
 	let anyOfPath: string;
 	const hasAnyOf = errors.some((err) => {
-		if (err.keyword === 'anyOf') {
+		if (err.keyword === compound) {
 			anyOfPath = err.schemaPath;
 			return true;
 		}
@@ -71,7 +72,7 @@ function filterAnyOf(errors: any[]) {
 
 	return hasAnyOf
 		? errors.filter((err) => {
-				if (err.schemaPath.startsWith(anyOfPath) && err.keyword !== 'anyOf') {
+				if (err.schemaPath.startsWith(anyOfPath) && err.keyword !== compound) {
 					return false;
 				}
 				return true;
@@ -80,33 +81,17 @@ function filterAnyOf(errors: any[]) {
 }
 
 function filterErrors(errors: any[]) {
-	return filterAnyOf(errors);
+	errors = filterCompound(errors, 'oneOf');
+	errors = filterCompound(errors, 'anyOf');
+	return errors;
 }
 
-function formatSchema(schemaToFormat: any, prevSchemas?: any): any {
-	prevSchemas = prevSchemas || [];
-
-	const formatInnerSchema = (innerSchema: any, addSelf?: boolean) => {
-		if (!addSelf) {
-			return formatSchema(innerSchema, prevSchemas);
-		}
-		if (prevSchemas.includes(innerSchema)) {
-			return '(recursive)';
-		}
-		return formatSchema(innerSchema, prevSchemas.concat(schemaToFormat));
-	};
-
+function formatSchema(schemaToFormat: any): any {
 	if (schemaToFormat.oneOf) {
-		return schemaToFormat.oneOf.map(formatInnerSchema).join(' | ');
-	}
-	if (schemaToFormat.$ref) {
-		return formatInnerSchema(schemaToFormat.$ref, true);
-	}
-	if (schemaToFormat.allOf) {
-		return schemaToFormat.allOf.map(formatInnerSchema).join(' & ');
+		return schemaToFormat.oneOf.map(formatSchema).join(' | ');
 	}
 	if (schemaToFormat.anyOf) {
-		return schemaToFormat.anyOf.map(formatInnerSchema).join(' | ');
+		return schemaToFormat.anyOf.map(formatSchema).join(' | ');
 	}
 	if (schemaToFormat.enum) {
 		return schemaToFormat.enum.map((item: any) => JSON.stringify(item)).join(' | ');
@@ -127,10 +112,13 @@ function formatSchema(schemaToFormat: any, prevSchemas?: any): any {
 	if (schemaToFormat.type === 'number') {
 		return 'number';
 	}
+	if (schemaToFormat.type === 'integer') {
+		return 'integer';
+	}
 	if (schemaToFormat.type === 'object') {
 		if (schemaToFormat.properties) {
 			const required = schemaToFormat.required || [];
-			return `object { ${Object.keys(schemaToFormat.properties)
+			return `{ ${Object.keys(schemaToFormat.properties)
 				.map((property) => {
 					if (!required.includes(property)) {
 						return property + '?';
@@ -140,79 +128,12 @@ function formatSchema(schemaToFormat: any, prevSchemas?: any): any {
 				.concat(schemaToFormat.additionalProperties ? ['…'] : [])
 				.join(', ')} }`;
 		}
-		if (schemaToFormat.additionalProperties) {
-			return `object { <key>: ${formatInnerSchema(schemaToFormat.additionalProperties)} }`;
+		if (schemaToFormat.patternProperties) {
+			return JSON.stringify(schemaToFormat.patternProperties, null, 2);
 		}
-		return 'object';
 	}
-	if (schemaToFormat.type === 'array') {
-		return `[${formatInnerSchema(schemaToFormat.items)}]`;
-	}
-
 	return JSON.stringify(schemaToFormat, null, 2);
 }
-
-// function indent(str: string, prefix: string, firstLine: boolean) {
-// 	if (firstLine) {
-// 		return prefix + str.replace(/\n(?!$)/g, "\n" + prefix);
-// 	} else {
-// 		return str.replace(/\n(?!$)/g, `\n${prefix}`);
-// 	}
-// };
-
-// function getSchemaPart(schema: any, path: string, parents?: number, additionalPath?: string) {
-// 	parents = parents || 0;
-// 	let pathArr = path.split("/");
-// 	pathArr = pathArr.slice(0, pathArr.length - parents);
-// 	if (additionalPath) {
-// 		pathArr = pathArr.concat(additionalPath.split("/"));
-// 	}
-// 	let schemaPart = schema;
-// 	for (let i = 1; i < pathArr.length; i++) {
-// 		const inner = schemaPart[pathArr[i]];
-// 		if (inner) {
-// 			schemaPart = inner;
-// 		}
-// 	}
-// 	return schemaPart;
-// };
-
-// function getSchemaPartText(commandSchema: any, schemaPart: any, additionalPath?: any[]): string {
-// 	if (additionalPath) {
-// 		for (let i = 0; i < additionalPath.length; i++) {
-// 			const inner = schemaPart[additionalPath[i]];
-// 			if (inner) {
-// 				schemaPart = inner;
-// 			}
-// 		}
-// 	}
-// 	while (schemaPart.$ref) {
-// 		schemaPart = getSchemaPart(commandSchema, schemaPart.$ref);
-// 	}
-// 	let schemaText = formatSchema(commandSchema, schemaPart);
-// 	if (schemaPart.description) {
-// 		schemaText += `\n-> ${schemaPart.description}`;
-// 	}
-// 	return schemaText;
-// };
-
-// function getSchemaPartDescription(schema: any, schemaPart: any): string {
-// 	while (schemaPart.$ref) {
-// 		schemaPart = getSchemaPart(schema, schemaPart.$ref);
-// 	}
-// 	if (schemaPart.description) {
-// 		return `\n-> ${schemaPart.description}`;
-// 	}
-// 	return "";
-// };
-
-// function filterChildren(children: any) {
-// 	return children.filter((err: any) =>
-// 			err.keyword !== "anyOf" &&
-// 			err.keyword !== "allOf" &&
-// 			err.keyword !== "oneOf"
-// 	);
-// };
 
 function formatValidationErrors(commandSchema: any, err: any): any {
 	const dataPath = `configuration${err.dataPath}`;
@@ -225,14 +146,16 @@ function formatValidationErrors(commandSchema: any, err: any): any {
 		if (err.parentSchema && err.parentSchema.enum && err.parentSchema.enum.length === 1) {
 			return `${dataPath} should be ${formatSchema(err.parentSchema)}`;
 		}
-
 		return `${dataPath} should be one of these:\n${formatSchema(err.parentSchema)}`;
-	} else if (err.keyword === 'allOf') {
-		return `${dataPath} should be:\n${formatSchema(err.parentSchema)}`;
 	} else if (err.keyword === 'type') {
 		switch (err.params.type) {
 			case 'object':
-				return `${dataPath} should be an object.`;
+				if (err.parentSchema.patternProperties) {
+					return `${dataPath} should be an object with following pattern of properties: ${formatSchema(
+						err.parentSchema
+					)}`;
+				}
+				return `${dataPath} should be an object with following properties: ${formatSchema(err.parentSchema)}.`;
 			case 'string':
 				return `${dataPath} should be a string.`;
 			case 'boolean':
@@ -242,11 +165,11 @@ function formatValidationErrors(commandSchema: any, err: any): any {
 			case 'array':
 				return `${dataPath} should be an array.`;
 		}
-
-		return `${dataPath} should be ${err.params.type}`;
+		return `${dataPath} should be ${err.params.type}.`;
 	} else if (err.keyword === 'required') {
 		const missingProperty = err.params.missingProperty.replace(/^\./, '');
-		return `${dataPath} misses the property '${missingProperty}'.`;
+		const form = formatSchema(err.schema[missingProperty]);
+		return `${dataPath} misses the property '${missingProperty}', which is of type ${form}.`;
 	} else if (err.keyword === 'minimum' || err.keyword === 'maximum') {
 		return `${dataPath} ${err.message}.`;
 	} else if (err.keyword === 'uniqueItems') {

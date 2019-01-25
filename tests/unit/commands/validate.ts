@@ -38,8 +38,8 @@ describe('validate', () => {
 				required: ['bar', 'qux']
 			},
 			bar: {
-				type: 'number',
-				maximum: 10
+				type: 'array',
+				items: { $ref: '#/definitions/bar' }
 			}
 		},
 		type: 'object',
@@ -50,6 +50,32 @@ describe('validate', () => {
 				properties: {
 					bar: {
 						enum: ['foobar']
+					},
+					qux: {
+						type: 'string'
+					}
+				}
+			},
+			complex: {
+				type: 'object',
+				required: ['first', 'second'],
+				properties: {
+					first: {
+						enum: ['one', 'two', 'three']
+					},
+					second: {
+						type: 'number'
+					},
+					third: {
+						type: 'string'
+					}
+				}
+			},
+			pattern: {
+				type: 'object',
+				patternProperties: {
+					'^.*$': {
+						type: 'array'
 					}
 				}
 			},
@@ -61,6 +87,10 @@ describe('validate', () => {
 						type: 'string'
 					}
 				}
+			},
+			additionalTrue: {
+				type: 'object',
+				additionalProperties: { type: 'string' }
 			},
 			ref: {
 				type: 'object',
@@ -111,14 +141,21 @@ describe('validate', () => {
 			numAnyOf: {
 				type: 'number',
 				anyOf: [{ maximum: 3 }, { type: 'integer' }]
+			},
+			complexOneOf: {
+				oneOf: [
+					{ type: 'string', minLength: 5 },
+					{ type: 'string', minLength: 1 },
+					{ type: 'boolean' },
+					{ type: 'integer' }
+				]
+			},
+			recursive: {
+				type: 'array',
+				items: {
+					$ref: '#/definitions/bar'
+				}
 			}
-			// refOneOf: {
-			// 	$ref: "#/definitions/bar",
-			// 	oneOf: [
-			// 		{ minimum: 5 },
-			// 		{ type: "integer" }
-			// 	]
-			// },
 		},
 		required: ['foo']
 	};
@@ -212,7 +249,9 @@ describe('validate', () => {
 				expect(consoleLogStub.getCall(0).args[0]).to.equal(
 					red('testGroup-testCommand config is invalid! The following issues were found: ')
 				);
-				expect(consoleLogStub.getCall(1).args[0]).to.equal(red(`configuration misses the property 'foo'.`));
+				expect(consoleLogStub.getCall(1).args[0]).to.equal(
+					red(`configuration misses the property 'foo', which is of type { bar, qux? }.`)
+				);
 			});
 
 			it(`should fail on validating a command where config value has additional property`, async () => {
@@ -246,7 +285,56 @@ describe('validate', () => {
 				expect(consoleLogStub.getCall(0).args[0]).to.equal(
 					red('testGroup-testCommand config is invalid! The following issues were found: ')
 				);
-				expect(consoleLogStub.getCall(1).args[0]).to.equal(red('configuration.foo should be an object.'));
+				expect(consoleLogStub.getCall(1).args[0]).to.equal(
+					red('configuration.foo should be an object with following properties: { bar, qux? }.')
+				);
+			});
+
+			it(`should fail on validating a command where config value is wrong type object with additional properties`, async () => {
+				validateableCommandWrapper.commandConfig = {
+					foo: { bar: 'foobar' },
+					additionalTrue: {
+						additional: 2
+					}
+				};
+				validateableCommandWrapper.commandSchema = { ...detailedSchema };
+				const valid = await builtInCommandValidation(validateableCommandWrapper);
+				expect(valid).to.be.false;
+				expect(consoleLogStub.callCount).to.equal(2);
+				expect(consoleLogStub.getCall(0).args[0]).to.equal(
+					red('testGroup-testCommand config is invalid! The following issues were found: ')
+				);
+				expect(consoleLogStub.getCall(1).args[0]).to.equal(
+					red(`configuration.additionalTrue['additional'] should be a string.`)
+				);
+			});
+
+			it(`should fail on validating a command where config value is wrong type (object - complex)`, async () => {
+				validateableCommandWrapper.commandConfig = {
+					foo: { bar: 'foobar' },
+					complex: {
+						first: 'first',
+						second: '2',
+						third: 3
+					}
+				};
+				validateableCommandWrapper.commandSchema = { ...detailedSchema };
+				const valid = await builtInCommandValidation(validateableCommandWrapper);
+				expect(valid).to.be.false;
+				expect(consoleLogStub.callCount).to.equal(4);
+				expect(consoleLogStub.getCall(0).args[0]).to.equal(
+					red('testGroup-testCommand config is invalid! The following issues were found: ')
+				);
+				expect(consoleLogStub.getCall(1).args[0]).to.equal(
+					red(`configuration.complex.first should be one of these:
+"one" | "two" | "three"`)
+				);
+				expect(consoleLogStub.getCall(2).args[0]).to.equal(
+					red(`configuration.complex.second should be a number.`)
+				);
+				expect(consoleLogStub.getCall(3).args[0]).to.equal(
+					red(`configuration.complex.third should be a string.`)
+				);
 			});
 
 			it(`should fail on validating a command where config value is wrong type (string)`, async () => {
@@ -447,17 +535,15 @@ describe('validate', () => {
 						`configuration.numOneOf should be one of these:
 {
   "maximum": 3
-} | {
-  "type": "integer"
-}`
+} | integer`
 					)
 				);
 			});
 
-			it(`should fail on validating a command where allOf is not met`, async () => {
+			it(`should fail on validating a command where complex oneOf is not met`, async () => {
 				validateableCommandWrapper.commandConfig = validateableCommandWrapper.commandConfig = {
 					foo: { bar: 'foobar' },
-					numAllOf: 2.5 // Must be integer AND max 3
+					complexOneOf: {}
 				};
 				validateableCommandWrapper.commandSchema = { ...detailedSchema };
 				const valid = await builtInCommandValidation(validateableCommandWrapper);
@@ -466,7 +552,26 @@ describe('validate', () => {
 				expect(consoleLogStub.getCall(0).args[0]).to.equal(
 					red('testGroup-testCommand config is invalid! The following issues were found: ')
 				);
-				expect(consoleLogStub.getCall(1).args[0]).to.equal(red(`configuration.numAllOf should be integer`));
+				expect(consoleLogStub.getCall(1).args[0]).to.equal(
+					red(`configuration.complexOneOf should be one of these:
+string (min length 5) | non-empty string | boolean | integer`)
+				);
+			});
+
+			it(`should fail on validating a command where allOf is not met`, async () => {
+				validateableCommandWrapper.commandConfig = validateableCommandWrapper.commandConfig = {
+					foo: { bar: 'foobar' },
+					numAllOf: 4.5 // Must be integer AND max 3
+				};
+				validateableCommandWrapper.commandSchema = { ...detailedSchema };
+				const valid = await builtInCommandValidation(validateableCommandWrapper);
+				expect(valid).to.be.false;
+				expect(consoleLogStub.callCount).to.equal(3);
+				expect(consoleLogStub.getCall(0).args[0]).to.equal(
+					red('testGroup-testCommand config is invalid! The following issues were found: ')
+				);
+				expect(consoleLogStub.getCall(1).args[0]).to.equal(red(`configuration.numAllOf should be <= 3.`));
+				expect(consoleLogStub.getCall(2).args[0]).to.equal(red(`configuration.numAllOf should be integer.`));
 			});
 
 			it(`should fail on validating a command where anyOf is not met`, async () => {
@@ -486,9 +591,7 @@ describe('validate', () => {
 						`configuration.numAnyOf should be one of these:
 {
   "maximum": 3
-} | {
-  "type": "integer"
-}`
+} | integer`
 					)
 				);
 			});
@@ -509,32 +612,50 @@ describe('validate', () => {
 					red('testGroup-testCommand config is invalid! The following issues were found: ')
 				);
 				expect(consoleLogStub.getCall(1).args[0]).to.equal(
-					red("configuration.ref.first misses the property 'qux'.")
+					red("configuration.ref.first misses the property 'qux', which is of type number.")
 				);
 				expect(consoleLogStub.getCall(2).args[0]).to.equal(
-					red("configuration.ref.second misses the property 'bar'.")
+					red("configuration.ref.second misses the property 'bar', which is of type string.")
 				);
 			});
 
-			// it(`should handle $ref parentSchemas correctly`, async () => {
-			// 	validateableCommandWrapper.commandConfig = validateableCommandWrapper.commandConfig = {
-			// 		foo: { bar: 'foobar' },
-			// 		refOneOf: 4.5
-			// 	};
-			// 	validateableCommandWrapper.commandSchema = { ...detailedSchema };
-			// 	const valid = await builtInCommandValidation(validateableCommandWrapper);
-			// 	expect(valid).to.be.false;
-			// 	expect(consoleLogStub.callCount).to.equal(2);
-			// 	expect(consoleLogStub.getCall(0).args[0]).to.equal(
-			// 		red('testGroup-testCommand config is invalid! The following issues were found: ')
-			// 	);
-			// 	expect(consoleLogStub.getCall(1).args[0]).to.equal(
-			// 		red("configuration.ref.first misses the property 'qux'.")
-			// 	);
-			// 	expect(consoleLogStub.getCall(2).args[0]).to.equal(
-			// 		red("configuration.ref.second misses the property 'bar'.")
-			// 	);
-			// });
+			it(`should handle recursive properties with an invalid property correctly`, async () => {
+				validateableCommandWrapper.commandConfig = validateableCommandWrapper.commandConfig = {
+					foo: { bar: 'foobar' },
+					recursive: [[[[{}]]]]
+				};
+				validateableCommandWrapper.commandSchema = { ...detailedSchema };
+				const valid = await builtInCommandValidation(validateableCommandWrapper);
+				expect(valid).to.be.false;
+				expect(consoleLogStub.callCount).to.equal(2);
+				expect(consoleLogStub.getCall(0).args[0]).to.equal(
+					red('testGroup-testCommand config is invalid! The following issues were found: ')
+				);
+				expect(consoleLogStub.getCall(1).args[0]).to.equal(
+					red('configuration.recursive[0][0][0][0] should be an array.')
+				);
+			});
+
+			it(`should handle pattern properties`, async () => {
+				validateableCommandWrapper.commandConfig = validateableCommandWrapper.commandConfig = {
+					foo: { bar: 'foobar' },
+					pattern: 2
+				};
+				validateableCommandWrapper.commandSchema = { ...detailedSchema };
+				const valid = await builtInCommandValidation(validateableCommandWrapper);
+				expect(valid).to.be.false;
+				expect(consoleLogStub.callCount).to.equal(2);
+				expect(consoleLogStub.getCall(0).args[0]).to.equal(
+					red('testGroup-testCommand config is invalid! The following issues were found: ')
+				);
+				expect(consoleLogStub.getCall(1).args[0]).to.equal(
+					red(`configuration.pattern should be an object with following pattern of properties: {
+  "^.*$": {
+    "type": "array"
+  }
+}`)
+				);
+			});
 
 			it(`should fail on validating a command where config value is required`, async () => {
 				validateableCommandWrapper.commandConfig = { ...missingRequiredConfig };
@@ -545,7 +666,9 @@ describe('validate', () => {
 				expect(consoleLogStub.getCall(0).args[0]).to.equal(
 					red('testGroup-testCommand config is invalid! The following issues were found: ')
 				);
-				expect(consoleLogStub.getCall(1).args[0]).to.equal(red(`configuration.foo misses the property 'bar'.`));
+				expect(consoleLogStub.getCall(1).args[0]).to.equal(
+					red(`configuration.foo misses the property 'bar', which is of type "foobar".`)
+				);
 			});
 
 			it(`should fail on validating a command with undefined config`, async () => {
