@@ -27,6 +27,8 @@ describe('validate', () => {
 		silentSuccess: false
 	};
 
+	const configKey = validateableCommandWrapper.commandGroup + '-' + validateableCommandWrapper.commandName;
+
 	const detailedSchema = {
 		definitions: {
 			foo: {
@@ -183,7 +185,7 @@ describe('validate', () => {
 					},
 					required: ['command']
 				};
-				const errors = getValidationErrors({ command: 'foo' }, mockSchema);
+				const errors = getValidationErrors(configKey, { command: 'foo' }, mockSchema);
 				expect(errors).to.be.lengthOf(0);
 			});
 
@@ -210,7 +212,7 @@ describe('validate', () => {
 				const config = {
 					simple: { bar: 'foo' }
 				};
-				const errors = getValidationErrors(config, mockSchema);
+				const errors = getValidationErrors(configKey, config, mockSchema);
 				expect(errors).to.be.lengthOf(2);
 			});
 		});
@@ -227,10 +229,12 @@ describe('validate', () => {
 				expect(valid).to.be.false;
 				expect(consoleLogStub.callCount).to.equal(2);
 				expect(consoleLogStub.getCall(0).args[0]).to.equal(
-					red('testGroup-testCommand config is invalid! The following issues were found: ')
+					red('testGroup-testCommand config is invalid! The following issues were found: \n')
 				);
 				expect(consoleLogStub.getCall(1).args[0]).to.equal(
-					red(`configuration misses the property 'simple', which is of type { bar, qux? }.`)
+					`  ▹ ${red(
+						"config.testGroup-testCommand misses the property 'simple', which is of type { bar, qux? }."
+					)}\n`
 				);
 			});
 
@@ -247,10 +251,10 @@ describe('validate', () => {
 				expect(valid).to.be.false;
 				expect(consoleLogStub.callCount).to.equal(2);
 				expect(consoleLogStub.getCall(0).args[0]).to.equal(
-					red('testGroup-testCommand config is invalid! The following issues were found: ')
+					red('testGroup-testCommand config is invalid! The following issues were found: \n')
 				);
 				expect(consoleLogStub.getCall(1).args[0]).to.equal(
-					red(`configuration.additional has an unknown property 'unexpected'.`)
+					`  ▹ ${red("config.testGroup-testCommand.additional has an unknown property 'unexpected'.")}\n`
 				);
 			});
 
@@ -263,10 +267,12 @@ describe('validate', () => {
 				expect(valid).to.be.false;
 				expect(consoleLogStub.callCount).to.equal(2);
 				expect(consoleLogStub.getCall(0).args[0]).to.equal(
-					red('testGroup-testCommand config is invalid! The following issues were found: ')
+					red('testGroup-testCommand config is invalid! The following issues were found: \n')
 				);
 				expect(consoleLogStub.getCall(1).args[0]).to.equal(
-					red('configuration.simple should be an object with following properties: { bar, qux? }.')
+					`  ▹ ${red(
+						'config.testGroup-testCommand.simple should be an object with following properties: { bar, qux? }.'
+					)}\n`
 				);
 			});
 
@@ -282,10 +288,10 @@ describe('validate', () => {
 				expect(valid).to.be.false;
 				expect(consoleLogStub.callCount).to.equal(2);
 				expect(consoleLogStub.getCall(0).args[0]).to.equal(
-					red('testGroup-testCommand config is invalid! The following issues were found: ')
+					red('testGroup-testCommand config is invalid! The following issues were found: \n')
 				);
 				expect(consoleLogStub.getCall(1).args[0]).to.equal(
-					red(`configuration.additionalTrue['additional'] should be a string.`)
+					`  ▹ ${red("config.testGroup-testCommand.additionalTrue['additional'] should be a string.")}\n`
 				);
 			});
 
@@ -303,17 +309,18 @@ describe('validate', () => {
 				expect(valid).to.be.false;
 				expect(consoleLogStub.callCount).to.equal(4);
 				expect(consoleLogStub.getCall(0).args[0]).to.equal(
-					red('testGroup-testCommand config is invalid! The following issues were found: ')
+					red('testGroup-testCommand config is invalid! The following issues were found: \n')
 				);
 				expect(consoleLogStub.getCall(1).args[0]).to.equal(
-					red(`configuration.complex.first should be one of these:
-"one" | "two" | "three"`)
+					`  ▹ ${red(
+						`config.testGroup-testCommand.complex.first should be one of these:\n\"one\" | \"two\" | \"three\"`
+					)}\n`
 				);
 				expect(consoleLogStub.getCall(2).args[0]).to.equal(
-					red(`configuration.complex.second should be a number.`)
+					`  ▹ ${red(`config.testGroup-testCommand.complex.second should be a number.`)}\n`
 				);
 				expect(consoleLogStub.getCall(3).args[0]).to.equal(
-					red(`configuration.complex.third should be a string.`)
+					`  ▹ ${red(`config.testGroup-testCommand.complex.third should be a string.`)}\n`
 				);
 			});
 
@@ -327,9 +334,11 @@ describe('validate', () => {
 				expect(valid).to.be.false;
 				expect(consoleLogStub.callCount).to.equal(2);
 				expect(consoleLogStub.getCall(0).args[0]).to.equal(
-					red('testGroup-testCommand config is invalid! The following issues were found: ')
+					red('testGroup-testCommand config is invalid! The following issues were found: \n')
 				);
-				expect(consoleLogStub.getCall(1).args[0]).to.equal(red('configuration.str should be a string.'));
+				expect(consoleLogStub.getCall(1).args[0]).to.equal(
+					`  ▹ ${red(`config.testGroup-testCommand.str should be a string.`)}\n`
+				);
 			});
 
 			it(`should fail on validating a command where config value is wrong type (number)`, async () => {
@@ -342,9 +351,11 @@ describe('validate', () => {
 				expect(valid).to.be.false;
 				expect(consoleLogStub.callCount).to.equal(2);
 				expect(consoleLogStub.getCall(0).args[0]).to.equal(
-					red('testGroup-testCommand config is invalid! The following issues were found: ')
+					red('testGroup-testCommand config is invalid! The following issues were found: \n')
 				);
-				expect(consoleLogStub.getCall(1).args[0]).to.equal(red('configuration.num should be a number.'));
+				expect(consoleLogStub.getCall(1).args[0]).to.equal(
+					`  ▹ ${red(`config.testGroup-testCommand.num should be a number.`)}\n`
+				);
 			});
 
 			it(`should fail on validating a command where config value is wrong type (boolean)`, async () => {
@@ -357,9 +368,11 @@ describe('validate', () => {
 				expect(valid).to.be.false;
 				expect(consoleLogStub.callCount).to.equal(2);
 				expect(consoleLogStub.getCall(0).args[0]).to.equal(
-					red('testGroup-testCommand config is invalid! The following issues were found: ')
+					red('testGroup-testCommand config is invalid! The following issues were found: \n')
 				);
-				expect(consoleLogStub.getCall(1).args[0]).to.equal(red('configuration.boolean should be a boolean.'));
+				expect(consoleLogStub.getCall(1).args[0]).to.equal(
+					`  ▹ ${red(`config.testGroup-testCommand.boolean should be a boolean.`)}\n`
+				);
 			});
 
 			it(`should fail on validating a command where config value is wrong type (array)`, async () => {
@@ -372,9 +385,11 @@ describe('validate', () => {
 				expect(valid).to.be.false;
 				expect(consoleLogStub.callCount).to.equal(2);
 				expect(consoleLogStub.getCall(0).args[0]).to.equal(
-					red('testGroup-testCommand config is invalid! The following issues were found: ')
+					red('testGroup-testCommand config is invalid! The following issues were found: \n')
 				);
-				expect(consoleLogStub.getCall(1).args[0]).to.equal(red('configuration.arr should be an array.'));
+				expect(consoleLogStub.getCall(1).args[0]).to.equal(
+					`  ▹ ${red(`config.testGroup-testCommand.arr should be an array.`)}\n`
+				);
 			});
 
 			it(`should fail on validating a command where config value is not in schema enum`, async () => {
@@ -386,9 +401,11 @@ describe('validate', () => {
 				expect(valid).to.be.false;
 				expect(consoleLogStub.callCount).to.equal(2);
 				expect(consoleLogStub.getCall(0).args[0]).to.equal(
-					red('testGroup-testCommand config is invalid! The following issues were found: ')
+					red('testGroup-testCommand config is invalid! The following issues were found: \n')
 				);
-				expect(consoleLogStub.getCall(1).args[0]).to.equal(red('configuration.simple.bar should be "foobar"'));
+				expect(consoleLogStub.getCall(1).args[0]).to.equal(
+					`  ▹ ${red(`config.testGroup-testCommand.simple.bar should be "foobar"`)}\n`
+				);
 			});
 
 			it(`should fail on validating a command where string is length of 1 with error as string can't be empty`, async () => {
@@ -400,10 +417,10 @@ describe('validate', () => {
 				expect(valid).to.be.false;
 				expect(consoleLogStub.callCount).to.equal(2);
 				expect(consoleLogStub.getCall(0).args[0]).to.equal(
-					red('testGroup-testCommand config is invalid! The following issues were found: ')
+					red('testGroup-testCommand config is invalid! The following issues were found: \n')
 				);
 				expect(consoleLogStub.getCall(1).args[0]).to.equal(
-					red('configuration.strMinLength should not be empty.')
+					`  ▹ ${red(`config.testGroup-testCommand.strMinLength should not be empty.`)}\n`
 				);
 			});
 
@@ -416,10 +433,12 @@ describe('validate', () => {
 				expect(valid).to.be.false;
 				expect(consoleLogStub.callCount).to.equal(2);
 				expect(consoleLogStub.getCall(0).args[0]).to.equal(
-					red('testGroup-testCommand config is invalid! The following issues were found: ')
+					red('testGroup-testCommand config is invalid! The following issues were found: \n')
 				);
 				expect(consoleLogStub.getCall(1).args[0]).to.equal(
-					red('configuration.strMinLengthFive should NOT be shorter than 5 characters')
+					`  ▹ ${red(
+						`config.testGroup-testCommand.strMinLengthFive should NOT be shorter than 5 characters`
+					)}\n`
 				);
 			});
 
@@ -433,9 +452,11 @@ describe('validate', () => {
 				expect(valid).to.be.false;
 				expect(consoleLogStub.callCount).to.equal(2);
 				expect(consoleLogStub.getCall(0).args[0]).to.equal(
-					red('testGroup-testCommand config is invalid! The following issues were found: ')
+					red('testGroup-testCommand config is invalid! The following issues were found: \n')
 				);
-				expect(consoleLogStub.getCall(1).args[0]).to.equal(red(`configuration.num should be <= 3.`));
+				expect(consoleLogStub.getCall(1).args[0]).to.equal(
+					`  ▹ ${red(`config.testGroup-testCommand.num should be <= 3.`)}\n`
+				);
 			});
 
 			it(`should fail on validating a command with none unique array items where uniqueItems is present`, async () => {
@@ -448,10 +469,10 @@ describe('validate', () => {
 				expect(valid).to.be.false;
 				expect(consoleLogStub.callCount).to.equal(2);
 				expect(consoleLogStub.getCall(0).args[0]).to.equal(
-					red('testGroup-testCommand config is invalid! The following issues were found: ')
+					red('testGroup-testCommand config is invalid! The following issues were found: \n')
 				);
 				expect(consoleLogStub.getCall(1).args[0]).to.equal(
-					red(`configuration.arrUnique should not contain the item 'foo' twice.`)
+					`  ▹ ${red(`config.testGroup-testCommand.arrUnique should not contain the item 'foo' twice.`)}\n`
 				);
 			});
 
@@ -465,10 +486,10 @@ describe('validate', () => {
 				expect(valid).to.be.false;
 				expect(consoleLogStub.callCount).to.equal(2);
 				expect(consoleLogStub.getCall(0).args[0]).to.equal(
-					red('testGroup-testCommand config is invalid! The following issues were found: ')
+					red('testGroup-testCommand config is invalid! The following issues were found: \n')
 				);
 				expect(consoleLogStub.getCall(1).args[0]).to.equal(
-					red(`configuration.arrMaxItems should NOT have more than 2 items`)
+					`  ▹ ${red(`config.testGroup-testCommand.arrMaxItems should NOT have more than 2 items`)}\n`
 				);
 			});
 
@@ -482,10 +503,10 @@ describe('validate', () => {
 				expect(valid).to.be.false;
 				expect(consoleLogStub.callCount).to.equal(2);
 				expect(consoleLogStub.getCall(0).args[0]).to.equal(
-					red('testGroup-testCommand config is invalid! The following issues were found: ')
+					red('testGroup-testCommand config is invalid! The following issues were found: \n')
 				);
 				expect(consoleLogStub.getCall(1).args[0]).to.equal(
-					red(`configuration.arrMinItems should not be empty.`)
+					`  ▹ ${red(`config.testGroup-testCommand.arrMinItems should not be empty.`)}\n`
 				);
 			});
 
@@ -499,9 +520,11 @@ describe('validate', () => {
 				expect(valid).to.be.false;
 				expect(consoleLogStub.callCount).to.equal(2);
 				expect(consoleLogStub.getCall(0).args[0]).to.equal(
-					red('testGroup-testCommand config is invalid! The following issues were found: ')
+					red('testGroup-testCommand config is invalid! The following issues were found: \n')
 				);
-				expect(consoleLogStub.getCall(1).args[0]).to.equal(red(`configuration.num should be >= 1.`));
+				expect(consoleLogStub.getCall(1).args[0]).to.equal(
+					`  ▹ ${red(`config.testGroup-testCommand.num should be >= 1.`)}\n`
+				);
 			});
 
 			it(`should fail on validating a command where oneOf is not met`, async () => {
@@ -514,15 +537,13 @@ describe('validate', () => {
 				expect(valid).to.be.false;
 				expect(consoleLogStub.callCount).to.equal(2);
 				expect(consoleLogStub.getCall(0).args[0]).to.equal(
-					red('testGroup-testCommand config is invalid! The following issues were found: ')
+					red('testGroup-testCommand config is invalid! The following issues were found: \n')
 				);
 				expect(consoleLogStub.getCall(1).args[0]).to.equal(
-					red(
-						`configuration.numOneOf should be one of these:
+					`  ▹ ${red(`config.testGroup-testCommand.numOneOf should be one of these:
 {
   "maximum": 3
-} | integer`
-					)
+} | integer`)}\n`
 				);
 			});
 
@@ -536,11 +557,11 @@ describe('validate', () => {
 				expect(valid).to.be.false;
 				expect(consoleLogStub.callCount).to.equal(2);
 				expect(consoleLogStub.getCall(0).args[0]).to.equal(
-					red('testGroup-testCommand config is invalid! The following issues were found: ')
+					red('testGroup-testCommand config is invalid! The following issues were found: \n')
 				);
 				expect(consoleLogStub.getCall(1).args[0]).to.equal(
-					red(`configuration.complexOneOf should be one of these:
-string (min length 5) | non-empty string | boolean | integer`)
+					`  ▹ ${red(`config.testGroup-testCommand.complexOneOf should be one of these:
+string (min length 5) | non-empty string | boolean | integer`)}\n`
 				);
 			});
 
@@ -554,10 +575,14 @@ string (min length 5) | non-empty string | boolean | integer`)
 				expect(valid).to.be.false;
 				expect(consoleLogStub.callCount).to.equal(3);
 				expect(consoleLogStub.getCall(0).args[0]).to.equal(
-					red('testGroup-testCommand config is invalid! The following issues were found: ')
+					red('testGroup-testCommand config is invalid! The following issues were found: \n')
 				);
-				expect(consoleLogStub.getCall(1).args[0]).to.equal(red(`configuration.numAllOf should be <= 3.`));
-				expect(consoleLogStub.getCall(2).args[0]).to.equal(red(`configuration.numAllOf should be integer.`));
+				expect(consoleLogStub.getCall(1).args[0]).to.equal(
+					`  ▹ ${red(`config.testGroup-testCommand.numAllOf should be <= 3.`)}\n`
+				);
+				expect(consoleLogStub.getCall(2).args[0]).to.equal(
+					`  ▹ ${red(`config.testGroup-testCommand.numAllOf should be integer.`)}\n`
+				);
 			});
 
 			it(`should fail on validating a command where anyOf is not met`, async () => {
@@ -570,15 +595,13 @@ string (min length 5) | non-empty string | boolean | integer`)
 				expect(valid).to.be.false;
 				expect(consoleLogStub.callCount).to.equal(2);
 				expect(consoleLogStub.getCall(0).args[0]).to.equal(
-					red('testGroup-testCommand config is invalid! The following issues were found: ')
+					red('testGroup-testCommand config is invalid! The following issues were found: \n')
 				);
 				expect(consoleLogStub.getCall(1).args[0]).to.equal(
-					red(
-						`configuration.numAnyOf should be one of these:
+					`  ▹ ${red(`config.testGroup-testCommand.numAnyOf should be one of these:
 {
   "maximum": 3
-} | integer`
-					)
+} | integer`)}\n`
 				);
 			});
 
@@ -595,13 +618,17 @@ string (min length 5) | non-empty string | boolean | integer`)
 				expect(valid).to.be.false;
 				expect(consoleLogStub.callCount).to.equal(4);
 				expect(consoleLogStub.getCall(0).args[0]).to.equal(
-					red('testGroup-testCommand config is invalid! The following issues were found: ')
+					red('testGroup-testCommand config is invalid! The following issues were found: \n')
 				);
 				expect(consoleLogStub.getCall(1).args[0]).to.equal(
-					red("configuration.ref.first misses the property 'qux', which is of type number.")
+					`  ▹ ${red(
+						`config.testGroup-testCommand.ref.first misses the property 'qux', which is of type number.`
+					)}\n`
 				);
 				expect(consoleLogStub.getCall(2).args[0]).to.equal(
-					red("configuration.ref.second misses the property 'bar', which is of type string.")
+					`  ▹ ${red(
+						`config.testGroup-testCommand.ref.second misses the property 'bar', which is of type string.`
+					)}\n`
 				);
 			});
 
@@ -615,10 +642,10 @@ string (min length 5) | non-empty string | boolean | integer`)
 				expect(valid).to.be.false;
 				expect(consoleLogStub.callCount).to.equal(2);
 				expect(consoleLogStub.getCall(0).args[0]).to.equal(
-					red('testGroup-testCommand config is invalid! The following issues were found: ')
+					red('testGroup-testCommand config is invalid! The following issues were found: \n')
 				);
 				expect(consoleLogStub.getCall(1).args[0]).to.equal(
-					red('configuration.recursive[0][0][0][0] should be an array.')
+					`  ▹ ${red(`config.testGroup-testCommand.recursive[0][0][0][0] should be an array.`)}\n`
 				);
 			});
 
@@ -632,14 +659,14 @@ string (min length 5) | non-empty string | boolean | integer`)
 				expect(valid).to.be.false;
 				expect(consoleLogStub.callCount).to.equal(2);
 				expect(consoleLogStub.getCall(0).args[0]).to.equal(
-					red('testGroup-testCommand config is invalid! The following issues were found: ')
+					red('testGroup-testCommand config is invalid! The following issues were found: \n')
 				);
 				expect(consoleLogStub.getCall(1).args[0]).to.equal(
-					red(`configuration.pattern should be an object with following pattern of properties: {
+					`  ▹ ${red(`config.testGroup-testCommand.pattern should be an object with following pattern of properties: {
   "^.*$": {
     "type": "array"
   }
-}`)
+}`)}\n`
 				);
 			});
 
@@ -652,10 +679,12 @@ string (min length 5) | non-empty string | boolean | integer`)
 				expect(valid).to.be.false;
 				expect(consoleLogStub.callCount).to.equal(2);
 				expect(consoleLogStub.getCall(0).args[0]).to.equal(
-					red('testGroup-testCommand config is invalid! The following issues were found: ')
+					red('testGroup-testCommand config is invalid! The following issues were found: \n')
 				);
 				expect(consoleLogStub.getCall(1).args[0]).to.equal(
-					red(`configuration.simple misses the property 'bar', which is of type "foobar".`)
+					`  ▹ ${red(
+						`config.testGroup-testCommand.simple misses the property 'bar', which is of type "foobar".`
+					)}\n`
 				);
 			});
 

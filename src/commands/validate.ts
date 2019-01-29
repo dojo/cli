@@ -26,11 +26,19 @@ export function logEmptyConfig() {
 }
 
 export function logSchemaErrors(mismatch: string) {
-	console.log(red(mismatch));
+	console.log(`  ▹ ${red(mismatch)}\n`);
+}
+
+export function logValidationFailed(commandKey: string) {
+	console.log(red(`${commandKey} config is invalid! The following issues were found: \n`));
 }
 
 export function logSchemaSuccess(commandName: string) {
 	console.log(green(`${commandName} config validation was successful!`));
+}
+
+export function logSchemaTopLevelError(commandKey: string) {
+	console.log(red(`.dojorc config does not have the top level command property '${commandKey}'`));
 }
 
 export function logConfigValidateSuccess() {
@@ -41,7 +49,7 @@ export function logNoValidatableCommands() {
 	console.log(green('There were no commands to validate against'));
 }
 
-export function getValidationErrors(commandConfig: any, commandSchema: any): string[] {
+export function getValidationErrors(commandKey: string, commandConfig: any, commandSchema: any): string[] {
 	const ajv = new Ajv({ allErrors: true, verbose: true });
 
 	const validate = ajv.compile(commandSchema);
@@ -51,7 +59,7 @@ export function getValidationErrors(commandConfig: any, commandSchema: any): str
 
 	if (validate.errors) {
 		errors = filterErrors(validate.errors).map((error) => {
-			return formatValidationErrors(commandSchema, error);
+			return formatValidationErrors(commandKey, commandSchema, error);
 		});
 	}
 
@@ -135,8 +143,8 @@ function formatSchema(schemaToFormat: any): string {
 	return JSON.stringify(schemaToFormat, null, 2);
 }
 
-function formatValidationErrors(commandSchema: any, err: any): string {
-	const dataPath = `configuration${err.dataPath}`;
+function formatValidationErrors(commandKey: string, commandSchema: any, err: any): string {
+	const dataPath = `config.${commandKey}${err.dataPath}`;
 
 	if (err.keyword === 'additionalProperties') {
 		return `${dataPath} has an unknown property '${err.params.additionalProperty}'.`;
@@ -203,16 +211,16 @@ export function builtInCommandValidation(validation: ValidationWrapper): Promise
 		const commandKey = `${commandGroup}-${commandName}`; // group and name are required properties
 
 		if (validation.commandConfig === undefined) {
-			logSchemaErrors(`.dojorc config does not have the top level command property '${commandKey}'`);
+			logSchemaTopLevelError(commandKey);
 			resolve(false);
 			return;
 		}
 
-		const mismatches = getValidationErrors(commandConfig, commandSchema);
+		const mismatches = getValidationErrors(commandKey, commandConfig, commandSchema);
 		const valid = mismatches.length === 0;
 
 		if (!valid) {
-			logSchemaErrors(`${commandKey} config is invalid! The following issues were found: `);
+			logValidationFailed(commandKey);
 			mismatches.forEach((mismatch) => {
 				logSchemaErrors(mismatch);
 			});
