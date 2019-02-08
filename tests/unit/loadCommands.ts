@@ -24,11 +24,13 @@ let testSandbox: any;
 function config(invalid = false): CliConfig {
 	// tests are run in package-dir (from cli) - FIX to use pkg-dir
 	const config: CliConfig = {
+		configStore: 'dojo',
 		searchPaths: ['dist/dev/tests/support'],
 		searchPrefixes: ['test-prefix'],
 		builtInCommandLocation: join(__dirname, '../support/commands')
 	};
 	const badConfig: CliConfig = {
+		configStore: 'garbage',
 		searchPaths: ['just/garbage', 'yep/really/bad/paths/here'],
 		searchPrefixes: ['bad-prefix'],
 		builtInCommandLocation: 'dirThatDoesNotExist'

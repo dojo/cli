@@ -7,6 +7,7 @@ export interface NpmPackageDetails {
 }
 
 export type CliConfig = {
+	configStore: string;
 	searchPaths: string[];
 	searchPrefixes: string[];
 	builtInCommandLocation: string;
