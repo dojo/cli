@@ -40,7 +40,7 @@ function copyFiles(commandName: string, { path, files }: FileCopyConfig): void {
 
 async function run(helper: Helper, args: EjectArgs): Promise<any> {
 	return inquirer
-		.prompt({
+		.prompt<{ eject: boolean }>({
 			type: 'confirm',
 			name: 'eject',
 			message: 'Are you sure you want to eject (this is a permanent operation)?',
