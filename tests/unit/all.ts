@@ -2,6 +2,7 @@ import './allCommands';
 import './command';
 import './CommandHelper';
 import './configurationHelper';
+import './handleArguments';
 import './config';
 import './index';
 import './installableCommands';
