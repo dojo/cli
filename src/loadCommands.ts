@@ -2,6 +2,7 @@ import * as globby from 'globby';
 import { resolve as pathResolve, join } from 'path';
 import { CliConfig, CommandWrapper, GroupMap } from './interfaces';
 import configurationHelper from './configurationHelper';
+import { argv } from 'yargs';
 
 export function isEjected(groupName: string, command: string): boolean {
 	const config: any = configurationHelper.sandbox(groupName, command).get();
@@ -16,7 +17,9 @@ export function isEjected(groupName: string, command: string): boolean {
  */
 export async function enumerateInstalledCommands(config: CliConfig): Promise<string[]> {
 	const { searchPrefixes } = config;
+	const [command] = argv._;
 	const globPaths = searchPrefixes.reduce((globPaths: string[], key) => {
+		key = command ? `${key}-${command}` : key;
 		return globPaths.concat(config.searchPaths.map((depPath) => pathResolve(depPath, `${key}-*`)));
 	}, []);
 	return globby(globPaths, { ignore: '**/*.{map,d.ts}' });
