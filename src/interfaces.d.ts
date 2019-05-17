@@ -127,10 +127,3 @@ export interface CommandWrapper extends Command {
 export type CommandMap = Map<string, CommandWrapper>;
 
 export type GroupMap = Map<string, CommandMap>;
-
-export interface Args {
-	builtin: boolean;
-	group: string;
-	command: string;
-	flags: { [key: string]: string[] };
-}
