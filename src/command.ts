@@ -1,7 +1,6 @@
 import { Command, CommandWrapper, GroupMap } from './interfaces';
 import { join } from 'path';
 import { readFileSync } from 'fs';
-import { argv } from 'yargs';
 
 /**
  * Function to create a loader instance, this allows the config to be injected
@@ -14,10 +13,15 @@ export function initCommandLoader(searchPrefixes: string[]): (path: string) => C
 	const commandRegExp = new RegExp(`(?:${searchPrefixes.join('|').replace('/', '\\/')})-([^-]+)-(.+)$`);
 
 	return function load(path: string): CommandWrapper {
-		// Avoid loading all modules on a call to help
-		const isHelpCall = argv._.length === 0 || argv._[1] === '-h' || argv._[1] === '--help';
+		// Using yargs argv causes issues with running commands if used here
+		const isHelpCall =
+			process.argv.length === 2 ||
+			((process.argv.length === 3 && process.argv[3] === '-h') || process.argv[3] === '--help');
+
 		let nodeModule: any;
+
 		if (isHelpCall) {
+			// Avoid loading all modules on a call to help
 			const packageJson = JSON.parse(readFileSync(join(path, 'package.json'), 'utf8'));
 			nodeModule = {
 				description: packageJson.description,
