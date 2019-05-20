@@ -62,6 +62,7 @@ function getBuiltInCommandPath(invalid: boolean): string {
 registerSuite('command', {
 	load: {
 		beforeEach() {
+			process.argv = ['node', 'dojo.js', 'group'];
 			loader = command.initCommandLoader(testSearchPrefixes);
 			commandWrapper = loader(getCommandPath(testSearchPrefixes)[0]);
 		},
@@ -171,6 +172,22 @@ registerSuite('command', {
 			'Should parse group names correctly'() {
 				assert.equal('foo', commandWrapper.group);
 				assert.equal('bar-baz', commandWrapper.name);
+			}
+		}
+	},
+	'dont load commands if passing help': {
+		before() {
+			process.argv = ['node', 'dojo.js', '--help'];
+			loader = command.initCommandLoader(testSearchPrefixesDashedNames);
+			commandWrapper = loader('../tests/support/dash-names-foo-bar-baz');
+		},
+		tests: {
+			'Should use the package description and mock command correctly'() {
+				assert.equal('a test command package', commandWrapper.description);
+				assert.isUndefined(commandWrapper.register());
+				assert.isUndefined(commandWrapper.run());
+				assert.isUndefined(commandWrapper.eject());
+				assert.isUndefined(commandWrapper.validate());
 			}
 		}
 	},

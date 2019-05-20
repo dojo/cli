@@ -1,4 +1,5 @@
 import { Command, CommandWrapper, GroupMap } from './interfaces';
+import { join } from 'path';
 
 /**
  * Function to create a loader instance, this allows the config to be injected
@@ -11,10 +12,31 @@ export function initCommandLoader(searchPrefixes: string[]): (path: string) => C
 	const commandRegExp = new RegExp(`(?:${searchPrefixes.join('|').replace('/', '\\/')})-([^-]+)-(.+)$`);
 
 	return function load(path: string): CommandWrapper {
-		let module = require(path);
+		// Using yargs argv causes issues with running commands if used here
+		const isHelpCall =
+			process.argv.length === 2 ||
+			(process.argv.length === 3 && (process.argv[2] === '-h' || process.argv[2] === '--help'));
+
+		let nodeModule: any;
+
+		if (isHelpCall) {
+			// Avoid loading all modules on a call to help
+			const packageJson = require(join(path, 'package.json'));
+			nodeModule = {
+				description: packageJson.description,
+				register: () => {},
+				run: () => {},
+				alias: [],
+				eject: () => {},
+				global: false,
+				validate: () => {}
+			};
+		} else {
+			nodeModule = require(path);
+		}
 
 		try {
-			const command = convertModuleToCommand(module);
+			const command = convertModuleToCommand(nodeModule);
 			const { description, register, run, alias, eject, global = false, validate } = command;
 			//  derive the group and name from the module directory name, e.g. dojo-cli-group-name
 			const [, group, name] = <string[]>commandRegExp.exec(path);

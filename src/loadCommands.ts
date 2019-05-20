@@ -15,8 +15,10 @@ export function isEjected(groupName: string, command: string): boolean {
  * @returns {Promise<string []>} the paths of all installed commands
  */
 export async function enumerateInstalledCommands(config: CliConfig): Promise<string[]> {
+	const [, , group] = process.argv;
 	const { searchPrefixes } = config;
 	const globPaths = searchPrefixes.reduce((globPaths: string[], key) => {
+		key = group ? `${key}-${group}` : key;
 		return globPaths.concat(config.searchPaths.map((depPath) => pathResolve(depPath, `${key}-*`)));
 	}, []);
 	return globby(globPaths, { ignore: '**/*.{map,d.ts}' });

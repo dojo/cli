@@ -44,6 +44,7 @@ registerSuite('loadCommands', {
 		commandWrapper2 = getCommandWrapper('command2');
 		loadStub = stub();
 		goodConfig = config();
+		process.argv = ['node', 'dojo.js', ''];
 	},
 	afterEach() {
 		consoleStub.restore();
@@ -160,6 +161,24 @@ registerSuite('loadCommands', {
 					const groupMap = await mockedLoadCommands(installedPaths, loadStub);
 
 					assert.equal(groupMap.size, 0);
+				}
+			}
+		},
+		'specific command': {
+			afterEach() {
+				mockModule.destroy();
+				testSandbox.restore();
+			},
+			tests: {
+				async 'should not load commands that are not in specified group'() {
+					process.argv = ['node', 'dojo.js', 'bar'];
+					const installedPaths = await enumInstalledCommands(goodConfig);
+					assert.isTrue(installedPaths.length === 0);
+				},
+				async 'should load commands that are in specified group'() {
+					process.argv = ['node', 'dojo.js', 'foo'];
+					const installedPaths = await enumInstalledCommands(goodConfig);
+					assert.isTrue(installedPaths.length === 2);
 				}
 			}
 		}
