@@ -26,7 +26,7 @@ export function initCommandLoader(searchPrefixes: string[]): (path: string) => C
 				description: packageJson.description,
 				register: () => {},
 				run: () => {},
-				alias: () => {},
+				alias: [],
 				eject: () => {},
 				global: false,
 				validate: () => {}

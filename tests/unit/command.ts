@@ -182,8 +182,12 @@ registerSuite('command', {
 			commandWrapper = loader('../tests/support/dash-names-foo-bar-baz');
 		},
 		tests: {
-			'Should use the package description correctly'() {
+			'Should use the package description and mock command correctly'() {
 				assert.equal('a test command package', commandWrapper.description);
+				assert.isUndefined(commandWrapper.register());
+				assert.isUndefined(commandWrapper.run());
+				assert.isUndefined(commandWrapper.eject());
+				assert.isUndefined(commandWrapper.validate());
 			}
 		}
 	},
