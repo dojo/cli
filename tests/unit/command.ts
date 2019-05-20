@@ -62,6 +62,7 @@ function getBuiltInCommandPath(invalid: boolean): string {
 registerSuite('command', {
 	load: {
 		beforeEach() {
+			process.argv = ['node', 'dojo.js', 'group'];
 			loader = command.initCommandLoader(testSearchPrefixes);
 			commandWrapper = loader(getCommandPath(testSearchPrefixes)[0]);
 		},

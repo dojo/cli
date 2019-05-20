@@ -44,6 +44,7 @@ registerSuite('loadCommands', {
 		commandWrapper2 = getCommandWrapper('command2');
 		loadStub = stub();
 		goodConfig = config();
+		process.argv = ['node', 'dojo.js', ''];
 	},
 	afterEach() {
 		consoleStub.restore();
