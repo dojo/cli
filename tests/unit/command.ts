@@ -175,6 +175,18 @@ registerSuite('command', {
 			}
 		}
 	},
+	'dont load commands if passing help': {
+		before() {
+			process.argv = ['node', 'dojo.js', '--help'];
+			loader = command.initCommandLoader(testSearchPrefixesDashedNames);
+			commandWrapper = loader('../tests/support/dash-names-foo-bar-baz');
+		},
+		tests: {
+			'Should use the package description correctly'() {
+				assert.equal('a test command package', commandWrapper.description);
+			}
+		}
+	},
 	getCommand: {
 		'should return command'() {
 			const command = getCommand(groupMap, 'foo', 'project');

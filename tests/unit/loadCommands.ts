@@ -163,6 +163,24 @@ registerSuite('loadCommands', {
 					assert.equal(groupMap.size, 0);
 				}
 			}
+		},
+		'specific command': {
+			afterEach() {
+				mockModule.destroy();
+				testSandbox.restore();
+			},
+			tests: {
+				async 'should not load commands that arent specified group'() {
+					process.argv = ['node', 'dojo.js', 'bar'];
+					const installedPaths = await enumInstalledCommands(goodConfig);
+					assert.isTrue(installedPaths.length === 0);
+				},
+				async 'should not load commands that are in specified group'() {
+					process.argv = ['node', 'dojo.js', 'foo'];
+					const installedPaths = await enumInstalledCommands(goodConfig);
+					assert.isTrue(installedPaths.length === 2);
+				}
+			}
 		}
 	}
 });
