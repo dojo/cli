@@ -127,7 +127,7 @@ function formatSchema(schemaToFormat: any): string {
 	if (schemaToFormat.type === 'object') {
 		if (schemaToFormat.properties) {
 			const required = schemaToFormat.required || [];
-			return `{ ${Object.keys(schemaToFormat.properties)
+			return `\n    { ${Object.keys(schemaToFormat.properties)
 				.map((property) => {
 					if (!required.includes(property)) {
 						return property + '?';
@@ -138,10 +138,19 @@ function formatSchema(schemaToFormat: any): string {
 				.join(', ')} }`;
 		}
 		if (schemaToFormat.patternProperties) {
-			return JSON.stringify(schemaToFormat.patternProperties, null, 2);
+			return formatObject(schemaToFormat.patternProperties);
 		}
 	}
-	return JSON.stringify(schemaToFormat, null, 2);
+	return formatObject(schemaToFormat);
+}
+
+function formatObject(obj: any) {
+	return (
+		'\n' +
+		JSON.stringify(obj, null, 4)
+			.replace('{', '    {')
+			.replace(new RegExp('\n', 'g'), '\n    ')
+	);
 }
 
 function formatValidationErrors(commandKey: string, commandSchema: any, err: any): string {
@@ -160,11 +169,11 @@ function formatValidationErrors(commandKey: string, commandSchema: any, err: any
 		switch (err.params.type) {
 			case 'object':
 				if (err.parentSchema.patternProperties) {
-					return `${dataPath} should be an object with following pattern of properties: ${formatSchema(
+					return `${dataPath} should be an object with following pattern of properties:\n${formatSchema(
 						err.parentSchema
 					)}`;
 				}
-				return `${dataPath} should be an object with following properties: ${formatSchema(err.parentSchema)}.`;
+				return `${dataPath} should be an object with following properties:\n${formatSchema(err.parentSchema)}`;
 			case 'string':
 				return `${dataPath} should be a string.`;
 			case 'boolean':
@@ -177,8 +186,14 @@ function formatValidationErrors(commandKey: string, commandSchema: any, err: any
 		return `${dataPath} should be ${err.params.type}.`;
 	} else if (err.keyword === 'required') {
 		const missingProperty = err.params.missingProperty.replace(/^\./, '');
-		const form = formatSchema(err.schema[missingProperty]);
-		return `${dataPath} misses the property '${missingProperty}', which is of type ${form}.`;
+		const schema = err.schema[missingProperty];
+		let form = formatSchema(schema);
+		if (schema.type === 'object') {
+			form = ':\n' + form + '\n';
+		} else {
+			form = ' ' + form + '.';
+		}
+		return `${dataPath} misses the property '${missingProperty}', which is of type${form}`;
 	} else if (err.keyword === 'minimum' || err.keyword === 'maximum') {
 		return `${dataPath} ${err.message}.`;
 	} else if (err.keyword === 'uniqueItems') {

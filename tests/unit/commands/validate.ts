@@ -233,7 +233,7 @@ describe('validate', () => {
 				);
 				expect(consoleLogStub.getCall(1).args[0]).to.equal(
 					`  ▹ ${red(
-						"config.testGroup-testCommand misses the property 'simple', which is of type { bar, qux? }."
+						"config.testGroup-testCommand misses the property 'simple', which is of type:\n\n    { bar, qux? }\n"
 					)}\n`
 				);
 			});
@@ -271,7 +271,7 @@ describe('validate', () => {
 				);
 				expect(consoleLogStub.getCall(1).args[0]).to.equal(
 					`  ▹ ${red(
-						'config.testGroup-testCommand.simple should be an object with following properties: { bar, qux? }.'
+						'config.testGroup-testCommand.simple should be an object with following properties:\n\n    { bar, qux? }'
 					)}\n`
 				);
 			});
@@ -541,9 +541,11 @@ describe('validate', () => {
 				);
 				expect(consoleLogStub.getCall(1).args[0]).to.equal(
 					`  ▹ ${red(`config.testGroup-testCommand.numOneOf should be one of these:
-{
-  "maximum": 3
-} | integer`)}\n`
+
+    {
+        "maximum": 3
+    } | integer`)}
+`
 				);
 			});
 
@@ -599,9 +601,11 @@ string (min length 5) | non-empty string | boolean | integer`)}\n`
 				);
 				expect(consoleLogStub.getCall(1).args[0]).to.equal(
 					`  ▹ ${red(`config.testGroup-testCommand.numAnyOf should be one of these:
-{
-  "maximum": 3
-} | integer`)}\n`
+
+    {
+        "maximum": 3
+    } | integer`)}
+`
 				);
 			});
 
@@ -662,11 +666,14 @@ string (min length 5) | non-empty string | boolean | integer`)}\n`
 					red('testGroup-testCommand config is invalid! The following issues were found: \n')
 				);
 				expect(consoleLogStub.getCall(1).args[0]).to.equal(
-					`  ▹ ${red(`config.testGroup-testCommand.pattern should be an object with following pattern of properties: {
-  "^.*$": {
-    "type": "array"
-  }
-}`)}\n`
+					`  ▹ ${red(`config.testGroup-testCommand.pattern should be an object with following pattern of properties:
+
+    {
+        "^.*$": {
+            "type": "array"
+        }
+    }`)}
+`
 				);
 			});
 
