@@ -1,3 +1,8 @@
+/*
+	Parts of this fule are adapted from Webpack source, licensed under:
+    MIT License http://www.opensource.org/licenses/mit-license.php
+	Author Gajus Kuizinas @gajus
+*/
 import { Argv } from 'yargs';
 import chalk from 'chalk';
 import { CommandWrapper, Helper, OptionsHelper, ValidationWrapper } from '../interfaces';
