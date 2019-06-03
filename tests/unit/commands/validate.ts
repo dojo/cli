@@ -688,15 +688,12 @@ string (min length 5) | non-empty string | boolean | integer`)}\n`
 				);
 			});
 
-			it(`should fail on validating a command with undefined config`, async () => {
+			it(`should ignore validating a command with undefined config`, async () => {
 				validateableCommandWrapper.commandConfig = undefined;
 				validateableCommandWrapper.commandSchema = { ...detailedSchema };
 				const valid = await builtInCommandValidation(validateableCommandWrapper);
-				expect(consoleLogStub.callCount).to.equal(1);
-				expect(consoleLogStub.getCall(0).args[0]).to.equal(
-					red(".dojorc config does not have the top level command property 'testGroup-testCommand'")
-				);
-				expect(valid).to.be.false;
+				expect(consoleLogStub.callCount).to.equal(0);
+				expect(valid).to.be.true;
 			});
 
 			it(`should pass on validating a valid command logging success`, async () => {

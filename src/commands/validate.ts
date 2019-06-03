@@ -37,10 +37,6 @@ export function logSchemaSuccess(commandName: string) {
 	console.log(green(`${commandName} config validation was successful!`));
 }
 
-export function logSchemaTopLevelError(commandKey: string) {
-	console.log(red(`.dojorc config does not have the top level command property '${commandKey}'`));
-}
-
 export function logConfigValidateSuccess() {
 	console.log(green('There were no issues with your config!'));
 }
@@ -211,8 +207,7 @@ export function builtInCommandValidation(validation: ValidationWrapper): Promise
 		const commandKey = `${commandGroup}-${commandName}`; // group and name are required properties
 
 		if (validation.commandConfig === undefined) {
-			logSchemaTopLevelError(commandKey);
-			resolve(false);
+			resolve(true);
 			return;
 		}
 
