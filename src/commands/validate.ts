@@ -189,9 +189,9 @@ function formatValidationErrors(commandKey: string, commandSchema: any, err: any
 		const schema = err.schema[missingProperty];
 		let form = formatSchema(schema);
 		if (schema.type === 'object') {
-			form = ':\n' + form + '\n';
+			form = `:\n${form}\n`;
 		} else {
-			form = ' ' + form + '.';
+			form = ` ${form}.`;
 		}
 		return `${dataPath} misses the property '${missingProperty}', which is of type${form}`;
 	} else if (err.keyword === 'minimum' || err.keyword === 'maximum') {
