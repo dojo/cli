@@ -48,6 +48,7 @@
     "typings.json"
   ],
   "dependencies": {
+    "ajv": "6.6.2",
     "chalk": "2.4.1",
     "configstore": "3.1.2",
     "cross-spawn": "5.1.0",
@@ -59,12 +60,12 @@
     "jsonschema": "1.2.4",
     "libnpmsearch": "^2.0.0",
     "pkg-dir": "2.0.0",
+    "readline-sync": "1.4.9",
     "slice-ansi": "1.0.0",
     "string-width": "2.1.1",
     "tslib": "1.8.1",
     "update-notifier": "2.5.0",
-    "yargs": "10.1.2",
-    "readline-sync": "1.4.9"
+    "yargs": "10.1.2"
   },
   "devDependencies": {
     "@dojo/scripts": "~3.0.1",

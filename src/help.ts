@@ -42,7 +42,7 @@ function getOptionDescription(options: Options): string | undefined {
 	return undefined;
 }
 
-function createPadding(text: string, paddingLength: number, paddingChar = ' '): string {
+export function createPadding(text: string, paddingLength: number, paddingChar = ' '): string {
 	return sliceAnsi(paddingChar.repeat(paddingLength), 0, paddingLength - stringWidth(text));
 }
 
