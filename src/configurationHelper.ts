@@ -102,7 +102,8 @@ export function checkForMultiConfig() {
 	const { dojoRcConfig, packageJsonConfig } = parseConfigs();
 	const hasPackageConfig = typeof packageJsonConfig === 'object';
 	const hasDojoRcConfig = typeof dojoRcConfig === 'object';
-	if (hasPackageConfig && hasDojoRcConfig) {
+	const usingDefaultojoRcConfig = getDojoRcConfigOption() === '.dojorc';
+	if (hasPackageConfig && hasDojoRcConfig && usingDefaultojoRcConfig) {
 		warnAboutMultiConfig();
 	}
 }
