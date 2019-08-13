@@ -7,6 +7,15 @@ import * as detectIndent from 'detect-indent';
 
 const pkgDir = require('pkg-dir');
 
+export function getDojoRcConfigOption(): string {
+	const defaultDojoRc = '.dojorc';
+	const configIndex = process.argv.indexOf('--config');
+	if (configIndex !== -1) {
+		return `${process.argv[configIndex + 1]}` || defaultDojoRc;
+	}
+	return defaultDojoRc;
+}
+
 const appPath = pkgDir.sync(process.cwd());
 let dojoRcPath: string;
 let packageJsonPath: string;
@@ -165,6 +174,10 @@ class SingleCommandConfigurationHelper implements ConfigurationHelper {
 
 export class ConfigurationHelperFactory {
 	sandbox(groupName: string, commandName?: string): ConfigurationHelper {
+		const dojorcName = getDojoRcConfigOption();
+		if (appPath) {
+			dojoRcPath = join(appPath, dojorcName);
+		}
 		return new SingleCommandConfigurationHelper(groupName, commandName);
 	}
 }
