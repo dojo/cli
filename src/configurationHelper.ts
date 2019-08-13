@@ -17,7 +17,7 @@ export function getDojoRcConfigOption(): string {
 		if (customDojoRc && existsSync(join(appPath, customDojoRc))) {
 			return customDojoRc;
 		}
-		console.warn(chalk.yellow(`Specified dojorc file ${customDojoRc} does not exists, using '.dojorc'`));
+		console.warn(chalk.yellow(`Specified dojorc file '${customDojoRc}' does not exist, using '.dojorc'`));
 	}
 	return defaultDojoRc;
 }
@@ -178,10 +178,14 @@ class SingleCommandConfigurationHelper implements ConfigurationHelper {
 }
 
 export class ConfigurationHelperFactory {
+	private _dojoRcName: string | undefined;
+
 	sandbox(groupName: string, commandName?: string): ConfigurationHelper {
-		const dojorcName = getDojoRcConfigOption();
-		if (appPath) {
-			dojoRcPath = join(appPath, dojorcName);
+		if (!this._dojoRcName) {
+			this._dojoRcName = getDojoRcConfigOption();
+			if (appPath) {
+				dojoRcPath = join(appPath, this._dojoRcName);
+			}
 		}
 		return new SingleCommandConfigurationHelper(groupName, commandName);
 	}
