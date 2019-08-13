@@ -7,16 +7,20 @@ import * as detectIndent from 'detect-indent';
 
 const pkgDir = require('pkg-dir');
 
+const appPath = pkgDir.sync(process.cwd());
+
 export function getDojoRcConfigOption(): string {
 	const defaultDojoRc = '.dojorc';
 	const configIndex = process.argv.indexOf('--config');
-	if (configIndex !== -1) {
-		return `${process.argv[configIndex + 1]}` || defaultDojoRc;
+	if (configIndex !== -1 && appPath) {
+		const customDojoRc = process.argv[configIndex + 1];
+		if (customDojoRc && existsSync(join(appPath, customDojoRc))) {
+			return customDojoRc;
+		}
+		console.warn(chalk.yellow(`Specified dojorc file ${customDojoRc} does not exists, using '.dojorc'`));
 	}
 	return defaultDojoRc;
 }
-
-const appPath = pkgDir.sync(process.cwd());
 let dojoRcPath: string;
 let packageJsonPath: string;
 if (appPath) {
