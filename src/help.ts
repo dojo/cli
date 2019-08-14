@@ -130,41 +130,41 @@ function formatCommandOptions(commandWrapper: CommandWrapper, isDefaultCommand =
 		return `${commandOptionHelp}\n  To install this command run ${chalk.green(`${commandWrapper.path}`)}`;
 	}
 
-	register(
-		(key, options) => {
-			let optionKeys = `${addOptionPrefix(chalk.greenBright(key))}`;
-			if (options.alias) {
-				const aliases = Array.isArray(options.alias) ? options.alias : [options.alias];
-				optionKeys = aliases.reduce((result, alias) => {
-					if (alias.length === 1) {
-						return `${addOptionPrefix(chalk.greenBright(alias))}, ${result}`;
-					}
-					return `${result}, ${addOptionPrefix(chalk.greenBright(alias))}`;
-				}, optionKeys);
-			}
-			commandOptionHelp = `${commandOptionHelp}\n  ${optionKeys}`;
-			commandOptionHelp = `${commandOptionHelp} ${createPadding(optionKeys, 20)}`;
-			const description = getOptionDescription(options);
-			if (description) {
-				commandOptionHelp = `${commandOptionHelp}${capitalize(description)}`;
-			}
-			if (options.choices) {
-				commandOptionHelp = `${commandOptionHelp} [choices: "${options.choices
-					.map((choice: any) => chalk.yellow(choice))
-					.join('", "')}"]`;
-			}
-			if (options.default) {
-				commandOptionHelp = `${commandOptionHelp} [default: "${chalk.yellow(options.default)}"]`;
-			}
-			if (options.type) {
-				commandOptionHelp = `${commandOptionHelp} [type: "${chalk.yellow(options.type)}"]`;
-			}
-			if (isRequiredOption(options)) {
-				commandOptionHelp = `${commandOptionHelp} [${chalk.yellow('required')}]`;
-			}
-		},
-		null as any
-	);
+	function formatOption(key: string, options: Options) {
+		let optionKeys = `${addOptionPrefix(chalk.greenBright(key))}`;
+		if (options.alias) {
+			const aliases = Array.isArray(options.alias) ? options.alias : [options.alias];
+			optionKeys = aliases.reduce((result, alias) => {
+				if (alias.length === 1) {
+					return `${addOptionPrefix(chalk.greenBright(alias))}, ${result}`;
+				}
+				return `${result}, ${addOptionPrefix(chalk.greenBright(alias))}`;
+			}, optionKeys);
+		}
+		commandOptionHelp = `${commandOptionHelp}\n  ${optionKeys}`;
+		commandOptionHelp = `${commandOptionHelp} ${createPadding(optionKeys, 20)}`;
+		const description = getOptionDescription(options);
+		if (description) {
+			commandOptionHelp = `${commandOptionHelp}${capitalize(description)}`;
+		}
+		if (options.choices) {
+			commandOptionHelp = `${commandOptionHelp} [choices: "${options.choices
+				.map((choice: any) => chalk.yellow(choice))
+				.join('", "')}"]`;
+		}
+		if (options.default) {
+			commandOptionHelp = `${commandOptionHelp} [default: "${chalk.yellow(options.default)}"]`;
+		}
+		if (options.type) {
+			commandOptionHelp = `${commandOptionHelp} [type: "${chalk.yellow(options.type)}"]`;
+		}
+		if (isRequiredOption(options)) {
+			commandOptionHelp = `${commandOptionHelp} [${chalk.yellow('required')}]`;
+		}
+	}
+
+	register(formatOption, null as any);
+	formatOption('config', { default: '.dojorc', type: 'string', description: 'The dojorc config file' });
 	return commandOptionHelp;
 }
 

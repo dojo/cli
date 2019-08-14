@@ -14,7 +14,7 @@ const noPackageWarning =
 	) +
 	chalk.whiteBright.bold('npm init');
 
-async function run(helper: Helper, args: {}) {
+async function run(helper: Helper, args: { config?: string } = {}) {
 	const cwd = process.cwd();
 	let rootDir = pkgDir.sync(cwd);
 	if (!rootDir) {
@@ -22,7 +22,7 @@ async function run(helper: Helper, args: {}) {
 		rootDir = cwd;
 	}
 
-	const dojoRcPath = join(rootDir, '.dojorc');
+	const dojoRcPath = join(rootDir, args.config || '.dojorc');
 	const file = existsSync(dojoRcPath) && readFileSync(dojoRcPath, 'utf8');
 	let json: { [name: string]: {} } = {};
 	let indent = '\t';
@@ -46,7 +46,7 @@ async function run(helper: Helper, args: {}) {
 	}
 
 	writeFileSync(dojoRcPath, JSON.stringify(json, null, indent));
-	console.log(chalk.white(`Successfully wrote .dojorc to ${dojoRcPath}`));
+	console.log(chalk.white(`Successfully wrote ${args.config} to ${dojoRcPath}`));
 }
 
 export default {

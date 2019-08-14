@@ -8,6 +8,19 @@ import * as detectIndent from 'detect-indent';
 const pkgDir = require('pkg-dir');
 
 const appPath = pkgDir.sync(process.cwd());
+
+export function getDojoRcConfigOption(): string {
+	const defaultDojoRc = '.dojorc';
+	const configIndex = process.argv.indexOf('--config');
+	if (configIndex !== -1 && appPath) {
+		const customDojoRc = process.argv[configIndex + 1];
+		if (customDojoRc && existsSync(join(appPath, customDojoRc))) {
+			return customDojoRc;
+		}
+		console.warn(chalk.yellow(`Specified dojorc file '${customDojoRc}' does not exist, using '.dojorc'`));
+	}
+	return defaultDojoRc;
+}
 let dojoRcPath: string;
 let packageJsonPath: string;
 if (appPath) {
@@ -89,7 +102,8 @@ export function checkForMultiConfig() {
 	const { dojoRcConfig, packageJsonConfig } = parseConfigs();
 	const hasPackageConfig = typeof packageJsonConfig === 'object';
 	const hasDojoRcConfig = typeof dojoRcConfig === 'object';
-	if (hasPackageConfig && hasDojoRcConfig) {
+	const usingDefaultojoRcConfig = getDojoRcConfigOption() === '.dojorc';
+	if (hasPackageConfig && hasDojoRcConfig && usingDefaultojoRcConfig) {
 		warnAboutMultiConfig();
 	}
 }
@@ -164,7 +178,15 @@ class SingleCommandConfigurationHelper implements ConfigurationHelper {
 }
 
 export class ConfigurationHelperFactory {
+	private _dojoRcName: string | undefined;
+
 	sandbox(groupName: string, commandName?: string): ConfigurationHelper {
+		if (!this._dojoRcName) {
+			this._dojoRcName = getDojoRcConfigOption();
+			if (appPath) {
+				dojoRcPath = join(appPath, this._dojoRcName);
+			}
+		}
 		return new SingleCommandConfigurationHelper(groupName, commandName);
 	}
 }

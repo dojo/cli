@@ -128,6 +128,7 @@ function registerGroups(yargs: Argv, helper: HelperFactory, groupName: string, c
 				.option('h', {
 					alias: 'help'
 				})
+				.option('config', { default: '.dojorc', type: 'string', description: 'The dojorc config file' })
 				.showHelpOnFail(false, formatHelp({ _: [groupName] }, groupMap))
 				.strict();
 		},
@@ -166,7 +167,10 @@ function registerCommands(yargs: Argv, helper: HelperFactory, groupName: string,
 					optionsYargs.option(key, { ...options, ...requireOptions });
 				}, helper.sandbox(groupName, name));
 
-				return optionsYargs.showHelpOnFail(false, formatHelp({ _: [groupName, name] }, groupMap)).strict();
+				return optionsYargs
+					.option('config', { default: '.dojorc', type: 'string', description: 'The dojorc config file' })
+					.showHelpOnFail(false, formatHelp({ _: [groupName, name] }, groupMap))
+					.strict();
 			},
 			async (argv: any) => {
 				if (argv.h || argv.help) {
