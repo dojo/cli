@@ -18,7 +18,7 @@ export async function enumerateInstalledCommands(config: CliConfig): Promise<str
 	const [, , group] = process.argv;
 	const { searchPrefixes } = config;
 	const globPaths = searchPrefixes.reduce((globPaths: string[], key) => {
-		key = group ? `${key}-${group}` : key;
+		key = group && group !== 'version' ? `${key}-${group}` : key;
 		return globPaths.concat(config.searchPaths.map((depPath) => pathResolve(depPath, `${key}-*`)));
 	}, []);
 	return globby(globPaths, { ignore: '**/*.{map,d.ts}' });
