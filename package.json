@@ -1,6 +1,6 @@
 {
   "name": "@dojo/cli",
-  "version": "6.0.0-alpha.3",
+  "version": "6.0.0-pre",
   "description": "Dojo CLI utility",
   "homepage": "https://dojo.io",
   "bugs": {
