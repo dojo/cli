@@ -17,10 +17,14 @@ export function isEjected(groupName: string, command: string): boolean {
 export async function enumerateInstalledCommands(config: CliConfig): Promise<string[]> {
 	const [, , group] = process.argv;
 	const { searchPrefixes } = config;
+	const builtins = ['version', 'init', 'eject', 'validate'];
+
 	const globPaths = searchPrefixes.reduce((globPaths: string[], key) => {
-		key = group && group !== 'version' ? `${key}-${group}` : key;
+		const isBuiltin = builtins.some((c) => key !== c);
+		key = group && !isBuiltin ? `${key}-${group}` : key;
 		return globPaths.concat(config.searchPaths.map((depPath) => pathResolve(depPath, `${key}-*`)));
 	}, []);
+
 	return globby(globPaths, { ignore: '**/*.{map,d.ts}' });
 }
 
