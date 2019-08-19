@@ -20,7 +20,7 @@ export async function enumerateInstalledCommands(config: CliConfig): Promise<str
 	const builtins = ['version', 'init', 'eject', 'validate'];
 
 	const globPaths = searchPrefixes.reduce((globPaths: string[], key) => {
-		const isBuiltin = builtins.some((c) => key !== c);
+		const isBuiltin = builtins.some((c) => group === c);
 		key = group && !isBuiltin ? `${key}-${group}` : key;
 		return globPaths.concat(config.searchPaths.map((depPath) => pathResolve(depPath, `${key}-*`)));
 	}, []);
