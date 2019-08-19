@@ -181,6 +181,34 @@ registerSuite('loadCommands', {
 					assert.isTrue(installedPaths.length === 2);
 				}
 			}
+		},
+		'builtin commands': {
+			afterEach() {
+				mockModule.destroy();
+				testSandbox.restore();
+			},
+			tests: {
+				async 'should load commands when passed group is init builtin command'() {
+					process.argv = ['node', 'dojo.js', 'init'];
+					const installedPaths = await enumInstalledCommands(goodConfig);
+					assert.equal(installedPaths.length, 2);
+				},
+				async 'should load commands when passed group is version builtin command'() {
+					process.argv = ['node', 'dojo.js', 'version'];
+					const installedPaths = await enumInstalledCommands(goodConfig);
+					assert.equal(installedPaths.length, 2);
+				},
+				async 'should load commands when passed group is eject builtin command'() {
+					process.argv = ['node', 'dojo.js', 'eject'];
+					const installedPaths = await enumInstalledCommands(goodConfig);
+					assert.equal(installedPaths.length, 2);
+				},
+				async 'should load commands when passed group is validate builtin command'() {
+					process.argv = ['node', 'dojo.js', 'validate'];
+					const installedPaths = await enumInstalledCommands(goodConfig);
+					assert.equal(installedPaths.length, 2);
+				}
+			}
 		}
 	}
 });
