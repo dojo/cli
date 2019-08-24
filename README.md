@@ -98,7 +98,7 @@ Some additional commands are available but must be installed manually via npm.
 
 ## dojorc
 
-Dojo CLI commands support a JSON configuration file at the root of the project called `.dojorc` . Each command has a dedicated section in the `.dojorc` keyed by the command name minus the `cli-` prefix. For example the command `@dojo/cli-build-app` has the following section in the `.dojorc`:
+Dojo CLI commands support a JSON configuration file supplied with the `--dojorc` option; by default, Dojo CLI will look for a file at the root of the project called `.dojorc`. Each command has a dedicated section in the `.dojorc` keyed by the command name minus the `cli-` prefix. For example the command `@dojo/cli-build-app` has the following section in the `.dojorc`:
 
 ```json
 {

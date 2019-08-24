@@ -164,7 +164,7 @@ function formatCommandOptions(commandWrapper: CommandWrapper, isDefaultCommand =
 	}
 
 	register(formatOption, null as any);
-	formatOption('config', { default: '.dojorc', type: 'string', description: 'The dojorc config file' });
+	formatOption('dojorc', { default: '.dojorc', type: 'string', description: 'The dojorc config file' });
 	return commandOptionHelp;
 }
 

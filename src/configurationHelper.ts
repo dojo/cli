@@ -11,7 +11,7 @@ const appPath = pkgDir.sync(process.cwd());
 
 export function getDojoRcConfigOption(): string {
 	const defaultDojoRc = '.dojorc';
-	const configIndex = process.argv.indexOf('--config');
+	const configIndex = process.argv.indexOf('--dojorc');
 	if (configIndex !== -1 && appPath) {
 		const customDojoRc = process.argv[configIndex + 1];
 		if (customDojoRc && existsSync(join(appPath, customDojoRc))) {
