@@ -185,6 +185,88 @@ registerSuite('Configuration Helper', {
 				assert.equal(mockFs.readFileSync.firstCall.args[0], dojoRcPath);
 				assert.deepEqual(config, existingConfig);
 			},
+			'Should shallow extend configs correctly'() {
+				mockFs.existsSync.onCall(0).returns(true);
+				mockFs.existsSync.onCall(1).returns(false);
+				mockFs.readFileSync.onCall(0).returns(
+					JSON.stringify({
+						extends: './path/to/dojorc/to/.extend',
+						'testGroupName-testCommandName': {
+							prop: 'config'
+						}
+					})
+				);
+				mockFs.readFileSync.onCall(1).returns(
+					JSON.stringify({
+						'testGroupName-testCommandName': {
+							prop: 'config-extended'
+						}
+					})
+				);
+				const config = configurationHelper.sandbox('testGroupName', 'testCommandName').get();
+				assert.isTrue(mockFs.readFileSync.calledTwice);
+				assert.equal(mockFs.readFileSync.firstCall.args[0], dojoRcPath);
+				assert.deepEqual(config, {
+					prop: 'config'
+				});
+			},
+			'Supports deep extension of configs correctly'() {
+				mockFs.existsSync.onCall(0).returns(true);
+				mockFs.existsSync.onCall(1).returns(false);
+				mockFs.readFileSync.onCall(0).returns(
+					JSON.stringify({
+						extends: './path/to/dojorc/to/.extend',
+						'testGroupName-testCommandName': {
+							prop: 'config'
+						}
+					})
+				);
+				mockFs.readFileSync.onCall(1).returns(
+					JSON.stringify({
+						extends: './path/to/dojorc/to/.extend1',
+						'testGroupName-testCommandName': {
+							prop: 'config-extended-1',
+							prop1: 'config-extended-1',
+							prop3: {
+								innerProp: 'config-inner-prop',
+								innerProp1: {
+									deepProp: 'config-deep-prop',
+									deepProp1: 'config-deep-prop'
+								}
+							}
+						}
+					})
+				);
+				mockFs.readFileSync.onCall(2).returns(
+					JSON.stringify({
+						'testGroupName-testCommandName': {
+							prop: 'config-extended-2',
+							prop2: 'config-extended-2',
+							prop3: {
+								innerProp: 'config-inner-prop-1',
+								innerProp1: {
+									deepProp: 'config-deep-prop'
+								}
+							}
+						}
+					})
+				);
+				const config = configurationHelper.sandbox('testGroupName', 'testCommandName').get();
+				assert.equal(mockFs.readFileSync.callCount, 3);
+				assert.equal(mockFs.readFileSync.firstCall.args[0], dojoRcPath);
+				assert.deepEqual(config, {
+					prop: 'config',
+					prop1: 'config-extended-1',
+					prop2: 'config-extended-2',
+					prop3: {
+						innerProp: 'config-inner-prop',
+						innerProp1: {
+							deepProp: 'config-deep-prop',
+							deepProp1: 'config-deep-prop'
+						}
+					}
+				});
+			},
 			'Should accept and ignore commandName parameter'() {
 				const newConfig = { foo: 'bar' };
 				mockFs.readFileSync = sinon.stub().returns(JSON.stringify({ 'testGroupName-testCommandName': {} }));

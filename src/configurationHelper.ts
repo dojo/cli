@@ -81,15 +81,60 @@ function writeDojoRcConfig(config: Config, indent: string | number) {
 	writeFileSync(dojoRcPath, json);
 }
 
+function mergeConfigs(config: Config) {
+	const configs = getExtendingConfigs(config);
+	let mergedConfig: Config = config;
+	if (configs.length) {
+		let baseConfig: Config;
+		while ((baseConfig = configs.shift())) {
+			mergedConfig = merge(mergedConfig, baseConfig);
+		}
+	}
+	return mergedConfig;
+}
+
+function getExtendingConfigs(config: Config) {
+	const configs = [];
+	let extendingConfig = config;
+	while (typeof extendingConfig.extends === 'string') {
+		const extendedConfig = JSON.parse(readFileSync(extendingConfig.extends, 'utf8'));
+		configs.push(extendedConfig);
+		extendingConfig = extendedConfig;
+	}
+	return configs;
+}
+
+function merge(extendingObj: { [key: string]: any }, baseObj: { [key: string]: any }) {
+	Object.keys(baseObj).forEach((prop) => {
+		if (extendingObj[prop] === undefined) {
+			extendingObj[prop] = baseObj[prop];
+		} else if (isObject(baseObj[prop])) {
+			extendingObj[prop] = merge(extendingObj[prop], baseObj[prop]);
+		}
+	});
+	return extendingObj;
+}
+
+function isObject(item: any) {
+	return item && typeof item === 'object' && !Array.isArray(item);
+}
+
+function checkIfConfigExtends(config?: Config) {
+	if (config && config.extends) {
+		config = mergeConfigs(config);
+	}
+	return config;
+}
+
 export function getConfig(): Config | undefined {
 	const { packageJsonConfig, dojoRcConfig } = parseConfigs();
 	const hasPackageConfig = typeof packageJsonConfig === 'object';
 	const hasDojoRcConfig = typeof dojoRcConfig === 'object';
 
 	if (!hasDojoRcConfig && hasPackageConfig) {
-		return packageJsonConfig;
+		return checkIfConfigExtends(packageJsonConfig);
 	} else {
-		return dojoRcConfig;
+		return checkIfConfigExtends(dojoRcConfig);
 	}
 }
 
