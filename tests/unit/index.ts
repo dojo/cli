@@ -104,7 +104,7 @@ describe('cli main module', () => {
 				assert.throw(mockUpdate.default, Error, errMessage);
 				assert.equal(
 					(console.log as sinon.SinonStub).args[0][0],
-					`Commands are not available: Error: ${errMessage}`
+					`Commands are not available:\n ${errMessage}`
 				);
 			});
 		});
