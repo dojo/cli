@@ -163,8 +163,6 @@ function formatCommandOptions(commandWrapper: CommandWrapper, isDefaultCommand =
 		}
 	}
 
-
-
 	register(formatOption, null as any);
 	formatOption('dojorc', { default: '.dojorc', type: 'string', description: 'The dojorc config file' });
 
