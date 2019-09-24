@@ -21,7 +21,7 @@ export async function init() {
 
 		registerCommands(yargs, mergedCommands);
 	} catch (err) {
-		console.log(`Commands are not available: ${err}`);
+		console.log(`Commands are not available:\n ${err.message}`);
 	}
 
 	try {

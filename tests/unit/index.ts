@@ -77,7 +77,7 @@ describe('cli main module', () => {
 
 	it('should catch runtime errors', () => {
 		describe('runtime error inner', () => {
-			const errMessage = 'ugh - oh noes';
+			const errMessage = '\n ugh - oh noes';
 			const expectedError = new Error(errMessage);
 
 			beforeEach(() => {

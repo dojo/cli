@@ -2,6 +2,7 @@ import * as globby from 'globby';
 import { resolve as pathResolve, join } from 'path';
 import { CliConfig, CommandWrapper, GroupMap } from './interfaces';
 import configurationHelper from './configurationHelper';
+import chalk from 'chalk';
 
 export function isEjected(groupName: string, command: string): boolean {
 	const config: any = configurationHelper.sandbox(groupName, command).get();
@@ -72,7 +73,7 @@ export async function loadCommands(paths: string[], load: (path: string) => Comm
 					}
 				}
 			} catch (error) {
-				error.message = `Failed to load module ${path}\nNested error: ${error.message}`;
+				error.message = `${chalk.red(`Failed to load module ${path}`)}\n\nNested error:\n ${error.message}`;
 				reject(error);
 			}
 		});

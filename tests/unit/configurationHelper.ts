@@ -52,7 +52,8 @@ registerSuite('Configuration Helper', {
 		tests: {
 			'Should write new config to file when save called'() {
 				const newConfig = { foo: 'bar' };
-				mockFs.readFileSync = sinon.stub().returns(JSON.stringify({ 'testGroupName-testCommandName': {} }));
+				const config = { 'testGroupName-testCommandName': {} };
+				mockFs.readFileSync = sinon.stub().returns(JSON.stringify(config));
 				configurationHelper.sandbox('testGroupName', 'testCommandName').set(newConfig);
 				assert.isTrue(consoleWarnStub.notCalled);
 				assert.isTrue(mockFs.writeFileSync.calledOnce);
@@ -64,7 +65,8 @@ registerSuite('Configuration Helper', {
 			},
 			'Should write new config to file when save called without commandName'() {
 				const newConfig = { foo: 'bar' };
-				mockFs.readFileSync = sinon.stub().returns(JSON.stringify({ testGroupName: {} }));
+				const config = { testGroupName: {} };
+				mockFs.readFileSync = sinon.stub().returns(JSON.stringify(config));
 				configurationHelper.sandbox('testGroupName').set(newConfig);
 				assert.isTrue(consoleWarnStub.notCalled);
 				assert.isTrue(mockFs.writeFileSync.calledOnce);
@@ -78,8 +80,8 @@ registerSuite('Configuration Helper', {
 				const newConfig = { foo: 'bar' };
 				const existingConfig = { existing: 'config' };
 				const mergedConfigs = Object.assign(existingConfig, newConfig);
-
-				mockFs.readFileSync.returns(JSON.stringify({ 'testGroupName-testCommandName': existingConfig }));
+				const config = { 'testGroupName-testCommandName': existingConfig };
+				mockFs.readFileSync.returns(JSON.stringify(config));
 				configurationHelper.sandbox('testGroupName', 'testCommandName').set(newConfig);
 				assert.isTrue(consoleErrorStub.notCalled);
 				assert.isTrue(consoleWarnStub.notCalled);
@@ -107,7 +109,8 @@ registerSuite('Configuration Helper', {
 			'Should merge new commandNames with existing command config to .dojorc when set called'() {
 				const newConfig = { foo: 'bar' };
 				const existingConfig = { existing: 'config' };
-				mockFs.readFileSync.returns(JSON.stringify({ existingCommandName: existingConfig }));
+				const config = { existingCommandName: existingConfig };
+				mockFs.readFileSync.returns(JSON.stringify(config));
 				configurationHelper.sandbox('testGroupName', 'testCommandName').set(newConfig);
 				assert.isTrue(consoleErrorStub.notCalled);
 				assert.isTrue(consoleWarnStub.notCalled);
@@ -128,10 +131,10 @@ registerSuite('Configuration Helper', {
 			'Should write .dojorc with current .dojorc identation of 4 spaces'() {
 				const newConfig = { foo: 'bar' };
 				const existingConfig = { existing: 'config' };
-				mockFs.readFileSync
-					.onCall(0)
-					.returns(JSON.stringify({ existingCommandName: existingConfig }, null, '    '));
-				mockFs.readFileSync.onCall(1).returns('{}');
+				const config = { existingCommandName: existingConfig };
+				mockFs.readFileSync.onCall(0).returns(JSON.stringify(config, null, '    '));
+				mockFs.readFileSync.onCall(1).returns(JSON.stringify(config, null, '    '));
+				mockFs.readFileSync.onCall(2).returns('{}');
 				configurationHelper.sandbox('testGroupName', 'testCommandName').set(newConfig);
 				assert.isTrue(consoleWarnStub.notCalled);
 				assert.isTrue(consoleErrorStub.notCalled);
@@ -150,10 +153,11 @@ registerSuite('Configuration Helper', {
 			'Should write .dojorc with current .dojorc identation of 2 spaces'() {
 				const newConfig = { foo: 'bar' };
 				const existingConfig = { existing: 'config' };
-				mockFs.readFileSync
-					.onCall(0)
-					.returns(JSON.stringify({ existingCommandName: existingConfig }, null, '  '));
-				mockFs.readFileSync.onCall(1).returns('{}');
+				const config = { existingCommandName: existingConfig };
+
+				mockFs.readFileSync.onCall(0).returns(JSON.stringify(config, null, '  '));
+				mockFs.readFileSync.onCall(1).returns(JSON.stringify(config, null, '  '));
+				mockFs.readFileSync.onCall(2).returns('{}');
 				configurationHelper.sandbox('testGroupName', 'testCommandName').set(newConfig);
 				assert.isTrue(consoleWarnStub.notCalled);
 				assert.isTrue(consoleErrorStub.notCalled);
@@ -179,9 +183,11 @@ registerSuite('Configuration Helper', {
 				const existingConfig = { existing: 'config' };
 				mockFs.existsSync.onCall(0).returns(true);
 				mockFs.existsSync.onCall(1).returns(false);
-				mockFs.readFileSync.returns(JSON.stringify({ 'testGroupName-testCommandName': existingConfig }));
+				const readConfig = { 'testGroupName-testCommandName': existingConfig };
+				mockFs.readFileSync.onCall(0).returns(JSON.stringify(readConfig));
+				mockFs.readFileSync.onCall(1).returns(JSON.stringify(readConfig));
 				const config = configurationHelper.sandbox('testGroupName', 'testCommandName').get();
-				assert.isTrue(mockFs.readFileSync.calledOnce);
+				assert.isTrue(mockFs.readFileSync.calledTwice);
 				assert.equal(mockFs.readFileSync.firstCall.args[0], dojoRcPath);
 				assert.deepEqual(config, existingConfig);
 			},
@@ -198,13 +204,21 @@ registerSuite('Configuration Helper', {
 				);
 				mockFs.readFileSync.onCall(1).returns(
 					JSON.stringify({
+						extends: './path/to/dojorc/to/.extend',
+						'testGroupName-testCommandName': {
+							prop: 'config'
+						}
+					})
+				);
+				mockFs.readFileSync.onCall(2).returns(
+					JSON.stringify({
 						'testGroupName-testCommandName': {
 							prop: 'config-extended'
 						}
 					})
 				);
 				const config = configurationHelper.sandbox('testGroupName', 'testCommandName').get();
-				assert.isTrue(mockFs.readFileSync.calledTwice);
+				assert.equal(mockFs.readFileSync.callCount, 3);
 				assert.equal(mockFs.readFileSync.firstCall.args[0], dojoRcPath);
 				assert.deepEqual(config, {
 					prop: 'config'
@@ -223,6 +237,14 @@ registerSuite('Configuration Helper', {
 				);
 				mockFs.readFileSync.onCall(1).returns(
 					JSON.stringify({
+						extends: './path/to/dojorc/to/.extend',
+						'testGroupName-testCommandName': {
+							prop: 'config'
+						}
+					})
+				);
+				mockFs.readFileSync.onCall(2).returns(
+					JSON.stringify({
 						extends: './path/to/dojorc/to/.extend1',
 						'testGroupName-testCommandName': {
 							prop: 'config-extended-1',
@@ -237,7 +259,7 @@ registerSuite('Configuration Helper', {
 						}
 					})
 				);
-				mockFs.readFileSync.onCall(2).returns(
+				mockFs.readFileSync.onCall(3).returns(
 					JSON.stringify({
 						'testGroupName-testCommandName': {
 							prop: 'config-extended-2',
@@ -252,7 +274,7 @@ registerSuite('Configuration Helper', {
 					})
 				);
 				const config = configurationHelper.sandbox('testGroupName', 'testCommandName').get();
-				assert.equal(mockFs.readFileSync.callCount, 3);
+				assert.equal(mockFs.readFileSync.callCount, 4);
 				assert.equal(mockFs.readFileSync.firstCall.args[0], dojoRcPath);
 				assert.deepEqual(config, {
 					prop: 'config',
@@ -283,7 +305,9 @@ registerSuite('Configuration Helper', {
 				mockFs.existsSync.returns(true);
 				mockFs.readFileSync = sinon.stub();
 				mockFs.readFileSync.onCall(0).returns('{}');
-				mockFs.readFileSync.onCall(1).returns('{]');
+				mockFs.readFileSync.onCall(1).returns('{}');
+				mockFs.readFileSync.onCall(2).returns('{]');
+				mockFs.readFileSync.onCall(3).returns('{]');
 				const test = () => configurationHelper.sandbox('testGroupName', 'testCommandName').get();
 
 				assert.throws(
@@ -293,7 +317,7 @@ registerSuite('Configuration Helper', {
 						`Could not parse the package.json file to get config: SyntaxError: Unexpected token ] in JSON at position 1`
 					)
 				);
-				assert.equal(mockFs.readFileSync.callCount, 2, 'both package.json and .dojorc should be read');
+				assert.equal(mockFs.readFileSync.callCount, 4, 'both package.json and .dojorc should be read');
 			}
 		}
 	},
@@ -453,10 +477,13 @@ registerSuite('Configuration Helper', {
 			mockPkgDir = mockModule.getMock('pkg-dir');
 			mockPkgDir.ctor.sync = sandbox.stub().returns(null);
 			mockFs = mockModule.getMock('fs');
+
 			mockFs.existsSync = sandbox.stub().returns(true);
 			mockFs.readFileSync = sandbox.stub();
-			mockFs.readFileSync.onFirstCall().returns('{}');
-			mockFs.readFileSync.onSecondCall(1).returns('{ "dojo": {} }');
+			mockFs.readFileSync.onCall(0).returns('{}');
+			mockFs.readFileSync.onCall(1).returns('{}');
+			mockFs.readFileSync.onCall(2).returns('{ "dojo": {} }');
+			mockFs.readFileSync.onCall(3).returns('{ "dojo": {} }');
 			mockPath = mockModule.getMock('path');
 			mockPath.join = sandbox.stub();
 			consoleWarnStub = sandbox.stub(console, 'warn');
@@ -471,8 +498,8 @@ registerSuite('Configuration Helper', {
 		tests: {
 			'should warn about having multi configs'() {
 				mockcheckForMultiConfig();
-				assert.isTrue(mockFs.existsSync.calledTwice);
-				assert.isTrue(mockFs.readFileSync.calledTwice);
+				assert.equal(mockFs.existsSync.callCount, 2);
+				assert.equal(mockFs.readFileSync.callCount, 4);
 				assert.equal(consoleWarnStub.callCount, 1);
 				assert.equal(
 					consoleWarnStub.firstCall.args[0],
