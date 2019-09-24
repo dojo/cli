@@ -4,9 +4,9 @@ import { join } from 'path';
 import { Config, ConfigurationHelper, ConfigWrapper } from './interfaces';
 import * as readlineSync from 'readline-sync';
 import * as detectIndent from 'detect-indent';
+import { json } from '@speedy/json-extends';
 
 const pkgDir = require('pkg-dir');
-
 const appPath = pkgDir.sync(process.cwd());
 
 export function getDojoRcConfigOption(): string {
@@ -37,18 +37,20 @@ function parseConfigs(): ConfigWrapper {
 	if (existsSync(dojoRcPath)) {
 		try {
 			const dojoRcFile = readFileSync(dojoRcPath, 'utf8');
+			const extendedConfig = json.readSync(dojoRcPath);
 			configWrapper.dojoRcIndent = detectIndent(dojoRcFile).indent;
-			configWrapper.dojoRcConfig = JSON.parse(dojoRcFile);
+			configWrapper.dojoRcConfig = extendedConfig;
 		} catch (error) {
-			throw Error(chalk.red(`Could not parse the .dojorc  file to get config : ${error}`));
+			throw Error(chalk.red(`Could not parse the .dojorc file to get config: ${error}`));
 		}
 	}
 
 	if (existsSync(packageJsonPath)) {
 		try {
 			const packageJsonFile = readFileSync(packageJsonPath, 'utf8');
-			const packageJson = JSON.parse(packageJsonFile);
+			const packageJson: any = json.readSync(packageJsonPath);
 			configWrapper.packageJsonIndent = detectIndent(packageJsonFile).indent;
+
 			configWrapper.packageJsonConfig = packageJson.dojo;
 		} catch (error) {
 			throw Error(chalk.red(`Could not parse the package.json file to get config: ${error}`));
