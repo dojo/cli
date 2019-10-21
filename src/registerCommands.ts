@@ -65,14 +65,24 @@ function getRcOption(rcConfig: any, option: string, aliases: Aliases) {
 	return undefined;
 }
 
-function saveCommandLineOptions(configuration: any, args: any) {
+function saveCommandLineOptions(configuration: any, args: any, aliases: any) {
 	const configToSave = Object.keys(args).reduce(
 		(config, key) => {
 			if (searchForOption(key)) {
+				// If it is a shorthand alias
+				// save the full length in the config
+				const keys = aliases[key] ? [key, ...aliases[key]] : [key];
+				const sortedKeys = keys.sort((a, b) => b.length - a.length);
+				const fullKey = sortedKeys.shift();
+
+				sortedKeys.forEach((shortKey) => {
+					config[shortKey] = undefined; // Delete shorthand alias
+				});
+
 				try {
-					config[key] = JSON.parse(args[key]);
+					config[fullKey] = JSON.parse(args[key]);
 				} catch {
-					config[key] = args[key];
+					config[fullKey] = args[key];
 				}
 			}
 			return config;
@@ -160,7 +170,7 @@ function registerGroups(yargs: Argv, helper: HelperFactory, groupName: string, c
 				const combinedArgs = getOptions(aliases, config, args);
 
 				if (save) {
-					saveCommandLineOptions(configurationHelper, combinedArgs);
+					saveCommandLineOptions(configurationHelper, combinedArgs, aliases);
 				}
 
 				if (typeof defaultCommand.validate === 'function') {
@@ -209,7 +219,7 @@ function registerCommands(yargs: Argv, helper: HelperFactory, groupName: string,
 				const combinedArgs = getOptions(aliases, config, args);
 
 				if (save) {
-					saveCommandLineOptions(configurationHelper, combinedArgs);
+					saveCommandLineOptions(configurationHelper, combinedArgs, aliases);
 				}
 
 				if (typeof command.validate === 'function') {

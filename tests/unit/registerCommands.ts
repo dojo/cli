@@ -285,6 +285,22 @@ registerSuite('registerCommands', {
 					assert.deepEqual(run.firstCall.args[1], { f: { feature1: 'foo', feature2: 'bar' } });
 					assert.isTrue(setStub.calledOnce);
 					assert.deepEqual(setStub.firstCall.args[0], { f: { feature1: 'foo', feature2: 'bar' } });
+				},
+				'should write full option name out to dojorc and unset aliases'() {
+					process.argv = ['-f'];
+					groupMap = getGroupMap(groupDef, (compositeKey: string) => {
+						return (func: Function) => {
+							func('foo', { alias: ['f', 'fo'] });
+							return compositeKey;
+						};
+					});
+					const { run } = groupMap.get('group1').get('command1');
+					const registerCommands = mockModule.getModuleUnderTest().default;
+					registerCommands(yargsStub, groupMap);
+					yargsStub.command.secondCall.args[3]({ f: 'bar', save: true });
+					assert.equal(run.callCount, 1);
+					assert.deepEqual(run.firstCall.args[1], { f: 'bar' });
+					assert.deepEqual(setStub.firstCall.args[0], { foo: 'bar', f: undefined, fo: undefined });
 				}
 			}
 		},
