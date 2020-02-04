@@ -1,6 +1,6 @@
 # Dojo CLI Architecture
 
-![Dojo architecture diagram](./dojo-cli-architecture.svg)
+![Dojo lifecycle diagram](./dojo-cli-lifecycle.svg)
 
 ## CLI Lifecycle
 
@@ -32,4 +32,4 @@ This phase calls validate() on the command. This is where schema validation occu
 
 Runs the command.
 
-This phase calls rn() on the command.
+This phase calls run() on the command.
