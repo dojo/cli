@@ -286,6 +286,13 @@ registerSuite('registerCommands', {
 					await yargsStub.command.firstCall.args[3]({ _: ['group'] });
 					assert.isTrue(command.validate.calledOnce);
 					assert.isFalse(command.run.called);
+				},
+				async 'Should run a command that failed to validate when using --force'() {
+					const command = groupMap.get('group1').get('command1');
+					command.validate = sinon.stub().resolves(false);
+					await yargsStub.command.firstCall.args[3]({ _: ['group'], force: true });
+					assert.isTrue(command.validate.calledOnce);
+					assert.isTrue(command.run.called);
 				}
 			}
 		},
@@ -319,6 +326,16 @@ registerSuite('registerCommands', {
 					await yargsStub.command.secondCall.args[3]({});
 					assert.isTrue(command.validate.called, 'validate was not called');
 					assert.isFalse(command.run.calledOnce, 'run was called when it shouldnt have been');
+				},
+				async 'Should run validateCommand and continue even if invalid when using --force'() {
+					groupMap = getGroupMap(groupDef, () => () => {}, true);
+					const command = groupMap.get('group1').get('command1');
+					command.validate = sinon.stub().resolves(false);
+					const registerCommands = mockModule.getModuleUnderTest().default;
+					registerCommands(yargsStub, groupMap);
+					await yargsStub.command.secondCall.args[3]({ force: true });
+					assert.isTrue(command.validate.called, 'validate was not called');
+					assert.isTrue(command.run.calledOnce, 'run wasnt called');
 				}
 			}
 		},

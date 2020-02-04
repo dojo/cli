@@ -128,6 +128,7 @@ function registerGroups(yargs: Argv, helper: HelperFactory, groupName: string, c
 				.option('h', {
 					alias: 'help'
 				})
+				.option('force', { type: 'boolean', description: 'continue running commands even if validation fails'})
 				.option('dojorc', { default: '.dojorc', type: 'string', description: 'The dojorc config file' })
 				.showHelpOnFail(false, formatHelp({ _: [groupName] }, groupMap))
 				.strict();
@@ -143,7 +144,7 @@ function registerGroups(yargs: Argv, helper: HelperFactory, groupName: string, c
 
 				if (typeof defaultCommand.validate === 'function') {
 					const valid = await defaultCommand.validate(helper.sandbox(groupName, defaultCommand.name));
-					if (!valid) {
+					if (!valid && !args.force) {
 						return;
 					}
 				}
@@ -168,6 +169,7 @@ function registerCommands(yargs: Argv, helper: HelperFactory, groupName: string,
 				}, helper.sandbox(groupName, name));
 
 				return optionsYargs
+					.option('force', { type: 'boolean', description: 'continue running commands even if validation fails'})
 					.option('dojorc', { default: '.dojorc', type: 'string', description: 'The dojorc config file' })
 					.showHelpOnFail(false, formatHelp({ _: [groupName, name] }, groupMap))
 					.strict();
@@ -183,7 +185,7 @@ function registerCommands(yargs: Argv, helper: HelperFactory, groupName: string,
 
 				if (typeof command.validate === 'function') {
 					const valid = await command.validate(helper.sandbox(groupName, command.name));
-					if (!valid) {
+					if (!valid && !args.force) {
 						return;
 					}
 				}
