@@ -164,7 +164,7 @@ function formatCommandOptions(commandWrapper: CommandWrapper, isDefaultCommand =
 	}
 
 	register(formatOption, null as any);
-	formatOption('force', { type: 'boolean', description: 'continue running commands even if validation fails' });
+	formatOption('force', { type: 'boolean', description: 'Continue running commands even if validation fails' });
 	formatOption('dojorc', { default: '.dojorc', type: 'string', description: 'The dojorc config file' });
 	return commandOptionHelp;
 }

@@ -128,7 +128,7 @@ function registerGroups(yargs: Argv, helper: HelperFactory, groupName: string, c
 				.option('h', {
 					alias: 'help'
 				})
-				.option('force', { type: 'boolean', description: 'continue running commands even if validation fails' })
+				.option('force', { type: 'boolean', description: 'Continue running commands even if validation fails' })
 				.option('dojorc', { default: '.dojorc', type: 'string', description: 'The dojorc config file' })
 				.showHelpOnFail(false, formatHelp({ _: [groupName] }, groupMap))
 				.strict();
@@ -171,7 +171,7 @@ function registerCommands(yargs: Argv, helper: HelperFactory, groupName: string,
 				return optionsYargs
 					.option('force', {
 						type: 'boolean',
-						description: 'continue running commands even if validation fails'
+						description: 'Continue running commands even if validation fails'
 					})
 					.option('dojorc', { default: '.dojorc', type: 'string', description: 'The dojorc config file' })
 					.showHelpOnFail(false, formatHelp({ _: [groupName, name] }, groupMap))
