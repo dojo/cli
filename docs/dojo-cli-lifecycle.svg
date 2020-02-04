@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 1280 800" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+    <g id="Initialization">
+        <g transform="matrix(0.25,0,0,1,0,209)">
+            <rect x="0" y="0" width="1280" height="800" style="fill:rgb(230,226,244);"/>
+        </g>
+        <g transform="matrix(1,0,0,1,50.9864,206)">
+            <text x="9px" y="55px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:55.842px;">initialize</text>
+        </g>
+        <g transform="matrix(1,0,0,1,-4,219)">
+            <text x="15px" y="83.326px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:20px;">Loads commands internally and</text>
+            <text x="15px" y="103.326px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:20px;">from package.json</text>
+            <text x="15px" y="135.326px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:20px;">ﬁle: index.ts</text>
+            <text x="15px" y="167.326px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:20px;">source: init()</text>
+        </g>
+    </g>
+    <g id="register">
+        <g transform="matrix(0.25,0,0,1,320,209)">
+            <rect x="0" y="0" width="1280" height="800" style="fill:rgb(242,228,228);"/>
+        </g>
+        <g transform="matrix(1,0,0,1,364.429,200.819)">
+            <text x="9px" y="55px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:55.842px;">register</text>
+        </g>
+        <g transform="matrix(1,0,0,1,316,219)">
+            <text x="15px" y="83.326px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:20px;">a group&apos;s commands are loaded</text>
+            <text x="15px" y="103.326px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:20px;">in by name and a default</text>
+            <text x="15px" y="123.326px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:20px;">command is registered</text>
+            <text x="15px" y="155.326px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:20px;">ﬁle: registercommands.ts</text>
+            <text x="15px" y="187.326px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:20px;">source: registerCommands()</text>
+            <text x="15px" y="251.326px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:20px;">This phase calls register() on the</text>
+            <text x="15px" y="271.326px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:20px;">command as part of the yargs</text>
+            <text x="15px" y="291.326px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:20px;">builder step.</text>
+            <text x="15px" y="355.326px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:20px;">Note: the default command is</text>
+            <text x="15px" y="375.326px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:20px;">registered separately<tspan x="200.283px 205.84px 210.293px 223.633px " y="375.326px 375.326px 375.326px 375.326px ">. An</tspan>y</text>
+            <text x="15px" y="395.326px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:20px;">change to command registration</text>
+            <text x="15px" y="415.326px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:20px;">needs to happen in two places.</text>
+        </g>
+    </g>
+    <g id="validate">
+        <g transform="matrix(0.25,0,0,1,640,209)">
+            <rect x="0" y="0" width="1280" height="800" style="fill:rgb(248,248,222);"/>
+        </g>
+        <g transform="matrix(1,0,0,1,695.567,206)">
+            <text x="9px" y="55px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:55.842px;">validate</text>
+        </g>
+        <g transform="matrix(1,0,0,1,636,218)">
+            <text x="15px" y="83.326px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:20px;">Run validation if it exists on the</text>
+            <text x="15px" y="103.326px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:20px;">command. If validation fails then</text>
+            <text x="15px" y="123.326px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:20px;">stop.</text>
+            <text x="15px" y="155.326px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:20px;">ﬁle: registercommands.ts</text>
+            <text x="15px" y="187.326px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:20px;">source: registerCommands()</text>
+            <text x="15px" y="251.326px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:20px;">This phase calls validate() on the</text>
+            <text x="15px" y="271.326px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:20px;">command.</text>
+            <text x="15px" y="303.326px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:20px;">optional. async. <tspan x="159.17px 171.387px " y="303.326px 303.326px ">Th</tspan>is is when json</text>
+            <text x="15px" y="323.326px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:20px;">schema validation occurs.</text>
+        </g>
+    </g>
+    <g id="run">
+        <g transform="matrix(0.25,0,0,1,960,209)">
+            <rect x="0" y="0" width="1280" height="800" style="fill:rgb(198,249,199);"/>
+        </g>
+        <g transform="matrix(1,0,0,1,1070.75,200.819)">
+            <text x="9px" y="55px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:55.842px;">run</text>
+        </g>
+        <g transform="matrix(1,0,0,1,956,218)">
+            <text x="15px" y="83.326px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:20px;">runs the command.</text>
+            <text x="15px" y="115.326px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:20px;">ﬁle: registercommands.ts</text>
+            <text x="15px" y="147.326px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:20px;">source: registerCommands()</text>
+            <text x="15px" y="211.326px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:20px;">This phase calls run() on the</text>
+            <text x="15px" y="231.326px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:20px;">command.</text>
+            <text x="15px" y="263.326px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:20px;">required. async. <tspan x="161.748px 175.088px " y="263.326px 263.326px ">An</tspan>y rejections</text>
+            <text x="15px" y="283.326px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:20px;">from the command are caught.</text>
+        </g>
+    </g>
+    <g id="heading">
+        <rect x="0" y="0" width="1280" height="209" style="fill:white;stroke:black;stroke-width:1px;"/>
+        <path d="M767.456,84.677L767.5,94L760.016,88.441C762.817,89.361 766.537,87.478 767.456,84.677Z"/>
+        <path d="M752,54C758.395,72.786 762.232,82.759 764.489,88.047" style="fill:none;stroke:black;stroke-width:2.78px;stroke-linecap:butt;"/>
+        <g transform="matrix(1,0,0,1,-7,-119)">
+            <text x="647px" y="159.596px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:12px;">executable</text>
+        </g>
+        <g transform="matrix(1,0,0,1,158,-119)">
+            <text x="647px" y="159.596px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:12px;">command</text>
+        </g>
+        <g transform="matrix(1,0,0,1,248,-119)">
+            <text x="647px" y="159.596px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:12px;">parameters</text>
+        </g>
+        <path d="M830.36,86.372L825,94L822.114,85.135C823.866,87.506 827.989,88.125 830.36,86.372Z"/>
+        <path d="M831,54C831,54 827.693,76.044 825.99,87.403" style="fill:none;stroke:black;stroke-width:2.78px;stroke-linecap:butt;"/>
+        <path d="M912.832,87.656L906,94L905.024,84.728C906.244,87.412 910.148,88.876 912.832,87.656Z"/>
+        <path d="M921,54C921,54 912.561,76.505 908.342,87.754" style="fill:none;stroke:black;stroke-width:2.78px;stroke-linecap:butt;"/>
+        <use xlink:href="#_Image1" x="672.333" y="53.386" width="22.89px" height="41.39px" transform="matrix(0.995207,0,0,0.985471,0,0)"/>
+        <g transform="matrix(1,0,0,1,90,-119)">
+            <text x="647px" y="159.596px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:12px;">group</text>
+        </g>
+        <g>
+            <text x="8px" y="90.894px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:18px;">The dojo cli is composed of a modular set of commands</text>
+            <text x="8px" y="109.482px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:18px;">that allows for customization and extension.</text>
+            <text x="8px" y="140.071px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:18px;">A<tspan x="19.013px 24.014px " y="140.071px 140.071px "> C</tspan>LI command is broken into four parts: the executable</text>
+            <text x="8px" y="158.66px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:18px;">(dojo), a group name, a command name, and parameters</text>
+        </g>
+        <g transform="matrix(1,0,0,1,578,-0.0109066)">
+            <text x="111px" y="120.5px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:22.337px;">dojo create app --name MyApp</text>
+        </g>
+        <g transform="matrix(1,0,0,1,-0.781186,-0.180641)">
+            <text x="9px" y="55px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:55.842px;">CLI lifecycle</text>
+            <rect x="9" y="60.917" width="301.022" height="4.09"/>
+        </g>
+        <g transform="matrix(1,0,0,1,-1,-2.65508)">
+            <path d="M737,91L737,144" style="fill:none;stroke:rgb(255,0,0);stroke-width:2.78px;stroke-linecap:butt;"/>
+        </g>
+        <g transform="matrix(1,0,0,1,67,-2.65508)">
+            <path d="M737,91L737,144" style="fill:none;stroke:rgb(255,0,0);stroke-width:2.78px;stroke-linecap:butt;"/>
+        </g>
+        <g transform="matrix(1,0,0,1,109.271,-2.65508)">
+            <path d="M737,91L737,144" style="fill:none;stroke:rgb(255,0,0);stroke-width:2.78px;stroke-linecap:butt;"/>
+        </g>
+    </g>
+    <defs>
+        <image id="_Image1" width="23px" height="42px" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABcAAAAqCAYAAABYzsDTAAAACXBIWXMAAA7EAAAOxAGVKw4bAAACrklEQVRIia3WP0g6YRzH8c/9uBSHAyEUhOCMGoJCcoloca2pxmoRmmqyf0ONtkhT1FJrLjWGi01RS+FSpC5hYA05GCkIkol3n9/wwy/0K0q95+AB7zxe74fnHvE0kgCAt7c39vf3a1B4/Hl8fOTi4iIHBwdRLpepEsfS0hIBEABjsRhJQtXA8/MzXS4XAdDlcrFYLCoLgCTW1tZk9tFoVC1eLpdpGAYBUNM05vN5JQH5EI/HZfZzc3Nq8VqtRp/PJ4GbmxvHgU8n+/v7gkciEdq27Sjw6aTRaNA0TQmcn5+rw0ni+PhY8HA4TMuyeg58udBqtTg6OiqB09NTdThJnJ2dCT48PMxms9lT4NuLtm1zcnJSAkdHR+pwkri8vBQ8EAiwXq93Hfjxy+npaQns7u6qxW9vbwX3er2sVCpdBX69YX5+XgLb29tq8UKhQF3XCYAej4elUqnjQEc3LS8vy+xXVlbU4i8vL/R4PARAXddZKBQ6CnS8fltbWzL7hYUFtXilUqHX65XA3d3dr4GOcZJIJBKCz8zMqMXr9ToDgYAErq6ufgx0hZPE4eGh4FNTUz/+oXSNN5tNDg0NSSCVSqnDSeLk5ETwsbExtlqtbwM94ZZlcXx8XALJZFIdThLpdFrwYDDIRqPxJdAzbts2I5GIBA4ODtThJHF9fS24z+djrVajMpwkZmdnJbCzsyN4tVp1BpNEPp+npmkEQMMw+Pr6yo+PD66vr1Mjnb/vR6NRJpNJAMDGxgbcbjcymYzzZSGJYrHIvr4+2TntX6/uZMYPDw+8v7+HruuYmJhANpvF09MTAOD9/d3ZzC3L4t7eHt1utzzU9hgZGXG+JCSRy+UYCoU+4aZpqsHJf2/Im5ubsnP8fr86vD0uLi44MDBAwzDUbMX/j2q1ytXVVfwFVPpkatQ0Gr4AAAAASUVORK5CYII="/>
+    </defs>
+</svg>
