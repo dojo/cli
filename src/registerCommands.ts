@@ -188,7 +188,7 @@ function registerCommands(yargs: Argv, helper: HelperFactory, groupName: string,
 
 				if (typeof command.validate === 'function') {
 					const valid = await command.validate(helper.sandbox(groupName, command.name));
-					if (!valid && !args.force) {
+					if (!valid && !argv.force) {
 						return;
 					}
 				}
