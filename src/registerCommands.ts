@@ -144,7 +144,7 @@ function registerGroups(yargs: Argv, helper: HelperFactory, groupName: string, c
 
 				if (typeof defaultCommand.validate === 'function') {
 					const valid = await defaultCommand.validate(helper.sandbox(groupName, defaultCommand.name));
-					if (!valid && !args.force) {
+					if (!valid && !argv.force) {
 						return;
 					}
 				}
