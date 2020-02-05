@@ -110,6 +110,22 @@ function parseAliases(aliases: Aliases, key: string, optionAlias: string | strin
 	return aliases;
 }
 
+/**
+ * Runs through a command's validation and run phases.
+ */
+async function executeCommand(command: CommandWrapper, argv: any, groupName: string, aliases: Aliases, helper: HelperFactory) {
+	const config = helper.sandbox(groupName, command.name).configuration.get();
+	const args = getOptions(aliases, config, argv);
+
+	if (typeof command.validate === 'function') {
+		const valid = await command.validate(helper.sandbox(groupName, command.name));
+		if (!valid && !argv.force) {
+			return;
+		}
+	}
+	return command.run(helper.sandbox(groupName, command.name), args).catch(reportError);
+}
+
 function registerGroups(yargs: Argv, helper: HelperFactory, groupName: string, commandMap: CommandMap): void {
 	const groupMap = new Map().set(groupName, commandMap);
 	const defaultCommand = getCommand(groupMap, groupName);
@@ -139,16 +155,8 @@ function registerGroups(yargs: Argv, helper: HelperFactory, groupName: string, c
 					console.log(formatHelp(argv, groupMap));
 					return Promise.resolve({});
 				}
-				const config = helper.sandbox(groupName, defaultCommand.name).configuration.get();
-				const args = getOptions(aliases, config, argv);
 
-				if (typeof defaultCommand.validate === 'function') {
-					const valid = await defaultCommand.validate(helper.sandbox(groupName, defaultCommand.name));
-					if (!valid && !argv.force) {
-						return;
-					}
-				}
-				return defaultCommand.run(helper.sandbox(groupName, defaultCommand.name), args).catch(reportError);
+				return executeCommand(defaultCommand, argv, groupName, aliases, helper);
 			}
 		}
 	);
@@ -156,7 +164,7 @@ function registerGroups(yargs: Argv, helper: HelperFactory, groupName: string, c
 
 function registerCommands(yargs: Argv, helper: HelperFactory, groupName: string, commandMap: CommandMap): void {
 	[...commandMap.values()].forEach((command: CommandWrapper) => {
-		const { name, register, run } = command;
+		const { name, register } = command;
 		let aliases: Aliases = {};
 		const groupMap = new Map().set(groupName, commandMap);
 		yargs.command(
@@ -177,22 +185,13 @@ function registerCommands(yargs: Argv, helper: HelperFactory, groupName: string,
 					.showHelpOnFail(false, formatHelp({ _: [groupName, name] }, groupMap))
 					.strict();
 			},
-			async (argv: any) => {
+			(argv: any) => {
 				if (argv.h || argv.help) {
 					console.log(formatHelp(argv, groupMap));
 					return Promise.resolve({});
 				}
 
-				const config = helper.sandbox(groupName, name).configuration.get();
-				const args = getOptions(aliases, config, argv);
-
-				if (typeof command.validate === 'function') {
-					const valid = await command.validate(helper.sandbox(groupName, command.name));
-					if (!valid && !argv.force) {
-						return;
-					}
-				}
-				return run(helper.sandbox(groupName, name), args).catch(reportError);
+				return executeCommand(command, argv, groupName, aliases, helper);
 			}
 		);
 	});
