@@ -3,9 +3,10 @@ import { GroupMap, CommandMap } from './interfaces';
 import { initCommandLoader, createBuiltInCommandLoader } from './command';
 import config from './config';
 
-export async function loadExternalCommands(): Promise<GroupMap> {
+export async function loadExternalCommands(group?: string): Promise<GroupMap> {
+	group = group !== undefined ? group : process.argv[2];
 	const installedCommandLoader = initCommandLoader(config.searchPrefixes);
-	const installedCommandsPaths = await enumerateInstalledCommands(config);
+	const installedCommandsPaths = await enumerateInstalledCommands(config, group);
 	return await loadCommands(installedCommandsPaths, installedCommandLoader);
 }
 

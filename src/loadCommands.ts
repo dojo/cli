@@ -15,8 +15,7 @@ export function isEjected(groupName: string, command: string): boolean {
  * @param config
  * @returns {Promise<string []>} the paths of all installed commands
  */
-export async function enumerateInstalledCommands(config: CliConfig): Promise<string[]> {
-	const [, , group] = process.argv;
+export async function enumerateInstalledCommands(config: CliConfig, group?: string): Promise<string[]> {
 	const { searchPrefixes } = config;
 	const builtins = ['version', 'init', 'eject', 'validate'];
 

@@ -22,7 +22,8 @@ async function run(helper: Helper, args: { dojorc?: string } = {}) {
 		rootDir = cwd;
 	}
 
-	const dojoRcPath = join(rootDir, args.dojorc || '.dojorc');
+	const dojoRcName = args.dojorc || '.dojorc';
+	const dojoRcPath = join(rootDir, dojoRcName);
 	const file = existsSync(dojoRcPath) && readFileSync(dojoRcPath, 'utf8');
 	let json: { [name: string]: {} } = {};
 	let indent = '\t';
@@ -32,7 +33,7 @@ async function run(helper: Helper, args: { dojorc?: string } = {}) {
 		json = JSON.parse(file);
 	}
 
-	const groupMap = await loadExternalCommands();
+	const groupMap = await loadExternalCommands('');
 	const values = [];
 
 	for (let [, commandMap] of groupMap.entries()) {
@@ -46,7 +47,7 @@ async function run(helper: Helper, args: { dojorc?: string } = {}) {
 	}
 
 	writeFileSync(dojoRcPath, JSON.stringify(json, null, indent));
-	console.log(chalk.white(`Successfully wrote ${args.dojorc} to ${dojoRcPath}`));
+	console.log(chalk.white(`Successfully wrote ${dojoRcName} to ${dojoRcPath}`));
 }
 
 export default {
