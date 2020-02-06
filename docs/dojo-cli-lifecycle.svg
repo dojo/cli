@@ -31,10 +31,6 @@
             <text x="15px" y="251.326px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:20px;">This phase calls register() on the</text>
             <text x="15px" y="271.326px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:20px;">command as part of the yargs</text>
             <text x="15px" y="291.326px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:20px;">builder step.</text>
-            <text x="15px" y="355.326px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:20px;">Note: the default command is</text>
-            <text x="15px" y="375.326px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:20px;">registered separately<tspan x="200.283px 205.84px 210.293px 223.633px " y="375.326px 375.326px 375.326px 375.326px ">. An</tspan>y</text>
-            <text x="15px" y="395.326px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:20px;">change to command registration</text>
-            <text x="15px" y="415.326px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:20px;">needs to happen in two places.</text>
         </g>
     </g>
     <g id="validate">
