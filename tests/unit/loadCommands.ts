@@ -171,12 +171,10 @@ registerSuite('loadCommands', {
 			},
 			tests: {
 				async 'should not load commands that are not in specified group'() {
-					process.argv = ['node', 'dojo.js', 'bar'];
-					const installedPaths = await enumInstalledCommands(goodConfig);
+					const installedPaths = await enumInstalledCommands(goodConfig, 'bar');
 					assert.isTrue(installedPaths.length === 0);
 				},
 				async 'should load commands that are in specified group'() {
-					process.argv = ['node', 'dojo.js', 'foo'];
 					const installedPaths = await enumInstalledCommands(goodConfig);
 					assert.isTrue(installedPaths.length === 2);
 				}
