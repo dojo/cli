@@ -113,7 +113,13 @@ function parseAliases(aliases: Aliases, key: string, optionAlias: string | strin
 /**
  * Runs through a command's validation and run phases.
  */
-async function executeCommand(command: CommandWrapper, argv: any, groupName: string, aliases: Aliases, helper: HelperFactory) {
+async function executeCommand(
+	command: CommandWrapper,
+	argv: any,
+	groupName: string,
+	aliases: Aliases,
+	helper: HelperFactory
+) {
 	const config = helper.sandbox(groupName, command.name).configuration.get();
 	const args = getOptions(aliases, config, argv);
 
