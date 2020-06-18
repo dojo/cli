@@ -129,7 +129,12 @@ async function executeCommand(
 			return;
 		}
 	}
-	return command.run(helper.sandbox(groupName, command.name), args).catch(reportError);
+	return command
+		.run(helper.sandbox(groupName, command.name), args)
+		.then(() => {
+			process.exit(0);
+		})
+		.catch(reportError);
 }
 
 function registerGroups(yargs: Argv, helper: HelperFactory, groupName: string, commandMap: CommandMap): void {
