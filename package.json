@@ -69,7 +69,7 @@
     "yargs": "10.1.2"
   },
   "devDependencies": {
-    "@dojo/scripts": "~3.0.1",
+    "@dojo/scripts": "4.0.2",
     "@types/configstore": "^2.1.1",
     "@types/detect-indent": "^5.0.0",
     "@types/ejs": "2.6.3",
