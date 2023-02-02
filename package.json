@@ -59,7 +59,7 @@
     "globby": "6.1.0",
     "inquirer": "6.2.2",
     "jsonschema": "1.2.4",
-    "libnpmsearch": "^2.0.0",
+    "libnpmsearch": "^6.0.1",
     "pkg-dir": "2.0.0",
     "readline-sync": "1.4.9",
     "slice-ansi": "1.0.0",
