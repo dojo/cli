@@ -54,7 +54,7 @@
     "configstore": "3.1.2",
     "cross-spawn": "5.1.0",
     "detect-indent": "5.0.0",
-    "ejs": "2.6.1",
+    "ejs": "3.1.7",
     "fs-extra": "7.0.0",
     "globby": "6.1.0",
     "inquirer": "6.2.2",
